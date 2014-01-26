@@ -1,0 +1,90 @@
+\documentclass{article}
+
+\usepackage{fancyhdr} % Required for custom headers
+\usepackage[utf8]{inputenc}
+\usepackage{lastpage} % Required to determine the last page for the footer
+\usepackage{extramarks} % Required for headers and footers
+\usepackage[usenames,dvipsnames]{color} % Required for custom colors
+\usepackage{graphicx} % Required to insert images
+\usepackage{listings} % Required for insertion of code
+\usepackage{courier} % Required for the courier font
+\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+
+% Margins
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.5in
+\textheight=9.0in
+\headsep=0.25in
+
+\linespread{1.1} % Line spacing
+
+% Set up the header and footer
+\pagestyle{fancy}
+
+\lhead{\hmwkAuthorName} % Top left header
+\chead{\hmwkClass:\hmwkTitle} % Top center head
+\rhead{\firstxmark} % Top right header
+\lfoot{\lastxmark} % Bottom left footer
+\cfoot{} % Bottom center footer
+\rfoot{Page\ \thepage\ of\ \protect\pageref{LastPage}} % Bottom right footer
+\renewcommand\headrulewidth{0.4pt} % Size of the header rule
+\renewcommand\footrulewidth{0.4pt} % Size of the footer rule
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs
+
+
+% Document data
+
+\newcommand{\exerciseTitle}{Exericse 1} % Assignment title
+\newcommand{\exerciseClass}{TDT4258} % Course/class
+\newcommand{\exerciseGroup}{Group 1} % Your name
+\newcommand{\exerciseGroupMembers}{Kim Rune Solstad, Sindre Magnussen and Håkon Åmdal}
+
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+\title{
+\vspace{2in}
+\textmd{\textbf{\hmwkClass:\ \hmwkTitle}}\\
+\normalsize\vspace{0.1in}\small{Due\ on\ \hmwkDueDate}\\
+\vspace{3in}
+}
+
+\author{\textbf{\hmwkAuthorName}}
+\date{} % Insert date here if you want it to appear below your name
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+\maketitle
+\newpage
+
+\section{Problem 1, Regular laguages}
+\subsection{Subtask A}
+\includegraphics[width=0.75\columnwidth]{img/P1A.jpg} % Example image
+
+\subsection{Subtask B}
+\includegraphics[width=0.75\columnwidth]{img/P1B.jpg} % Example image
+
+\subsection{Subtask C}
+This flex program does not handle nested loops. The bracket of the innermost loop will close all of the while loops. I believe there is a way to make the program work, but I do not know how to do that.
+
+\section{Problem 2, Grammars}
+\subsection{Subtask A}
+An ambigous grammar means that different derivations of the same character stream may produce different parse trees.
+
+\subsection{Subtask B}
+Yes, the grammar is ambigouos. It produces two different parse trees with leftmost derivation:\\
+\includegraphics[width=0.75\columnwidth]{img/P2B.jpg} % Example image
+
+\subsection{Subtask C}
+\label{subsec:p2c}
+A grammar for a context-free language is left-recursive if there exists a non-terminal symbol A that can be put through the production rules to produce a string with A as the leftmost symbol.\footnote{Notes on Formal Language Theory and Parsing, James Power, Department of Computer Science National University of Ireland, Maynooth Maynooth, Co. Kildare, Ireland.}
+
+\subsection{Subtask D}
+Yes, according to the definition in subtask C, there exists a non-terminal symbol (S::= Sp rule) that can produce a string with the symbol as the leftmost.
+\end{document}
