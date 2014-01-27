@@ -98,18 +98,44 @@ _reset:
 
 	mov r2, 0x2
 	str r2, [r1, #GPIO_CTRL]
-
-
+	
 	// More something, dont know what
 	mov r2, 0x55555555
 	str r2, [r1, #GPIO_MODEH]
 
+	// So this was output, lets configure input
+
+	ldr r4, gpio_pc_base_addr
+
+	mov r2, 0x33333333
+	str r2, [r4, #GPIO_MODEL]
+	
+	mov r2, 0xff
+	str r2, [r4, #GPIO_DOUT]
+	b event_loop
+
+
+event_loop:
+
+	
+	// Load input register value
+	ldrb r2, [r4, #GPIO_DIN] 
+
+	// See if we can turn on some lights!!
+	mov r3, 0x11
+
+	strb r2, [r1, #GPIO_DOUT]
+
+	b event_loop
 
 
 
 
 gpio_pa_base_addr:
 	.long GPIO_PA_BASE
+
+gpio_pc_base_addr:
+	.long GPIO_PC_BASE
 
 cmu_base_addr:
 	.long CMU_BASE
