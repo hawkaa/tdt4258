@@ -107,17 +107,6 @@ _reset:
 	//mov r2, 0x11 
 	//strb r2, [r1, #GPIO_DOUT]
 
-
-
-gpio_pa_base_addr:
-	.long GPIO_PA_BASE
-
-gpio_pc_base_addr:
-	.long GPIO_PC_BASE
-
-cmu_base_addr:
-	.long CMU_BASE
-
 	/////////////////////////////////////////////////////////////////////////////
 	//
   // GPIO handler
