@@ -92,11 +92,19 @@ _reset:
 
 	str r2, [r1, #CMU_HFPERCLKEN0]
 	
+
 	// Something something
 	ldr r1, gpio_pa_base_addr
 
 	mov r2, 0x2
 	str r2, [r1, #GPIO_CTRL]
+
+
+	// More something, dont know what
+	mov r2, 0x55555555
+	str r2, [r1, #GPIO_MODEH]
+
+
 
 
 
