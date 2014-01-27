@@ -1,4 +1,4 @@
-        .syntax unified
+  	.syntax unified
 	
 	      .include "efm32gg.s"
 
@@ -11,7 +11,7 @@
 	
         .section .vectors
 	
-	      .long   stack_top               /* Top of Stack                 */
+	      .long   0x1000               /* Top of Stack                 */
 	      .long   _reset                  /* Reset Handler                */
 	      .long   dummy_handler           /* NMI Handler                  */
 	      .long   dummy_handler           /* Hard Fault Handler           */
@@ -82,7 +82,30 @@
 	      .type   _reset, %function
         .thumb_func
 _reset: 
-	      b .  // do nothing
+	// load CMU base adress
+	ldr r1, cmu_base_addr
+
+	// load current value of HFPERCLK ENABLE
+	ldr r2, [r1, #CMU_HFPERCLKEN0]
+
+	// set bit for GPIO clk
+	mov r3, #1
+	lsl r3, r3 , #CMU_HFPERCLKEN0_GPIO 
+
+	// store new value
+	str r2, [r1,  #CMU_HFPERCLKEN0]
+
+	ldr r1, gpio_pa_base
+
+	mov r2, 0x2
+	str r2, [r1, #GPIO_CTRL]
+	
+	mov r2, 0x55555555
+	str r2, [r1, #GPIO_MODEH]
+
+	//mov r2, 0x11 
+	//strb r2, [r1, #GPIO_DOUT]
+	
 	
 	/////////////////////////////////////////////////////////////////////////////
 	//
@@ -101,4 +124,10 @@ gpio_handler:
         .thumb_func
 dummy_handler:  
         b .  // do nothing
+
+cmu_base_addr:
+	.long CMU_BASE
+
+gpio_pa_base:
+	.long GPIO_PA_BASE
 
