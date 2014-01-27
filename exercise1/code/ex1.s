@@ -4,8 +4,8 @@
 
 	/////////////////////////////////////////////////////////////////////////////
 	//
-  // Exception vector table
-  // This table contains addresses for all exception handlers
+ 	// Exception vector table
+	// This table contains addresses for all exception handlers
 	//
 	/////////////////////////////////////////////////////////////////////////////
 	
@@ -74,13 +74,13 @@
 	/////////////////////////////////////////////////////////////////////////////
 	//
 	// Reset handler
-  // The CPU will start executing here after a reset
+  	// The CPU will start executing here after a reset
 	//
 	/////////////////////////////////////////////////////////////////////////////
 
 	      .globl  _reset
 	      .type   _reset, %function
-        .thumb_func
+		.thumb_func
 _reset: 
 	// load CMU base adress
 	ldr r1, cmu_base_addr
@@ -106,8 +106,18 @@ _reset:
 
 	//mov r2, 0x11 
 	//strb r2, [r1, #GPIO_DOUT]
-	
-	
+
+
+
+gpio_pa_base_addr:
+	.long GPIO_PA_BASE
+
+gpio_pc_base_addr:
+	.long GPIO_PC_BASE
+
+cmu_base_addr:
+	.long CMU_BASE
+
 	/////////////////////////////////////////////////////////////////////////////
 	//
   // GPIO handler
