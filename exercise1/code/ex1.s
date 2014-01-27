@@ -80,10 +80,21 @@
 
 	      .globl  _reset
 	      .type   _reset, %function
-        .thumb_func
+		.thumb_func
 _reset: 
-	      b .  // do nothing
-	
+
+	ldr r1, cmu_base_addr
+	ldr r2 , [r1, #CMU_HFPERCLKEN0]
+
+	mov r3, #1
+	lsl r3, r3, #CMU_HFPERCLKEN0_GPIO
+	orr r2, r2, r3
+
+	str r2, [r1, #CMU_HFPERCLKEN0]
+
+cmu_base_addr:
+	.long CMU_BASE
+
 	/////////////////////////////////////////////////////////////////////////////
 	//
   // GPIO handler
