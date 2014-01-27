@@ -91,6 +91,7 @@ _reset:
 	// set bit for GPIO clk
 	mov r3, #1
 	lsl r3, r3 , #CMU_HFPERCLKEN0_GPIO 
+	orr r2, r2, r3
 
 	// store new value
 	str r2, [r1,  #CMU_HFPERCLKEN0]
