@@ -122,9 +122,8 @@ event_loop:
 	ldrb r2, [r4, #GPIO_DIN] 
 
 	// See if we can turn on some lights!!
-	mov r3, 0x11
 
-	strb r2, [r1, #GPIO_DOUT]
+//	strb r2, [r1, #GPIO_DOUT]
 
 	b event_loop
 
