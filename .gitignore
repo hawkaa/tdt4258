@@ -16,3 +16,8 @@
 *.exe
 *.out
 *.app
+
+# Latex uneccessairly files
+*.aux
+*.log
+*.pdf

@@ -23,8 +23,8 @@
 % Set up the header and footer
 \pagestyle{fancy}
 
-\lhead{\hmwkAuthorName} % Top left header
-\chead{\hmwkClass:\hmwkTitle} % Top center head
+\lhead{\exerciseGroup} % Top left header
+\chead{\exerciseClass: \exerciseTitle} % Top center head
 \rhead{\firstxmark} % Top right header
 \lfoot{\lastxmark} % Bottom left footer
 \cfoot{} % Bottom center footer
@@ -48,12 +48,11 @@
 
 \title{
 \vspace{2in}
-\textmd{\textbf{\hmwkClass:\ \hmwkTitle}}\\
-\normalsize\vspace{0.1in}\small{Due\ on\ \hmwkDueDate}\\
+\textmd{\textbf{\exerciseClass: \exerciseTitle}}\\
 \vspace{3in}
 }
 
-\author{\textbf{\hmwkAuthorName}}
+\author{\textbf{\exerciseGroup}}
 \date{} % Insert date here if you want it to appear below your name
 
 %----------------------------------------------------------------------------------------
@@ -62,29 +61,5 @@
 
 \maketitle
 \newpage
-
-\section{Problem 1, Regular laguages}
-\subsection{Subtask A}
-\includegraphics[width=0.75\columnwidth]{img/P1A.jpg} % Example image
-
-\subsection{Subtask B}
-\includegraphics[width=0.75\columnwidth]{img/P1B.jpg} % Example image
-
-\subsection{Subtask C}
-This flex program does not handle nested loops. The bracket of the innermost loop will close all of the while loops. I believe there is a way to make the program work, but I do not know how to do that.
-
-\section{Problem 2, Grammars}
-\subsection{Subtask A}
-An ambigous grammar means that different derivations of the same character stream may produce different parse trees.
-
-\subsection{Subtask B}
-Yes, the grammar is ambigouos. It produces two different parse trees with leftmost derivation:\\
-\includegraphics[width=0.75\columnwidth]{img/P2B.jpg} % Example image
-
-\subsection{Subtask C}
-\label{subsec:p2c}
-A grammar for a context-free language is left-recursive if there exists a non-terminal symbol A that can be put through the production rules to produce a string with A as the leftmost symbol.\footnote{Notes on Formal Language Theory and Parsing, James Power, Department of Computer Science National University of Ireland, Maynooth Maynooth, Co. Kildare, Ireland.}
-
-\subsection{Subtask D}
-Yes, according to the definition in subtask C, there exists a non-terminal symbol (S::= Sp rule) that can produce a string with the symbol as the leftmost.
+huoehueho
 \end{document}
