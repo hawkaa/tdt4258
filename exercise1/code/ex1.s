@@ -82,7 +82,7 @@
 	      .type   _reset, %function
 		.thumb_func
 _reset: 
-
+	// GPIO CLOCK
 	ldr r1, cmu_base_addr
 	ldr r2 , [r1, #CMU_HFPERCLKEN0]
 
@@ -91,6 +91,17 @@ _reset:
 	orr r2, r2, r3
 
 	str r2, [r1, #CMU_HFPERCLKEN0]
+	
+	// Something something
+	ldr r1, gpio_pa_base_addr
+
+	mov r2, 0x2
+	str r2, [r1, #GPIO_CTRL]
+
+
+
+gpio_pa_base_addr:
+	.long GPIO_PA_BASE
 
 cmu_base_addr:
 	.long CMU_BASE
