@@ -123,7 +123,7 @@ event_loop:
 
 	// See if we can turn on some lights!!
 
-//	strb r2, [r1, #GPIO_DOUT]
+	strb r2, [r1, #GPIO_DOUT]
 
 	b event_loop
 
