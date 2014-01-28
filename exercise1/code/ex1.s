@@ -129,6 +129,14 @@ event_loop:
 
 
 
+///////////////////////////////////////////////////////////
+//
+// Base addresses
+// This section contains the base addresses of various
+// units, like the GPIO ports and CMU
+//
+///////////////////////////////////////////////////////////
+
 
 gpio_pa_base_addr:
 	.long GPIO_PA_BASE
@@ -141,19 +149,18 @@ cmu_base_addr:
 
 	/////////////////////////////////////////////////////////////////////////////
 	//
-  // GPIO handler
-  // The CPU will jump here when there is a GPIO interrupt
+  	// GPIO handler
+  	// The CPU will jump here when there is a GPIO interrupt
 	//
 	/////////////////////////////////////////////////////////////////////////////
 	
-        .thumb_func
-gpio_handler:  
 
-	      b .  // do nothing
-	
-	/////////////////////////////////////////////////////////////////////////////
-	
-        .thumb_func
+.thumb_func
+gpio_handler:  
+	b .  // do nothing
+		
+        
+.thumb_func
 dummy_handler:  
         b .  // do nothing
 
