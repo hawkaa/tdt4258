@@ -6,3 +6,9 @@ gpio_pa_base:
 
 gpio_pc_base:
 	.long GPIO_PC_BASE
+
+gpio_base:
+	.long GPIO_BASE
+
+iser0:
+	.long ISER0
