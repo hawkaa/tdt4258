@@ -84,11 +84,12 @@
 _reset: 
 	// load CMU base adress
 	ldr r1, cmu_base_addr
-
+	
+	// Enable GPIO-clk
 	// load current value of HFPERCLK ENABLE
 	ldr r2, [r1, #CMU_HFPERCLKEN0]
 
-	// set bit for GPIO clk
+	// set bit for GPIO-clk
 	mov r3, #1
 	lsl r3, r3 , #CMU_HFPERCLKEN0_GPIO 
 	orr r2, r2, r3
@@ -103,10 +104,31 @@ _reset:
 	
 	mov r2, 0x55555555
 	str r2, [r1, #GPIO_MODEH]
+	
+	ldr r3, gpio_pc_base
+	
+	mov r2, 0x33333333
+	str r2, [r3, #GPIO_MODEL]
 
-	//mov r2, 0x11 
+	mov r2, 0xff
+	str r2, [r3, #GPIO_DOUT]
+
+	b withoutinter
+
+withoutinter:
+	ldrb r2, [r3, #GPIO_DIN]
+	
+	strb r2, [r1, #GPIO_DOUT]
+	
+	b withoutinter
+	
+	
+	// Example-code to set individual LED's
+	//mov r2, #1
+	//lsl r2, r2, #0
+	//mvn r2, r2
 	//strb r2, [r1, #GPIO_DOUT]
-
+	
 	/////////////////////////////////////////////////////////////////////////////
 	//
   // GPIO handler
@@ -131,3 +153,5 @@ cmu_base_addr:
 gpio_pa_base:
 	.long GPIO_PA_BASE
 
+gpio_pc_base:
+	.long GPIO_PC_BASE
