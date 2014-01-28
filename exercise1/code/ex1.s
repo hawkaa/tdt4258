@@ -78,27 +78,7 @@
 	//
 	/////////////////////////////////////////////////////////////////////////////
 
-	      .globl  _reset
-	      .type   _reset, %function
-		.thumb_func
-_reset: 
-	.include "gpio_setup.s"
-	
-	b withoutinter
-
-withoutinter:
-	ldrb r2, [r3, #GPIO_DIN]
-	
-	strb r2, [r1, #GPIO_DOUT]
-	
-	b withoutinter
-	
-	
-	// Example-code to set individual LED's
-	//mov r2, #1
-	//lsl r2, r2, #0
-	//mvn r2, r2
-	//strb r2, [r1, #GPIO_DOUT]
+	.include "polling_reset_handler.s"
 	
 	/////////////////////////////////////////////////////////////////////////////
 	//
@@ -118,11 +98,4 @@ gpio_handler:
 dummy_handler:  
         b .  // do nothing
 
-cmu_base_addr:
-	.long CMU_BASE
-
-gpio_pa_base:
-	.long GPIO_PA_BASE
-
-gpio_pc_base:
-	.long GPIO_PC_BASE
+.include "base_addresses.s"
