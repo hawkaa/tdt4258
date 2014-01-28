@@ -21,6 +21,7 @@
 *.aux
 *.log
 *.pdf
+*.toc
 
 # VIM
 *.swp
