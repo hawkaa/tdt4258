@@ -96,7 +96,7 @@ _reset:
 	// store new value
 	str r2, [r1,  #CMU_HFPERCLKEN0]
 
-	ldr r1, gpio_pa_base
+	ldr r1, gpio_pa_base_addr
 
 	mov r2, 0x2
 	str r2, [r1, #GPIO_CTRL]
