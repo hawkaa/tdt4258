@@ -24,3 +24,7 @@
 
 # VIM
 *.swp
+
+#
+*.bin
+*.elf
