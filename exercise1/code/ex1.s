@@ -84,11 +84,12 @@
 _reset: 
 	// load CMU base adress
 	ldr r1, cmu_base_addr
-
+	
+	// Enable GPIO-clk
 	// load current value of HFPERCLK ENABLE
 	ldr r2, [r1, #CMU_HFPERCLKEN0]
 
-	// set bit for GPIO clk
+	// set bit for GPIO-clk
 	mov r3, #1
 	lsl r3, r3 , #CMU_HFPERCLKEN0_GPIO 
 	orr r2, r2, r3
@@ -96,72 +97,61 @@ _reset:
 	// store new value
 	str r2, [r1,  #CMU_HFPERCLKEN0]
 
-	ldr r1, gpio_pa_base_addr
+	ldr r1, gpio_pa_base
 
 	mov r2, 0x2
 	str r2, [r1, #GPIO_CTRL]
 	
 	mov r2, 0x55555555
 	str r2, [r1, #GPIO_MODEH]
-
-	// So this was output, lets configure input
-
-	ldr r4, gpio_pc_base_addr
-
+	
+	ldr r3, gpio_pc_base
+	
 	mov r2, 0x33333333
-	str r2, [r4, #GPIO_MODEL]
-	
+	str r2, [r3, #GPIO_MODEL]
+
 	mov r2, 0xff
-	str r2, [r4, #GPIO_DOUT]
-	b event_loop
+	str r2, [r3, #GPIO_DOUT]
 
+	b withoutinter
 
-event_loop:
-
+withoutinter:
+	ldrb r2, [r3, #GPIO_DIN]
 	
-	// Load input register value
-	ldrb r2, [r4, #GPIO_DIN] 
-
-	// See if we can turn on some lights!!
-
 	strb r2, [r1, #GPIO_DOUT]
+	
+	b withoutinter
+	
+	
+	// Example-code to set individual LED's
+	//mov r2, #1
+	//lsl r2, r2, #0
+	//mvn r2, r2
+	//strb r2, [r1, #GPIO_DOUT]
+	
+	/////////////////////////////////////////////////////////////////////////////
+	//
+  // GPIO handler
+  // The CPU will jump here when there is a GPIO interrupt
+	//
+	/////////////////////////////////////////////////////////////////////////////
+	
+        .thumb_func
+gpio_handler:  
 
-	b event_loop
-
-
-
-///////////////////////////////////////////////////////////
-//
-// Base addresses
-// This section contains the base addresses of various
-// units, like the GPIO ports and CMU
-//
-///////////////////////////////////////////////////////////
-
-
-gpio_pa_base_addr:
-	.long GPIO_PA_BASE
-
-gpio_pc_base_addr:
-	.long GPIO_PC_BASE
+	      b .  // do nothing
+	
+	/////////////////////////////////////////////////////////////////////////////
+	
+        .thumb_func
+dummy_handler:  
+        b .  // do nothing
 
 cmu_base_addr:
 	.long CMU_BASE
 
-	/////////////////////////////////////////////////////////////////////////////
-	//
-  	// GPIO handler
-  	// The CPU will jump here when there is a GPIO interrupt
-	//
-	/////////////////////////////////////////////////////////////////////////////
-	
+gpio_pa_base:
+	.long GPIO_PA_BASE
 
-.thumb_func
-gpio_handler:  
-	b .  // do nothing
-		
-        
-.thumb_func
-dummy_handler:  
-        b .  // do nothing
-
+gpio_pc_base:
+	.long GPIO_PC_BASE
