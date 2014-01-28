@@ -1,7 +1,8 @@
 \section{Description and Methodology}
-\subsection{Setting up the GPIO}
-The gamepad created for this course requires some setup to be able to register input (button press) and create output (LED lights). We need to enable the internal pull-ups of the EFM32GG board. We followed the instructions available at \cite[p. 24]{compendium}
+\subsection{Setting up the GPIO}\label{subsection:gpio_setup}
+The gamepad created for this course requires some setup to be able to register input (button press) and create output (LED lights). We need to enable the internal pull-ups of the EFM32GG board. We followed the instructions available at \cite[p. 24]{compendium}. Please see \ref{code:gpio_setup.s} and \ref{code:base_addresses.s} for assembly code.
 
-\begin{figure}[h]
-	\lstinputlisting[frame=single]{../code/gpio_setup.s}
-\end{figure}
+	\subsection{Polling}
+	The easiest way to register input, is by continiously polling the button status. The reset handler will in this case initialize the GPIO (as explained in \ref{subsection:gpio_setup}) and start a tight loop.
+	The code in \ref{code:polling_reset_handler.s} will read the input registers directly into the LED output register, making each button on the gamepad turn on the LED light with corresponding input number.
+	
