@@ -10,6 +10,14 @@
 	/////////////////////////////////////////////////////////////////////////////
 	
         .section .vectors
+	/////////////////////////////////////////////////////////////////////////////
+	//
+  // Exception vector table
+  // This table contains addresses for all exception handlers
+	//
+	/////////////////////////////////////////////////////////////////////////////
+	
+        .section .vectors
 	
 	      .long   0x1000               /* Top of Stack                 */
 	      .long   _reset                  /* Reset Handler                */
@@ -69,17 +77,70 @@
 	      .long   dummy_handler
 	      .long   dummy_handler
 
-	      .section .text
+	      	      .section .text
 
 	/////////////////////////////////////////////////////////////////////////////
 	//
 	// Reset handler
-  	// The CPU will start executing here after a reset
-	//
+  	// The CPU will start executing here after a reset	//
 	/////////////////////////////////////////////////////////////////////////////
 
 	//.include "polling_reset_handler.s"
-	.include "interrupt_reset_handler.s"
+	//.include "interrupt_reset_handler.s"
+	
+.globl _reset
+.type _reset, %function
+.thumb_func
+_reset:
+	// load CMU base adress
+	ldr r1, cmu_base_addr
+	
+	// Enable GPIO-clk
+	// load current value of HFPERCLK ENABLE
+	ldr r2, [r1, #CMU_HFPERCLKEN0]
+
+	// set bit for GPIO-clk
+	mov r3, #1
+	lsl r3, r3 , #CMU_HFPERCLKEN0_GPIO 
+	orr r2, r2, r3
+
+	// store new value
+	str r2, [r1,  #CMU_HFPERCLKEN0]
+
+	ldr r1, gpio_pa_base
+
+	mov r2, 0x2
+	str r2, [r1, #GPIO_CTRL]
+	
+	mov r2, 0x55555555
+	str r2, [r1, #GPIO_MODEH]
+	
+	ldr r3, gpio_pc_base
+	
+	mov r2, 0x33333333
+	str r2, [r3, #GPIO_MODEL]
+
+	mov r2, 0xff
+	str r2, [r3, #GPIO_DOUT]
+
+	
+	// r6 reserved for GPIO_BASE
+	ldr r6, gpio_base 
+
+	mov r2, 0x22222222
+	str r2, [r6, #GPIO_EXTIPSELL]
+
+	mov r5, 0xff
+	str r5, [r6, #GPIO_EXTIFALL]
+	str r5, [r6, #GPIO_EXTIRISE]
+	str r5, [r6, #GPIO_IEN]
+
+	// r4 reserved for ISER0
+	ldr r4, iser0
+	ldr r2,=0x802
+
+	str r2, [r4]
+
 	
 	/////////////////////////////////////////////////////////////////////////////
 	//
@@ -88,7 +149,18 @@
 	//
 	/////////////////////////////////////////////////////////////////////////////
 	
-	.include "gpio_interrupt_handler.s"
+	//.include "gpio_interrupt_handler.s"
+	.thumb_func
+gpio_handler:
+	ldr r3, gpio_pc_base
+	ldr r1, gpio_pa_base
+	//ldr r5, gpio_base
+	mov r5, 0xff
+	ldr r2, [r3, #GPIO_DIN]
+	str r2, [r1, #GPIO_DOUT]
+	str r5, [r6, #GPIO_IFC]
+	bx LR
+
 	
 	/////////////////////////////////////////////////////////////////////////////
 	
@@ -96,4 +168,20 @@
 dummy_handler:  
         b .  // do nothing
 
-.include "base_addresses.s"
+//.include "base_addresses.s"
+cmu_base_addr:
+	.long CMU_BASE
+
+gpio_pa_base:
+	.long GPIO_PA_BASE
+
+gpio_pc_base:
+	.long GPIO_PC_BASE
+
+gpio_base:
+	.long GPIO_BASE
+
+iser0:
+	.long ISER0
+
+
