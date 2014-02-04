@@ -1,3 +1,4 @@
+
   	.syntax unified
 	
 	      .include "efm32gg.s"
@@ -199,3 +200,4 @@ iser0:
 
 scr:
 	.long SCR
+
