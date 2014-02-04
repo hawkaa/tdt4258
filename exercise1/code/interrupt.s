@@ -1,7 +1,7 @@
 	.syntax unified
 	.include "efm32gg.s"
 	.section .vectors
-	      .long   0x1000               /* Top of Stack                 */
+	      .long   stack_top               /* Top of Stack                 */
 	      .long   _reset                  /* Reset Handler                */
 	      .long   dummy_handler           /* NMI Handler                  */
 	      .long   dummy_handler           /* Hard Fault Handler           */
@@ -110,6 +110,34 @@ _reset:
 	mov r3, 0x22
 	strb r3, [r1, #GPIO_DOUT]
 
+	
+	//
+	// INTERRUPT
+	//
+
+	// Save the GPIO C Address to register r1
+	ldr r1, gpio_base
+
+	// Write 0x22222222 to GPIO_EXTIPSELL
+	mov r2, 0x22222222
+	str r2, [r1, #GPIO_EXTIPSELL]
+
+	// We want on button down
+	mov r2, 0xff
+	str r2, [r1, #GPIO_EXTIFALL]
+	str r2, [r1, #GPIO_EXTIRISE]
+
+	// Enable interrupt generation
+	mov r2, 0xff
+	str r2, [r1, #GPIO_IEN]
+	str r2, [r1, #GPIO_IFC]
+
+
+	//
+	ldr r1, iser0
+	ldr r2, =0x802
+	str r2, [r1]
+
 	b main_loop
 
 main_loop:
@@ -120,9 +148,21 @@ main_loop:
 .thumb_func
 gpio_handler:
 	ldr r1, gpio_pa_base
-	mov r3, 0x33
-	strb r3, [r1, #GPIO_DOUT]
-	b .
+	ldr r2, gpio_pc_base
+	ldr r4, gpio_base
+	
+	// change some led lights
+	//mov r3, 0x33
+	//strb r3, [r1, #GPIO_DOUT]
+	ldrb r3, [r2, #GPIO_DIN]
+	strb r3, [r1, #GPIO_DOUT]	
+	
+	// reset the interrupt
+	mov r3, 0xff
+	str r3, [r4, #GPIO_IFC]
+
+
+	bx lr 
 
 	
 .thumb_func
