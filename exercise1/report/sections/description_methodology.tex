@@ -16,15 +16,18 @@ H
 
 	\subsection{Polling}
 	\begin{figure}[h]
-		\ref{code:polling_loop}
-		\lstinputlisting{code/polling_loop}
+		\lstinputlisting[frame=single]{code/polling_loop.s}
 		\caption{Tight polling loop}
+		\label{code:polling_loop}
 	\end{figure}
-	The first and most naïve way of replicating the button input to the LED output, is to let the program sit in a tight loop, better known as polling. The GPIO was set up, and the program was directed to 
+	The first and most naïve way of replicating the button input to the LED output, is to let the program sit in a tight loop, better known as polling. The GPIO was set up, and the program was directed to an tight, infinite loop as shown in figure \ref{code:polling_loop}.
 
-	The easiest way to register input, is by continiously polling the button status. The reset handler will in this case initialize the GPIO (as explained in \ref{subsection:gpio_setup}) and start a tight loop.
-	The code in \ref{code:polling_reset_handler.s} will read the input registers directly into the LED output register, making each button on the gamepad turn on the LED light with corresponding input number.
-	
+	\subsection{Interrupts}
+	\label{subsection:interrupts}
+	Obviously, there is no need to continiously read from and write to the GPIO registers. The Giant Gecko EFM32 have interrupt support, which makes us able to  
+
+
+	\subsection{Putting our system to sleep}
 	
 	\subsection{Lets play a game}
 
