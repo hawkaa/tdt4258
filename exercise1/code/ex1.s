@@ -1,25 +1,6 @@
-
-  	.syntax unified
-	
-	      .include "efm32gg.s"
-
-	/////////////////////////////////////////////////////////////////////////////
-	//
- 	// Exception vector table
-	// This table contains addresses for all exception handlers
-	//
-	/////////////////////////////////////////////////////////////////////////////
-	
-        .section .vectors
-	/////////////////////////////////////////////////////////////////////////////
-	//
-  // Exception vector table
-  // This table contains addresses for all exception handlers
-	//
-	/////////////////////////////////////////////////////////////////////////////
-	
-        .section .vectors
-	
+	.syntax unified
+	.include "efm32gg.s"
+	.section .vectors
 	      .long   stack_top               /* Top of Stack                 */
 	      .long   _reset                  /* Reset Handler                */
 	      .long   dummy_handler           /* NMI Handler                  */
@@ -93,6 +74,7 @@
 .type _reset, %function
 .thumb_func
 _reset:
+
 	// load CMU base adress
 	ldr r1, cmu_base_addr
 	
@@ -115,73 +97,77 @@ _reset:
 	
 	mov r2, 0x55555555
 	str r2, [r1, #GPIO_MODEH]
-
-	mov r2, 0xff
-	str r2, [r1, #GPIO_DOUT]
-
 	
 	ldr r3, gpio_pc_base
 	
 	mov r2, 0x33333333
 	str r2, [r3, #GPIO_MODEL]
 
-	mov r2, 0xffffffff
-	str r2, [r1, #GPIO_DOUT]
+	mov r2, 0xff
+	str r2, [r3, #GPIO_DOUT]
+	
+	// Set one light
+	mov r3, 0x22
+	strb r3, [r1, #GPIO_DOUT]
 
-	// r6 reserved for GPIO_BASE
-	ldr r6, gpio_base 
+	
+	//
+	// INTERRUPT
+	//
 
+	// Save the GPIO C Address to register r1
+	ldr r1, gpio_base
+
+	// Write 0x22222222 to GPIO_EXTIPSELL
 	mov r2, 0x22222222
-	str r2, [r6, #GPIO_EXTIPSELL]
+	str r2, [r1, #GPIO_EXTIPSELL]
 
-	mov r5, 0xff
-	str r5, [r6, #GPIO_EXTIFALL]
-	str r5, [r6, #GPIO_EXTIRISE]
-	str r5, [r6, #GPIO_IEN]
+	// We want on button down
+	mov r2, 0xff
+	str r2, [r1, #GPIO_EXTIFALL]
+	str r2, [r1, #GPIO_EXTIRISE]
 
-	// r4 reserved for ISER0
-	ldr r4, iser0
-	ldr r2,=0x802
+	// Enable interrupt generation
+	mov r2, 0xff
+	str r2, [r1, #GPIO_IEN]
+	str r2, [r1, #GPIO_IFC]
 
-	str r5, [r6, #GPIO_IFC]
 
-	str r2, [r4]
+	//
+	ldr r1, iser0
+	ldr r2, =0x802
+	str r2, [r1]
 
+	b .
+
+main_loop:
+	//ldrb r2, [r3, #GPIO_DIN]
+	//strb r2, [r1, #GPIO_DOUT]	
 	b main_loop
-	
 
-	
-	/////////////////////////////////////////////////////////////////////////////
-	//
-  // GPIO handler
-  // The CPU will jump here when there is a GPIO interrupt
-	//
-	/////////////////////////////////////////////////////////////////////////////
-	
-	//.include "gpio_interrupt_handler.s"
 .thumb_func
 gpio_handler:
-	ldr r3, gpio_pc_base
 	ldr r1, gpio_pa_base
-	ldr r6, gpio_base
-	mov r5, 0xff
-	ldr r2, [r3, #GPIO_DIN]
-	//mov r2, 0x00000000
-	str r2, [r1, #GPIO_DOUT]
-	str r5, [r6, #GPIO_IFC]
-	bx lr
+	ldr r2, gpio_pc_base
+	ldr r4, gpio_base
+	
+	// change some led lights
+	//mov r3, 0x33
+	//strb r3, [r1, #GPIO_DOUT]
+	ldrb r3, [r2, #GPIO_DIN]
+	strb r3, [r1, #GPIO_DOUT]	
+	
+	// reset the interrupt
+	mov r3, 0xff
+	str r3, [r4, #GPIO_IFC]
+
+
+	bx lr 
 
 	
-	/////////////////////////////////////////////////////////////////////////////
-
 .thumb_func
-dummy_handler:  
+dummy_handler:
 	b .
-
-.thumb_func
-main_loop:
-	b .
-
 //.include "base_addresses.s"
 cmu_base_addr:
 	.long CMU_BASE
@@ -200,4 +186,6 @@ iser0:
 
 scr:
 	.long SCR
+
+
 
