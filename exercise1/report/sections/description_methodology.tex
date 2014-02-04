@@ -15,6 +15,7 @@ H
 	\end{itemize}
 
 	\subsection{Polling}
+	\label{subsection:polling}
 	\begin{figure}[h]
 		\lstinputlisting[frame=single]{code/polling_loop.s}
 		\caption{Tight polling loop}
@@ -24,10 +25,26 @@ H
 
 	\subsection{Interrupts}
 	\label{subsection:interrupts}
-	Obviously, there is no need to continiously read from and write to the GPIO registers. The Giant Gecko EFM32 have interrupt support, which makes us able to  
+	Obviously, there is no need to continiously read from and write to the GPIO registers. The Giant Gecko EFM32 have interrupt support, which makes us able to trigger a subroutine only when any button is pressed. We followed the instructions available at \cite[p. 24]{compendium}:
+	\begin{itemize}
+		\item Wrote 0x22222222 to \emph{GPIO\_EXTIPSELL}, which enables interrupts on pin 0-7 from PORT C (buttons) \cite[p. 770]{reference_manual}
+		\item Enabled low-to-high and high-to-low transition interrupts by writing 256 to \emph{GPIO\_EXTIFALL} and \emph{GPIO\_EXTRISE}.
+		\item Enabled interrupt generation by writing $0xff$ to \emph{GPIO\_IEN} and interrupt handling by writing $0x802$ (bits 1 and 11 for odd and even GPIO interrupts) to \emph{ISER0}.
+	\end{itemize}
+	
+	\begin{figure}[h]
+		\lstinputlisting[frame=single]{code/interrupt_handler.s}
+		\caption{Interrupt handler}
+		\label{code:interrupt_handler}
+	\end{figure}
 
+
+In addition to this, we had to create the interrupt handler itself and make entries to this handler at the NVIC. The interrupt handler looks much alike the the tight loop described in section \ref{subsection:polling}. The only difference is that the interrupt flags are cleared and the handler jumps back to where it was after the interrupt is done. The main differences is shown in figure \ref{code:interrupt_handler}. The reset handler was set to a tight loop (using the "b ." instruction) after the interrupts was set up.
 
 	\subsection{Putting our system to sleep}
+	To avoid the tight loop, we decided to put the system to sleep using the "wfi" instruction. In addition to this, we wanted to automatically put the system back to sleep when the interrupt handlers were done. This was done by setting 
+
+	\subsection{Towards energy mode 3 and 4}
 	
 	\subsection{Lets play a game}
 
