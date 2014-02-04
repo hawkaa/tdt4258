@@ -20,7 +20,7 @@
 	
         .section .vectors
 	
-	      .long   0x1000               /* Top of Stack                 */
+	      .long   stack_top               /* Top of Stack                 */
 	      .long   _reset                  /* Reset Handler                */
 	      .long   dummy_handler           /* NMI Handler                  */
 	      .long   dummy_handler           /* Hard Fault Handler           */
@@ -39,7 +39,7 @@
 
 	      /* External Interrupts */
 	      .long   dummy_handler
-	      .long   0x44           /* GPIO even handler */
+	      .long   gpio_handler           /* GPIO even handler */
 	      .long   dummy_handler
 	      .long   dummy_handler
 	      .long   dummy_handler
@@ -49,7 +49,7 @@
 	      .long   dummy_handler
 	      .long   dummy_handler
 	      .long   dummy_handler
-	      .long   0x6c           /* GPIO odd handler */
+	      .long   gpio_handler           /* GPIO odd handler */
 	      .long   dummy_handler
 	      .long   dummy_handler
 	      .long   dummy_handler
@@ -137,20 +137,17 @@ _reset:
 	mov r5, 0xff
 	str r5, [r6, #GPIO_EXTIFALL]
 	str r5, [r6, #GPIO_EXTIRISE]
-	str r5, [r6, #GPIO_IFC]
 	str r5, [r6, #GPIO_IEN]
 
 	// r4 reserved for ISER0
 	ldr r4, iser0
 	ldr r2,=0x802
 
+	str r5, [r6, #GPIO_IFC]
+
 	str r2, [r4]
-	
-	mov r2, #6
-	ldr r7, scr
-	str r2, [r7]
-	push {lr}
-	b dummy_handler
+
+	b main_loop
 	
 
 	
@@ -164,14 +161,14 @@ _reset:
 	//.include "gpio_interrupt_handler.s"
 .thumb_func
 gpio_handler:
-	//ldr r3, gpio_pc_base
-	//ldr r1, gpio_pa_base
-	//ldr r5, gpio_base
+	ldr r3, gpio_pc_base
+	ldr r1, gpio_pa_base
+	ldr r6, gpio_base
 	mov r5, 0xff
 	ldr r2, [r3, #GPIO_DIN]
+	//mov r2, 0x00000000
 	str r2, [r1, #GPIO_DOUT]
 	str r5, [r6, #GPIO_IFC]
-	pop {pc}
 	bx lr
 
 	
@@ -179,9 +176,12 @@ gpio_handler:
 
 .thumb_func
 dummy_handler:  
-        push {lr}
-	wfi
-	pop {pc}
+	b .
+
+.thumb_func
+main_loop:
+	b .
+
 //.include "base_addresses.s"
 cmu_base_addr:
 	.long CMU_BASE
