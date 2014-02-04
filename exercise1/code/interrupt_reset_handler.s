@@ -3,3 +3,4 @@
 .thumb_func
 _reset:
 	.include "interrupt_setup.s"
+

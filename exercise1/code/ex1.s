@@ -97,3 +97,4 @@ dummy_handler:
         b .  // do nothing
 
 .include "base_addresses.s"
+
