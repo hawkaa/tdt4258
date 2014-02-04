@@ -1,8 +1,31 @@
 \section{Description and Methodology}
-\subsection{Setting up the GPIO}\label{subsection:gpio_setup}
-The gamepad created for this course requires some setup to be able to register input (button press) and create output (LED lights). We need to enable the internal pull-ups of the EFM32GG board. We followed the instructions available at \cite[p. 24]{compendium}. Please see \ref{code:gpio_setup.s} and \ref{code:base_addresses.s} for assembly code.
+\label{section:description_and_methodology}
+To solve this task, we started out with the easiest solution, and then incrementally improving the energy consumtpion of the system. For these steps we used a simple procedure for controlling the lights; we copied the input registers into the output ones, making each button correspond to each LED output. This approach was chosen because it is easy to test the energy consumption. At the end of the exercise, we created a somewhat more advanced solution with animations and arithmetics
+
+	\subsection{Setting up the GPIO}
+	\label{subsection:gpio_setup}
+	The gamepad created for this course requires some setup to be able to register input (button press) and create output (LED lights). We followed the instructions available at \cite[p. 24]{compendium}:
+H
+	\begin{itemize}
+		\item Enabled the GPIO clock in the CMU by setting the CMU\_HFPERCLKEN0\_GPIO bit on the address pointed to by the CMU\_HFPERCLKEN0 constant.
+		\item Enabld HIGH drive strength to the LEDs by setting the Port Control Register to 2 \cite[p. 766]{reference_manual}. Writing to this register let us select among STANDARD, LOWEST, HIGH, LOW settings to control the intensity of the LED light.
+		\item Enabled LED output on bits 8-15 by writing $0x55555555$ to the \emph{PGIO\_PA\_CTRL} register.
+		\item Enabled GPIO pins 0-7 as input (buttons) by writing $0x33333333$ to the \emph{GPIO\_PC\_MODEL} register.
+		\item Enabled the internal pull-up resistors by writing 256 to \emph{GPIO\_PC\_DOUT}. This is needed to be able to read 3.3 volts from the input pins while a button is pressed down.
+	\end{itemize}
 
 	\subsection{Polling}
+	\begin{figure}[h]
+		\ref{code:polling_loop}
+		\lstinputlisting{code/polling_loop}
+		\caption{Tight polling loop}
+	\end{figure}
+	The first and most naïve way of replicating the button input to the LED output, is to let the program sit in a tight loop, better known as polling. The GPIO was set up, and the program was directed to 
+
 	The easiest way to register input, is by continiously polling the button status. The reset handler will in this case initialize the GPIO (as explained in \ref{subsection:gpio_setup}) and start a tight loop.
 	The code in \ref{code:polling_reset_handler.s} will read the input registers directly into the LED output register, making each button on the gamepad turn on the LED light with corresponding input number.
 	
+	
+	\subsection{Lets play a game}
+
+	\subsection{A little section about the Makefile}
