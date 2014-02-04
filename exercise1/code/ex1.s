@@ -38,7 +38,7 @@
 
 	      /* External Interrupts */
 	      .long   dummy_handler
-	      .long   gpio_handler            /* GPIO even handler */
+	      .long   0x44           /* GPIO even handler */
 	      .long   dummy_handler
 	      .long   dummy_handler
 	      .long   dummy_handler
@@ -48,7 +48,7 @@
 	      .long   dummy_handler
 	      .long   dummy_handler
 	      .long   dummy_handler
-	      .long   gpio_handler            /* GPIO odd handler */
+	      .long   0x6c           /* GPIO odd handler */
 	      .long   dummy_handler
 	      .long   dummy_handler
 	      .long   dummy_handler
@@ -114,16 +114,19 @@ _reset:
 	
 	mov r2, 0x55555555
 	str r2, [r1, #GPIO_MODEH]
+
+	mov r2, 0xff
+	str r2, [r1, #GPIO_DOUT]
+
 	
 	ldr r3, gpio_pc_base
 	
 	mov r2, 0x33333333
 	str r2, [r3, #GPIO_MODEL]
 
-	mov r2, 0xff
-	str r2, [r3, #GPIO_DOUT]
+	mov r2, 0xffffffff
+	str r2, [r1, #GPIO_DOUT]
 
-	
 	// r6 reserved for GPIO_BASE
 	ldr r6, gpio_base 
 
@@ -133,6 +136,7 @@ _reset:
 	mov r5, 0xff
 	str r5, [r6, #GPIO_EXTIFALL]
 	str r5, [r6, #GPIO_EXTIRISE]
+	str r5, [r6, #GPIO_IFC]
 	str r5, [r6, #GPIO_IEN]
 
 	// r4 reserved for ISER0
@@ -140,6 +144,13 @@ _reset:
 	ldr r2,=0x802
 
 	str r2, [r4]
+	
+	mov r2, #6
+	ldr r7, scr
+	str r2, [r7]
+	push {lr}
+	b dummy_handler
+	
 
 	
 	/////////////////////////////////////////////////////////////////////////////
@@ -150,24 +161,26 @@ _reset:
 	/////////////////////////////////////////////////////////////////////////////
 	
 	//.include "gpio_interrupt_handler.s"
-	.thumb_func
+.thumb_func
 gpio_handler:
-	ldr r3, gpio_pc_base
-	ldr r1, gpio_pa_base
+	//ldr r3, gpio_pc_base
+	//ldr r1, gpio_pa_base
 	//ldr r5, gpio_base
 	mov r5, 0xff
 	ldr r2, [r3, #GPIO_DIN]
 	str r2, [r1, #GPIO_DOUT]
 	str r5, [r6, #GPIO_IFC]
-	bx LR
+	pop {pc}
+	bx lr
 
 	
 	/////////////////////////////////////////////////////////////////////////////
-	
-        .thumb_func
-dummy_handler:  
-        b .  // do nothing
 
+.thumb_func
+dummy_handler:  
+        push {lr}
+	wfi
+	pop {pc}
 //.include "base_addresses.s"
 cmu_base_addr:
 	.long CMU_BASE
@@ -184,4 +197,5 @@ gpio_base:
 iser0:
 	.long ISER0
 
-
+scr:
+	.long SCR
