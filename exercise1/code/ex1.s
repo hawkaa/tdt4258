@@ -137,13 +137,12 @@ _reset:
 	ldr r1, iser0
 	ldr r2, =0x802
 	str r2, [r1]
+	
+	ldr r1, scr
+	mov r2, #6
+	str r2, [r1]
+	wfi
 
-	b .
-
-main_loop:
-	//ldrb r2, [r3, #GPIO_DIN]
-	//strb r2, [r1, #GPIO_DOUT]	
-	b main_loop
 
 .thumb_func
 gpio_handler:
