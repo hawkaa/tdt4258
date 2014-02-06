@@ -79,4 +79,7 @@
         // System Control Block
 
         SCR = 0xe000ed10
-
+	
+	///////////////////////////
+	// System Timer
+	SYSTICK = 0x0000003C
