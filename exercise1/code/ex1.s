@@ -16,7 +16,7 @@
 	      .long   dummy_handler           /* Debug Monitor Handler        */
 	      .long   dummy_handler           /* Reserved                     */
 	      .long   dummy_handler           /* PendSV Handler               */
-	      .long   dummy_handler           /* SysTick Handler              */
+	      .long   systick_handler		      /* SysTick Handler              */
 
 	      /* External Interrupts */
 	      .long   dummy_handler
@@ -134,7 +134,14 @@ _reset:
 	mov r2, 0xff
 	str r2, [r1, #GPIO_IEN]
 	str r2, [r1, #GPIO_IFC]
-
+	
+	//systick
+	//mov r5, 0b11 
+	//str r5, #0xe000e010 //enable timer
+	//mov r5, 0xff
+	//str r5, #0xe000e014 //set reload value
+	
+	
 
 	//
 	ldr r1, iser0
@@ -178,8 +185,10 @@ gpio_handler:
 	//strb r3, [r1, #GPIO_DOUT]	
 	
 	// small subroutine-program
-	bl prog
-	
+	//bl prog
+	b execute
+
+continue:		
 	// reset the interrupt
 	mov r3, 0xff
 	str r3, [r4, #GPIO_IFC]
@@ -193,6 +202,16 @@ prog:
 	ldr r1, gpio_pa_base 
 	ldr r2, gpio_pc_base
 	ldr r3
+
+execute:
+	// change some led lights
+	ldrb r3, [r2, #GPIO_DIN]
+	strb r3, [r1, #GPIO_DOUT]
+	
+	b continue
+.thumb_func
+systick_handler:
+	b .
 	
 .thumb_func
 dummy_handler:
