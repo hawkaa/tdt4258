@@ -49,20 +49,35 @@ In addition to this, we had to create the interrupt handler itself and make entr
 	
 	\begin{figure}[h]
 		\lstinputlisting[frame=single]{code/wfi_scr.s}
-		\caption{Energy mode 2}
+		\caption{Going to Energy mode 2}
 		\label{code:wfi_scr}
 	\end{figure}
 	
-	The first way to avoid the tight loop, was to put the system to EM2 while waiting for interrupts. This was done using the $wfi$ instruction, which (by default) enables Energy mode 2. In addition to this, we wanted to automatically put the system back to sleep when the interrupt handlers were done. This was done by setting the value of the SCR to the constant $6$. See figure \ref{code:wfi_scr} 
+	The first way to avoid the tight loop, was to put the system to EM2 while waiting for interrupts. This was done using the $wfi$ instruction, which (by default) enables Energy mode 2. In addition to this, we wanted to automatically put the system back to sleep when the interrupt handlers were done. This was done by setting the value of the SCR to the constant $6$. Please see figure \ref{code:wfi_scr}.
 
 		\subsubsection{EM3}
-		To improve the energy efficiency of our system, we tried out Energy Mode 3. To do this, we had to set blbalblablab
-	To search for a less power consuming system, we decided to go to a higher energy mode.
+		
+		\begin{figure}[h]
+			\lstinputlisting[frame=single]{code/em3.s}
+			\caption{Enbling Energy mode 3}
+			\label{code:em3}
+		\end{figure}
+
+		To improve the energy efficiency of our system, we tried out Energy Mode 3. To do enable this operational 
+
+		NOTATER FRA SINDRE:
+Hvordan komme til EM 3:
+
+- Egentlig mye av det samme som EM 2, så det som står i kompendiet følges først. Det vil si skriv ...
+- Deretter må Lav frekvens oscillatorene skrus av for å entre EM 3. Dette gjøres ved å skrive 0x0000 til offset CMU\_LFCLKSEL (0x028) fra 
+  CMU\_BASE. Etter dette er gjort er man i EM3.
+
+- For øving 1 sin del merker man egentlig ikke noe utslag. Grunnen er at man i beste fall minker 2 mikroampere på det beste.
 	
 		\subsubsection{EM4}
 		Energy mode 4 is the highest level, and thus the mode with less functionality. We decided to try out whether this mode was sufficient for the LED functionality.
 
-	\subsection{Towards energy mode 3 and 4}
+	 subsection{Towards energy mode 3 and 4}
 	The EFM32 supports five operational modes. The higher the level, the lower the energy consumption. We went straight to EM2
 	
 
