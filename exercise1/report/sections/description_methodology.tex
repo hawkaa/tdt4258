@@ -63,19 +63,17 @@ In addition to this, we had to create the interrupt handler itself and make entr
 			\label{code:em3}
 		\end{figure}
 
-		To improve the energy efficiency of our system, we tried out Energy Mode 3. To do enable this operational 
-
-		NOTATER FRA SINDRE:
-Hvordan komme til EM 3:
-
-- Egentlig mye av det samme som EM 2, så det som står i kompendiet følges først. Det vil si skriv ...
-- Deretter må Lav frekvens oscillatorene skrus av for å entre EM 3. Dette gjøres ved å skrive 0x0000 til offset CMU\_LFCLKSEL (0x028) fra 
-  CMU\_BASE. Etter dette er gjort er man i EM3.
-
-- For øving 1 sin del merker man egentlig ikke noe utslag. Grunnen er at man i beste fall minker 2 mikroampere på det beste.
+		To improve the energy efficiency of our system, we tried out Energy Mode 3. To do enable this operational mode, we had to turn off the low frequency oscilators. This was done by writing the constant $0$ to the CMU\_LFCLKSEL. See figure \ref{code:em3}.
 	
 		\subsubsection{EM4}
-		Energy mode 4 is the highest level, and thus the mode with less functionality. We decided to try out whether this mode was sufficient for the LED functionality.
+	
+		\begin{figure}[h]
+			\lstinputlisting[frame=single]{code/em4.s}
+			\caption{Enbling Energy mode 4}
+			\label{code:em4}
+		\end{figure}
+
+		Energy mode 4 is the highest level, and thus the mode with less functionality. We decided to try out whether this mode was sufficient for the LED functionality. EM4 was a little more complicated. In order to put our system in this state, we had to write a sequence of bytes to the EMU\_CTRL. Please see figure \ref{code:em4} for assembly code.
 
 	 subsection{Towards energy mode 3 and 4}
 	The EFM32 supports five operational modes. The higher the level, the lower the energy consumption. We went straight to EM2
