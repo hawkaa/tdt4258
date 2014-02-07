@@ -107,8 +107,8 @@ _reset:
 	str r2, [r3, #GPIO_DOUT]
 	
 	// Set one light
-	mov r3, 0x22
-	strb r3, [r1, #GPIO_DOUT]
+	//mov r3, 0x22
+	//strb r3, [r1, #GPIO_DOUT]
 
 	
 	//
@@ -133,13 +133,16 @@ _reset:
 	str r2, [r1, #GPIO_IFC]
 	
 	//systick
-	//mov r5, 0b11 
-	//str r5, #0xe000e010 //enable timer
-	//mov r5, 0xff
-	//str r5, #0xe000e014 //set reload value
+	mov r2, 0x7 
+	ldr r1, =0xe000e010 //enable timer
+	strb r2, [r1] //configure systick
 	
+	mov r2, 0x00ffffff  //longest possible interval
+	ldr r1, =0xe000e014 //load reset val
+	strb r2, [r1] //set reload value
 	
-
+	mov r5, 0x1
+	
 	//
 	ldr r1, iser0
 	ldr r2, =0x802
@@ -148,6 +151,7 @@ _reset:
 	ldr r1, scr
 	mov r2, #6
 	str r2, [r1]
+	
 	wfi
 
 
@@ -168,13 +172,18 @@ continue:
 
 execute:
 	// change some led lights
-	ldrb r3, [r2, #GPIO_DIN]
-	strb r3, [r1, #GPIO_DOUT]
+	//ldrb r3, [r2, #GPIO_DIN]
+	//strb r3, [r1, #GPIO_DOUT]
 	
 	b continue
+
 .thumb_func
 systick_handler:
-	b .
+	ldr r1, gpio_pa_base
+	strb r5, [r1, #GPIO_DOUT]
+	lsl r5, r5, #1
+
+	bx lr
 	
 .thumb_func
 dummy_handler:

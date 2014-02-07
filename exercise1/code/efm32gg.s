@@ -82,4 +82,4 @@
 	
 	///////////////////////////
 	// System Timer
-	SYSTICK = 0x0000003C
+	SYSTICK_VALUE = 0x2000f000
