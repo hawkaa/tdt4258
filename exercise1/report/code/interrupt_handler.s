@@ -4,5 +4,5 @@ gpio_handler:
 	mov r3, 0xff
 	str r3, [r4, #GPIO_IFC]
 
-	// Jump back
+	// Jump back, and let the code continue where it was
 	bx lr 

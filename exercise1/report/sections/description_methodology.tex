@@ -1,12 +1,12 @@
 \section{Description and Methodology}
 \label{section:description_and_methodology}
-To solve this task, we started out with the easiest solution, and then incrementally improving the energy consumtpion of the system. For these steps we used a simple procedure for controlling the lights; we copied the input registers into the output ones, making each button correspond to each LED output. This approach was chosen because it is easy to test the energy consumption. The code 
-At the end of the exercise, we created a somewhat more advanced solution with animations and arithmetics
+To solve this task, we started out with a very simple solution, and then incrementally improving the energy consumtpion of the system. For these steps we used a basic procedure for controlling the lights; we copied the input registers into the output ones, making each button correspond to each LED output. This approach was chosen because it is easy to test the energy consumption. After some relevant testing and discussion of this solution, we implemented a somewhat more advanced LED and button behaviour, to practise our ARM assembly skills. 
+
 
 	\subsection{Setting up the GPIO}
 	\label{subsection:gpio_setup}
 	The gamepad created for this course requires some setup to be able to register input (button press) and create output (LED lights). We followed the instructions available at \cite[p. 24]{compendium}:
-H
+	
 	\begin{itemize}
 		\item Enabled the GPIO clock in the CMU by setting the CMU\_HFPERCLKEN0\_GPIO bit on the address pointed to by the CMU\_HFPERCLKEN0 constant.
 		\item Enabld HIGH drive strength to the LEDs by setting the Port Control Register to 2 \cite[p. 766]{reference_manual}. Writing to this register let us select among STANDARD, LOWEST, HIGH, LOW settings to control the intensity of the LED light.
@@ -30,7 +30,7 @@ H
 	\begin{itemize}
 		\item Wrote 0x22222222 to \emph{GPIO\_EXTIPSELL}, which enables interrupts on pin 0-7 from PORT C (buttons) \cite[p. 770]{reference_manual}
 		\item Enabled low-to-high and high-to-low transition interrupts by writing 256 to \emph{GPIO\_EXTIFALL} and \emph{GPIO\_EXTRISE}.
-		\item Enabled interrupt generation by writing $0xff$ to \emph{GPIO\_IEN} and interrupt handling by writing $0x802$ (bits 1 and 11 for odd and even GPIO interrupts) to \emph{ISER0}.
+		\item Enabled interrupt generation by writing $0xff$ to \emph{GPIO\_IEN} and interrupt handling by writing $0x802$ ($0x802$ corresponds to bits 1 and 11 for odd and even GPIO interrupts) to \emph{ISER0}.
 	\end{itemize}
 	
 	\begin{figure}[h]
@@ -40,12 +40,32 @@ H
 	\end{figure}
 
 
-In addition to this, we had to create the interrupt handler itself and make entries to this handler at the NVIC. The interrupt handler looks much alike the the tight loop described in section \ref{subsection:polling}. The only difference is that the interrupt flags are cleared and the handler jumps back to where it was after the interrupt is done. The main differences is shown in figure \ref{code:interrupt_handler}. The reset handler was set to a tight loop (using the "b ." instruction) after the interrupts was set up.
+In addition to this, we had to create the interrupt handler itself and make entries to this handler at the NVIC. The interrupt handler looks much alike the the tight loop described in section \ref{subsection:polling}. The only difference is that the interrupt flags are cleared and the handler jumps back to where it was after the interrupt is done. The main differences is shown in figure \ref{code:interrupt_handler}. The reset handler (main procedure) was set to a tight loop (using the "b ." instruction) after the interrupts was set up.
 
-	\subsection{Putting our system to sleep}
-	To avoid the tight loop, we decided to put the system to sleep using the "wfi" instruction. In addition to this, we wanted to automatically put the system back to sleep when the interrupt handlers were done. This was done by setting 
+	\subsection{Energy modes}
+	The EFM32 supports five different opreational modes, which is known as Energy Modes. They are different levels of functionality and power consumption, numbered EM0 to EM4. EM0 has everything turned on, thus higher energy consumption. The higher the level, the less functionality and power consumption you get. See \cite[p. 2]{energy_optimization_application_note}.
+
+	\subsubsection{EM2}
+	
+	\begin{figure}[h]
+		\lstinputlisting[frame=single]{code/wfi_scr.s}
+		\caption{Energy mode 2}
+		\label{code:wfi_scr}
+	\end{figure}
+	
+	The first way to avoid the tight loop, was to put the system to EM2 while waiting for interrupts. This was done using the $wfi$ instruction, which (by default) enables Energy mode 2. In addition to this, we wanted to automatically put the system back to sleep when the interrupt handlers were done. This was done by setting the value of the SCR to the constant $6$. See figure \ref{code:wfi_scr} 
+
+		\subsubsection{EM3}
+		To improve the energy efficiency of our system, we tried out Energy Mode 3. To do this, we had to set blbalblablab
+	To search for a less power consuming system, we decided to go to a higher energy mode.
+	
+		\subsubsection{EM4}
+		Energy mode 4 is the highest level, and thus the mode with less functionality. We decided to try out whether this mode was sufficient for the LED functionality.
 
 	\subsection{Towards energy mode 3 and 4}
+	The EFM32 supports five operational modes. The higher the level, the lower the energy consumption. We went straight to EM2
+	
+
 	
 	\subsection{Lets play a game}
 
