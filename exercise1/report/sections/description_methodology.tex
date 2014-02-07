@@ -75,11 +75,7 @@ In addition to this, we had to create the interrupt handler itself and make entr
 
 		Energy mode 4 is the highest level, and thus the mode with less functionality. We decided to try out whether this mode was sufficient for the LED functionality. EM4 was a little more complicated. In order to put our system in this state, we had to write a sequence of bytes to the EMU\_CTRL. Please see figure \ref{code:em4} for assembly code.
 
-	 subsection{Towards energy mode 3 and 4}
-	The EFM32 supports five operational modes. The higher the level, the lower the energy consumption. We went straight to EM2
-	
-
 	
 	\subsection{Lets play a game}
 
-	\subsection{A little section about the Makefile}
+	\subsection{A little section about GNU-Toolchain}
