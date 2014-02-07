@@ -43,7 +43,7 @@
       	// CMU
 	
         CMU_BASE = 0x400c8000
-
+	CMU_LFCLKSEL = 0x028
         CMU_HFPERCLKDIV = 0x008
         CMU_HFPERCLKEN0 = 0x044
 

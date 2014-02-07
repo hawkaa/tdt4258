@@ -89,6 +89,9 @@ _reset:
 
 	// store new value
 	str r2, [r1,  #CMU_HFPERCLKEN0]
+	
+	mov r2, 0x00000000
+	str r2, [r1, #CMU_LFCLKSEL]	
 
 	ldr r1, gpio_pa_base
 
@@ -150,14 +153,41 @@ _reset:
 	str r2, [r1]
 	wfi
 
+	// EM4 Test
+	//ldr r1, emu_base
+	//mov r2, #2
+	//lsl r2, r2, #2
+	//mov r3, #3
+	//lsl r3, r3, #2
+	//str r2, [r1, #EMU_CTRL]
+	//str r3, [r1, #EMU_CTRL]
+	//str r2, [r1, #EMU_CTRL]
+	//str r3, [r1, #EMU_CTRL]
+	//str r2, [r1, #EMU_CTRL]
+	//str r3, [r1, #EMU_CTRL]
+	//str r2, [r1, #EMU_CTRL]
+	//str r3, [r1, #EMU_CTRL]
+	//str r2, [r1, #EMU_CTRL]
+
+	
+
 
 .thumb_func
 gpio_handler:
-	ldr r1, gpio_pa_base
-	ldr r2, gpio_pc_base
+	//ldr r1, gpio_pa_base
+	//ldr r2, gpio_pc_base
 	ldr r4, gpio_base
 	
+	// change some led lights
+	//mov r3, 0x33
+	//strb r3, [r1, #GPIO_DOUT]
+	//ldrb r3, [r2, #GPIO_DIN]
+	//strb r3, [r1, #GPIO_DOUT]	
+	
+	// small subroutine-program
+	//bl prog
 	b execute
+
 continue:		
 	// reset the interrupt
 	mov r3, 0xff
@@ -165,6 +195,13 @@ continue:
 
 
 	bx lr 
+
+.thumb_func
+prog:
+	push {lr}
+	ldr r1, gpio_pa_base 
+	ldr r2, gpio_pc_base
+	ldr r3
 
 execute:
 	// change some led lights
@@ -198,5 +235,6 @@ iser0:
 scr:
 	.long SCR
 
-
+emu_base:
+	.long EMU_BASE
 
