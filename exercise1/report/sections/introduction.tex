@@ -1,23 +1,10 @@
 \section{Introduction}
-\paragraph
-In this exercise, we were supposed to implement a system that let the user  control the LEDs in some way by pressing the gamepad buttons. We were also required to implement the functionality by using an interrupt routine. During the solving of this task, we were supposed to analyze the power consumption and correctness of the system.
-
-\paragraph
-tetetetet
-\subsection{Om introduction - Remove me}
-The introduction to your document should lead your readers into your paper and give them an ideaof what to expect (also see Forecasting). It should not be simplya restatement of the abstract even though it will contain some ofthe same material.
-
-Introductions often do the following:
-
-State the subject of your document as clearly as possible
-
-Define the problem you are addressing, your approach to the problem, and why this problem is important
-
-State the purpose of your document
-
-Define the scope of your document
-
-Provide necessary and relevant background information
-
-Because the introduction leads your reader into your document, try to begin with a general statementabout the topic before moving on to specific issues. This strategy will help make the topic accessibleto your readers, especially those who are not specialists in the field.
+In this exercise, we were supposed to implement a system that let the user control the LEDs in some way by pressing the gamepad buttons. We were also required to implement the functionality by using an interrupt routine. During the solving of this task, we were supposed to analyze the power consumption and correctness of the system. The learning outcome of this task was (as stated in \cite[p. 19]{compendium}):
+\begin{itemize}
+	\item Get to know the \boardName, the GPIO and the ARM Cortex-M3 arcitechture.
+	\item Get to know the GNU toolchain, object files and the task of a linker.
+	\item Programming in assembly for the ARM Cortex-M3.
+	\item Measuring and optimizing power consumption.
+\end{itemize}
+We approached the task by first creating a simple program which we graudually improved the energy efficiency of by intrudocing interrupts and various operational modes. Then we implemented a more advanced program to practise our assembly skills and see if added functionality required us to change operational mode. During the development we tested for correctness and power consumption continiously, which maximized the learning outcome of this task.
 

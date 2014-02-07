@@ -29,13 +29,17 @@ Testing the correctness for this simple program was easy. On every build, we con
 
 		\begin{figure}[t]
 
-			\begin{tabular}{l | l | l | l | l | l}
-				& Polling & Interrupts & Energy Mode 2 & Energy Mode 3 & Energy Mode 4 \\
+			\centerline{
+			\begin{tabular}{| c | c | c | c | c | c | c |}
 				\hline
-				Test 1 & $4.614mA$ & $3.350mA$ & $1.815\mu A$ & 1 & 70nA \\
-				Test 2 & $4.497mA$ & $3.512mA$ & $160.0\mu A$ & 1 & - \\
-				Test 3 & $4.618mA$ & $3.374mA$ & $20.07\mu A$ & 1 & - \\
+				& Polling & Interrupts & Energy Mode 1 & Energy Mode 2 & Energy Mode 3 & Energy Mode 4 \\
+				\hline
+				Test 1 & $4.614mA$ & $3.350mA$ & $1.220mA$ & $1.815\mu A$ & $1.543\mu A$ & 70nA \\
+				Test 2 & $4.497mA$ & $3.512mA$ & $1.377mA$ & $160.0\mu A$ & $159.0\mu A$ & - \\
+				Test 3 & $4.618mA$ & $3.374mA$ & $1.233mA$ & $20.07\mu A$ & $16.51\mu A$ & - \\
+				\hline
 			\end{tabular}
+			}
 			\caption{Energy test results}
 			\label{fig:test_results}
 		\end{figure}
@@ -50,8 +54,7 @@ Testing the correctness for this simple program was easy. On every build, we con
 		Finally, we got some real power savings, three orders of magnitude lower than the previous tests. This is what we expected. We see that the pull-up resistors for the buttons still increase the energy consumption. The amperage was also higher for the rapid button press. We expected that the wakeup and interrupt procedure would consume some energy, but it is impossible to say whether the energy is consumed by this procedure or by the pull-up resistors.
 
 		\subsubsection{EM3}
-		The energy consumption in EM3 is the same as EM2. The only difference between EM2 and EM3 is that the low frequency oscilators are turned off in EM3\cite[p. 2]{enegy_optimization_application_note}. These were not in use in our application anyway.
-
+		The energy consumption in EM3 looks very alike the one we got in EM2, except that it is slightly lower. This is due to the fact that the low frequency oscilators is disabled in this EM3. These oscilators are not used in our simple test application, so the program continiued to run correctly.
 		\subsubsection{EM4}
 		\begin{figure}[t]
 			\centerline{
