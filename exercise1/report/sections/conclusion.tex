@@ -1,2 +1,5 @@
 \section{Conclusion}
-\lipsum[3-5]
+This report shows how to use the \boardName, the GPIO and the ARM Cortex-M3 architecture by programming in assembly. It also shows some simple techniques for reducing the energy consumption of the system by itroducing different operational modes (better known as Energy Modes). \\
+\\
+The more functionality you want to have on your \boardName ~chip, the lower Energy Mode you will have to use, thus higher power consumption. Although $70\mu A$ power consumption in EM4 is rather amazing, it does no good when the system does not wake up from GPIO interrupts. For more advanced programs, like the ones that use the SysTick functionality, you will have to go as low as EM1 in order to have the timer tick interrupts generated.
+
