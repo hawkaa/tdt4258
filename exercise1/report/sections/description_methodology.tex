@@ -13,7 +13,7 @@ To solve this task, we started out with a very simple solution, and then increme
 		\item Enabld HIGH drive strength to the LEDs by setting the Port Control Register to 2 \cite[p. 766]{reference_manual}. Writing to this register let us select among STANDARD, LOWEST, HIGH, LOW settings to control the intensity of the LED light.
 		\item Enabled LED output on bits 8-15 by writing $0x55555555$ to the \emph{PGIO\_PA\_CTRL} register.
 		\item Enabled GPIO pins 0-7 as input (buttons) by writing $0x33333333$ to the \emph{GPIO\_PC\_MODEL} register.
-		\item Enabled the internal pull-up resistors by writing 256 to \emph{GPIO\_PC\_DOUT}. This is needed to be able to read 3.3 volts from the input pins while a button is released. 
+		\item Enabled the internal pull-up resistors by writing 256 to \emph{GPIO\_PC\_DOUT}. This is needed to be able to read 3.3 volts from the input pins while a button is not pressed down. 
 	\end{itemize}
 
 	\subsection{Polling}
@@ -32,7 +32,7 @@ To solve this task, we started out with a very simple solution, and then increme
 		\caption{Interrupt handler}
 		\label{code:interrupt_handler}
 	\end{figure}
-	Obviously, there is no need to continiously read from and write to the GPIO registers. The Giant Gecko EFM32 have interrupt support, which makes us able to trigger a subroutine only when any button is pressed. We followed the instructions available at \cite[p. 24]{compendium}:
+	Obviously, there is no need to continiously read from and write to the GPIO registers. The Giant Gecko EFM32 have interrupt support, which makes us able to trigger a subroutine when a button is pressed. We followed the instructions available at \cite[p. 24]{compendium}:
 	\begin{itemize}
 		\item Wrote 0x22222222 to \emph{GPIO\_EXTIPSELL}, which enables interrupts on pin 0-7 from PORT C (buttons) \cite[p. 770]{reference_manual}
 		\item Enabled low-to-high and high-to-low transition interrupts by writing 256 to \emph{GPIO\_EXTIFALL} and \emph{GPIO\_EXTRISE}.
@@ -66,7 +66,7 @@ In addition to this, we had to create the interrupt handler itself and make entr
 		\label{code:wfi_scr}
 	\end{figure}
 
-	To avoid looping, we can put the system to EM2. In addition to this, we had to make the system automatically go back to sleep after the interrupt handlers are done. We do both of these things by setting the value of the SCR to the constant $6$. \emph{wfi} is still needed to put the system to sleep, but no loop is needed. Please see figure \ref{code:wfi_scr}.
+	To avoid looping, we can put the system to EM2. In addition to this, we  wanted to make the system automatically go back to sleep after the interrupt handlers were done. We did both of these things by setting the value of the SCR to the constant $6$. \emph{wfi} is still needed to put the system to sleep, but no loop is needed. Please see figure \ref{code:wfi_scr}.
 
 		\subsubsection{EM3}
 		\label{subsubsection:em3}	
