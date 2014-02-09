@@ -1,9 +1,7 @@
 \begin{abstract}
-An abstract is a brief summarizing statement, usually between 75 and 150 words long. It gives thereader a synopsis of the problem, method, results, and conclusions of yourdocument. The abstract takes the form of a paragraph, usually with 5-10 sentences. It appears atthe top of a journal article, just under the title, or on the page following the title page of a report. In the latter instance, the abstract appears on a page by itself.
+This document describes how to use and power optimize the \boardName~chip with simlpe assembly programming and other relevant utilites, by implementing a system that allows a user to control a row of LED light by pressing buttons on a gamepad. This was done by first implementing a simple system, where the power efficiency was optimized by changing the chip's operational state. After the system was put in the highest possible Energy Mode (lowest power consumption) while still running correctly, functionality for animating the LEDs was added using the chip's SysTick. In order to make this work, the system had to go down to a much more power consuming Energy Mode. We measured average power consumption of $16.51\mu A$ for our simple application, and $1.233mA$ for the more animated one. In other words, if we need access to more advanced utilities, like the SysTick handling, power consumption easily increases by two orders of magnitude. \\
 
-Abstracts are often collected into volumes and must be able to stand alone. They are read by partieswho are trying to decide whether or not to read the main document. Sometimes they are read bypeople who want to get the big picture before reading the main document. Abstracts can savereaders an immense amount of time.
 
-An abstract includes these elements:
 
 Problem. Note the key topic or problem of your document.\\
 Method. State your main approach to solving the problem.\\
