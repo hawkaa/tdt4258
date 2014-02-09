@@ -55,14 +55,14 @@ In addition to this, we had to create the interrupt handler itself and make entr
 		\caption{Sleep loop for Energy mode 1}
 		\label{code:em1}
 	\end{figure}
-	The system is put to sleep (Energy mode 1) using the \emph{wfi} instruction. The system does not automatically go back to sleep after an interrupt is done, so we have to write a small loop which will continiously call the \emph{wfi} instruction. The system is now in an infinite loop, but it is not continiously running, it only does one iteration each time an interrupt handler is complete. Se figure \ref{code:em1}.
+	The system is put to sleep (Energy mode 1) using the \emph{wfi} instruction. The system does not automatically go back to sleep after an interrupt is done, so we have to write a small loop which will continiously call the \emph{wfi} instruction. The system is now in an infinite loop, but it is not continiously running, it only does one iteration each time an interrupt handler is complete. See figure \ref{code:em1}.
 
 	\subsubsection{EM2}
 	\label{subsubsection:em2}
 	
 	\begin{figure}[t]
 		\lstinputlisting[frame=single]{code/wfi_scr.s}
-		\caption{Going to Energy mode 2}
+		\caption{Entering Energy mode 2}
 		\label{code:wfi_scr}
 	\end{figure}
 
@@ -72,7 +72,7 @@ In addition to this, we had to create the interrupt handler itself and make entr
 		\label{subsubsection:em3}	
 		\begin{figure}[t]
 			\lstinputlisting[frame=single]{code/em3.s}
-			\caption{Enbling Energy mode 3}
+			\caption{Enabling Energy mode 3}
 			\label{code:em3}
 		\end{figure}
 
@@ -83,7 +83,7 @@ In addition to this, we had to create the interrupt handler itself and make entr
 	
 		\begin{figure}[t]
 			\lstinputlisting[frame=single]{code/em4.s}
-			\caption{Enbling Energy mode 4}
+			\caption{Enabling Energy mode 4}
 			\label{code:em4}
 		\end{figure}
 
@@ -92,10 +92,29 @@ In addition to this, we had to create the interrupt handler itself and make entr
 	
 	\subsection{Improving functionality - Animated LED rotation}
 	Since the assembly code so far was rather simple, and mostly consisted of writing predefined constants to various registers, we wanted to make a little more advanced code. We decided to animate the LEDs by doing a rotate operation at a given time interval.
+	
+\begin{figure}[t]
+		\lstinputlisting[frame=single]{code/systick_enable.s}
+		\caption{Enabling SysTick-exceptions}
+		\label{code:systick_enable}
+\end{figure}
 
 	\subsubsection{SysTick handler}
-	To animate the LEDs, we needed some sort of timer. This was done by ... We also had to put the system back to EM1, as the SysTick interrupts were not triggered in EM2-EM4.
+	To animate the LEDs, we needed a timer that triggered an interrupt at a predefined interval. This was done by using SysTick-exceptions. We looked up section 4.4 in \cite{cortex_m3_ref_man}. This is the procedure we followed to enable SysTick exceptions:
+	\begin{itemize}
+	\item Enable the SysTick-timer setting the enable bits high in SysTick control and status register, CTRL. SysTick CTRL is given as ST\_CTRL in figure \ref{code:systick_enable}
+	\item Setting the count-down timer to the longest possible interval time (0x00ffffff) to SysTick reload value register, LOAD. This value is loaded each time the SysTick-timer is done counting and starts a new iteration. SysTick LOAD is written as ST\_LOAD in figure \ref{code:systick_enable}
+	\end{itemize}
+	
+To make the controller act correctly, we changed the Exception-vector table so that we don't get stuck in the \emph{dummy\_handler} routine. Instead we wanted the program to jump to our own \emph{systick\_handler} routine. This routine moves the light set at the game-controller from left to right, and rotates the light when it has reached the rightmost LED.
 
 	\subsubsection{Rotating}
-	This was done by ....
+	Our program rotates the light left to right. To make the LED's rotate correctly when we have reached one of the end LED's, we had to do a little trick. Since writing to the pins is done with a 16-bit word and we only wanted the eight most significant bits set, we moved the light around to the leftmost LED by doing a small number of bit operations. These operations are best explained in an example (Note the binary numbers is inverted compared to the LED's!):
+	\begin{itemize}
+	\item The value of the pins is 0111111100000000 in binary. This means that the rightmost LED is active. On the next tick we need to rotate the left-most zero around.
+	\item The tick occurs. The value of the pins is or-ed with 0000000011111111, and we get the result 0111111111111111. This makes sure we by default shift in a LED that is turned off.
+	\item  In order to find out that the left-most bit is zero, we applied a logical and-operation with the bitstring 100000000000000. If the result of this was zero, the ninth bit was forced to zero by applying an and-operation to the following bit string 1111111101111111, which in this example is true.
+	\item Then we do a logical shift left to move the LED right.
+	\end{itemize}
 
+This example made us come up with the code for the SysTick handler. Check out ex1.s for the implementation.
