@@ -4,6 +4,7 @@
 
 /* local headers */
 #include "efm32gg.h"
+#include "timer.h"
 
 /* 
   TODO calculate the appropriate sample period for the sound wave(s) 
@@ -48,13 +49,6 @@ setupDAC(void)
 {
 	
 }
-
-static void
-setupTimer(uint32_t period)
-{
-	
-}
-
 
 
 /* Your code will start executing here */
