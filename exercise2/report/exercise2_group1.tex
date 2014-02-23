@@ -1,0 +1,102 @@
+\documentclass{article}
+
+\usepackage{fancyhdr} % Required for custom headers
+\usepackage[utf8]{inputenc}
+\usepackage{lastpage} % Required to determine the last page for the footer
+\usepackage{extramarks} % Required for headers and footers
+\usepackage[usenames,dvipsnames]{color} % Required for custom colors
+\usepackage{graphicx} % Required to insert images
+\usepackage{listings} % Required for insertion of code
+\usepackage{courier} % Required for the courier font
+\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+\usepackage{lstlangarm}
+
+% Margins
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.5in
+\textheight=9.0in
+\headsep=0.25in
+
+\linespread{1.1} % Line spacing
+
+% Set up the header and footer
+\pagestyle{fancy}
+
+\lhead{\exerciseGroup} % Top left header
+\chead{\exerciseClass: \exerciseTitle} % Top center head
+\rhead{\firstxmark} % Top right header
+\lfoot{\lastxmark} % Bottom left footer
+\cfoot{} % Bottom center footer
+\rfoot{Page\ \thepage\ of\ \protect\pageref{LastPage}} % Bottom right footer
+\renewcommand\headrulewidth{0.4pt} % Size of the header rule
+\renewcommand\footrulewidth{0.4pt} % Size of the footer rule
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs
+
+
+% Document data
+
+\newcommand{\exerciseTitle}{Exericse 2} % Assignment title
+\newcommand{\exerciseClass}{TDT4258} % Course/class
+\newcommand{\exerciseGroup}{Group 1} % Your name
+\newcommand{\exerciseGroupMembers}{Kim Rune Solstad, Sindre Magnussen and Håkon Åmdal}
+\newcommand{\chipName}{EFM32 Giant Gecko}
+\newcommand{\boardName}{EFM32GG-DK3750}
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+\title{
+\vspace*{\stretch{1}}
+\noindent\HRule
+\begin{center}
+ \Huge
+ \noindent	\exerciseClass \\
+ \noindent \exerciseTitle \\ [4mm]
+ \large
+ \noindent\emph{\exerciseGroupMembers}
+\noindent\HRule \newline
+\end{center}
+\vspace{5cm}
+\begin{center}
+	\includegraphics[width=4cm]{img/gecko_logo.png}
+\end{center}
+\vspace*{\stretch{3}}
+\begin{center}
+\Large\textsc{\author{\exerciseGroup}}
+\end{center}
+}
+% Insert date here if you want it to appear below your name
+
+
+\begin{document}
+\pagestyle{empty}
+\maketitle
+
+\thispagestyle{empty}
+
+\newpage \input{sections/abstract.tex}
+
+\newpage \tableofcontents
+
+
+\newpage
+\pagenumbering{arabic}
+\pagestyle{fancy}
+\input{sections/introduction.tex}
+
+\newpage \input{sections/description_methodology.tex}
+
+\newpage \input{sections/results_tests.tex}
+
+\newpage \input{sections/evaluation_of_assignment.tex}
+
+\newpage \input{sections/conclusion.tex}
+
+\newpage \input{sections/acknowledgements.tex}
+
+\newpage \input{sections/references.tex}
+
+\end{document}
