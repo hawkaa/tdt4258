@@ -64,8 +64,10 @@ main(void)
 	 * instead of infinite loop for busy-waiting
 	 */
 	 
-	 while(1);
-	 return 0;
+	for(;;) {
+		*GPIO_PA_DOUT = *GPIO_PC_DIN << 8;
+	}
+	return 0;
 }
 /* if other interrupt handlers are needed, use the following names: 
    NMI_Handler
