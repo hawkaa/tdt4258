@@ -15,7 +15,7 @@
 */
 
 /* The period between sound samples, in clock cycles */
-#define   SAMPLE_PERIOD   0
+#define   SAMPLE_PERIOD   (0xffff)
 
 static void
 setupNVIC(void)
@@ -33,8 +33,9 @@ setupNVIC(void)
 	*GPIO_EXTIPSELL = 0x22222222;
 	*GPIO_EXTIFALL = 0xff;
 	*GPIO_EXTIRISE = 0xff;
-	*GPIO_IEN = 0xff; //interupt generation
-	*ISER0 |= (1 << 1) | (1 << 11) | (1 << 12); //bits 1 and 11. odd and even gpiohandler	*/
+	/* interrupt generation, bits 1, 11 and TIMER1 */
+	*GPIO_IEN = 0xff;
+	*ISER0 |= (1 << 1) | (1 << 11) | (1 << 12);
 	
 }
 
