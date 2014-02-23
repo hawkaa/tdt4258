@@ -15,33 +15,8 @@
 /* The period between sound samples, in clock cycles */
 #define   SAMPLE_PERIOD   0
 
-/* Declaration of peripheral setup functions */
-void setupTimer(uint32_t period);
-void setupDAC();
-void setupNVIC();
-
-/* Your code will start executing here */
-int main(void) 
-{  
-	/* Call the peripheral setup functions */
-	setupGPIO();
-	setupDAC();
-	setupTimer(SAMPLE_PERIOD);
-  	
-	/* Enable interrupt handling */
-	setupNVIC();
-
-	/*
-	 * TODO
-	 * For higher energy efficiency, sleep while waiting for interrupts
-	 * instead of infinite loop for busy-waiting
-	 */
-	 
-	 while(1);
-	 return 0;
-}
-
-void setupNVIC(void)
+static void
+setupNVIC(void)
 {
 	/*
 	 * TODO
@@ -62,6 +37,47 @@ void setupNVIC(void)
 	
 }
 
+static void
+setupGPIO(void)
+{
+	
+}
+
+static void
+setupDAC(void)
+{
+	
+}
+
+static void
+setupTimer(uint32_t period)
+{
+	
+}
+
+
+
+/* Your code will start executing here */
+int
+main(void) 
+{  
+	/* Call the peripheral setup functions */
+	setupGPIO();
+	setupDAC();
+	setupTimer(SAMPLE_PERIOD);
+  	
+	/* Enable interrupt handling */
+	setupNVIC();
+
+	/*
+	 * TODO
+	 * For higher energy efficiency, sleep while waiting for interrupts
+	 * instead of infinite loop for busy-waiting
+	 */
+	 
+	 while(1);
+	 return 0;
+}
 /* if other interrupt handlers are needed, use the following names: 
    NMI_Handler
    HardFault_Handler
