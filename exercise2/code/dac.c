@@ -1,9 +1,12 @@
+/* system headers */
 #include <stdint.h>
 #include <stdbool.h>
 
+/* local headers */
 #include "efm32gg.h"
 
-void setupDAC()
+void
+setupDAC(void)
 {
   /*
     TODO enable and set up the Digital-Analog Converter
@@ -14,5 +17,9 @@ void setupDAC()
     4. Write a continuous stream of samples to the DAC data registers, DAC0_CH0DATA and DAC0_CH1DATA, for example from a timer interrupt
   */
 //	*CMU_HFPERCLKEN0 |= CMU2_HFPERCLKEN0_TIMER1 //bit 6 
+	*CMU_HFPERCLKEN0 |= 1 << 17;
+	*DAC0_CTRL = 0x50010;
+	*DAC0_CH0CTRL = *DAC0_CH1CTRL = 1;
 	
+
 }
