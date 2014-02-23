@@ -63,7 +63,7 @@ main(void)
 	setupNVIC();
 
 	/* Enable EM2  */
-	setupEM2();
+	//setupEM2();
 	
 	return 0;
 }
