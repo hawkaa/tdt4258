@@ -9,7 +9,8 @@
 static void
 gpio_handler(void)
 {
-
+	*GPIO_PA_DOUT = *GPIO_PC_DIN << 8;
+	*GPIO_IFC = 0xff;
 }
 
 

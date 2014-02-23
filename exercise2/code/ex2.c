@@ -30,13 +30,12 @@ setupNVIC(void)
 	 * this assignment.
 	 */
 
-	/*
+	
 	*GPIO_EXTIPSELL = 0x22222222;
 	*GPIO_EXTIFALL = 0xff;
 	*GPIO_EXTIRISE = 0xff;
 	*GPIO_IEN = 0xff; //interupt generation
-	*ISER0 |= 0x807;//(1<<1) | (1<<11) | (1<<12) ; //bits 1 and 11. odd and even gpiohandler	*/
-	
+	*ISER0 |= 0x807;//(1<<1) | (1<<11) | (1<<12) ; //bits 1 and 11. odd and even gpiohandler		
 }
 
 static void
