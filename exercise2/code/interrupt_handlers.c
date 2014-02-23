@@ -14,6 +14,7 @@ gpio_handler(void)
 }
 
 static int i = 0;
+
 void __attribute__ ((interrupt))
 TIMER1_IRQHandler(void)
 {
@@ -22,18 +23,14 @@ TIMER1_IRQHandler(void)
 	 * Feed new samples to the DAC. Remember to clear the pending
 	 * interrupt by writing 1 to TIMER1_IFC
 	 */
-
 	++i;
-	if(i % 100 == 0) {
-		*GPIO_PA_DOUT = ~(*GPIO_PA_DOUT);
-	}
-//	*GPIO_PA_DOUT = *GPIO_PC_DIN << 8;
+	i = i % 291;
 
-	//*GPIO_PA_DOUT = 0xaaff;
+
+
+	*DAC0_CH0DATA = *DAC0_CH1DATA = (i * 1024) / 291;
 
 	*TIMER1_IFC = 1;
-	//TIMER1_IF = 1;
-	//*GPIO_PA_DOUT  = 0xfafa;
 }
 
 /* GPIO even pin interrupt handler */

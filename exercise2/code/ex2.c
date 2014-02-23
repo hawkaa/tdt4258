@@ -6,6 +6,7 @@
 #include "efm32gg.h"
 #include "timer.h"
 #include "gpio.h"
+#include "dac.h"
 
 /* 
   TODO calculate the appropriate sample period for the sound wave(s) 
@@ -15,7 +16,7 @@
 */
 
 /* The period between sound samples, in clock cycles */
-#define   SAMPLE_PERIOD   0xffff
+#define   SAMPLE_PERIOD  292 
 
 static void
 setupNVIC(void)
@@ -42,13 +43,6 @@ static void setupEM2()
 {
 	*SCR = 0x6;
 }
-
-static void
-setupDAC(void)
-{
-	
-}
-
 
 /* Your code will start executing here */
 int
