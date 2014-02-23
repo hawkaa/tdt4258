@@ -5,6 +5,7 @@
 /* local headers */
 #include "efm32gg.h"
 #include "timer.h"
+#include "gpio.h"
 
 /* 
   TODO calculate the appropriate sample period for the sound wave(s) 
@@ -35,12 +36,6 @@ setupNVIC(void)
 	*GPIO_EXTIRISE = 0xff;
 	*GPIO_IEN = 0xff; //interupt generation
 	*ISER0 |= 0x807;//(1<<1) | (1<<11) | (1<<12) ; //bits 1 and 11. odd and even gpiohandler	*/
-	
-}
-
-static void
-setupGPIO(void)
-{
 	
 }
 
