@@ -64,7 +64,9 @@ main(void)
 	 * instead of infinite loop for busy-waiting
 	 */
 	 
-	for(;;);
+	for(;;) {
+		asm("wfi");
+	}
 	return 0;
 }
 /* if other interrupt handlers are needed, use the following names: 
