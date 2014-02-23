@@ -25,7 +25,7 @@ setupTimer(uint16_t period)
 	//*ISER0 |= (1 << 12);	
 
 	*CMU_HFPERCLKEN0 |= 1 << 6;
-	*TIMER1_TOP = 0xffff;
+	*TIMER1_TOP = period;
 	*TIMER1_IEN = 1;
 	*TIMER1_CMD = 1;
 

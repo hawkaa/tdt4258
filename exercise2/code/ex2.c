@@ -15,7 +15,7 @@
 */
 
 /* The period between sound samples, in clock cycles */
-#define   SAMPLE_PERIOD   (0xffff)
+#define   SAMPLE_PERIOD   0xffff
 
 static void
 setupNVIC(void)
