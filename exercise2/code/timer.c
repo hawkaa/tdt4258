@@ -1,10 +1,13 @@
+/* system headers */
 #include <stdint.h>
 #include <stdbool.h>
 
+/* local headers */
 #include "efm32gg.h"
 
 /* function to setup the timer */
-void setupTimer(uint16_t period)
+void
+setupTimer(uint16_t period)
 {
   /*
     TODO enable and set up the timer
@@ -16,10 +19,10 @@ void setupTimer(uint16_t period)
     
     This will cause a timer interrupt to be generated every (period) cycles. Remember to configure the NVIC as well, otherwise the interrupt handler will not be invoked.
   */ 
-	*CMU_HFPERCLKEN0 |= CMU2_HFPERCLKEN0_TIMER1 //set bit 6	
-	*TIMER1_TOP = 100;//period;
-	*TIMER1_IEN = 1;
-	*ISER0 |= (1 << 12);	
+	//*CMU_HFPERCLKEN0 |= CMU2_HFPERCLKEN0_TIMER1 //set bit 6	
+	//*TIMER1_TOP = 100;//period;
+	//*TIMER1_IEN = 1;
+	//*ISER0 |= (1 << 12);	
 }
 
 
