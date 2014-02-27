@@ -11,6 +11,10 @@ static int note_counter = 0;
 static int threshold = 0;
 static int i = 0;
 
+static float pull_counter = 0.0;
+static int sample_index = 0;
+static int current_sample_length = 0;
+
 static const int FREQUENCY = 47945;
 
 static int
@@ -54,7 +58,7 @@ static void
 set_hz(float hz)
 {
 	i = 0;
-	if(hz == 0)
+	if(hz < 0.01)
 		threshold = 0;
 	else
 		threshold = get_threshold(hz);
@@ -65,16 +69,80 @@ set_hz(float hz)
  */
 void
 sampler_init() {
+/* note G4, length 4 */
+sample[0][0].hz = 392.000000;
+sample[0][0].ms = 386.250000;
 
-	sample[0][0].hz = 361.0;
-	sample[0][0].ms = 1000;	
-	sample[0][1].hz = 220.0;
-	sample[0][1].ms = 1000;	
-	sample[0][2].hz = 361.0;
-	sample[0][2].ms = 1000;	
+/* pause */
+sample[0][1].hz = 0.000000;
+sample[0][1].ms = 42.916667;
 
-	sample_sizes[0] = 3;
-	set_hz(10);
+/* note G4, length 4 */
+sample[0][1].hz = 392.000000;
+sample[0][1].ms = 386.250000;
+
+/* pause */
+sample[0][2].hz = 0.000000;
+sample[0][2].ms = 42.916667;
+
+/* note G4, length 4 */
+sample[0][2].hz = 392.000000;
+sample[0][2].ms = 386.250000;
+
+/* pause */
+sample[0][3].hz = 0.000000;
+sample[0][3].ms = 42.916667;
+
+/* note E4, length 6 */
+sample[0][3].hz = 329.630000;
+sample[0][3].ms = 257.500000;
+
+/* pause */
+sample[0][4].hz = 0.000000;
+sample[0][4].ms = 28.611111;
+
+/* note A4, length 16 */
+sample[0][4].hz = 440.000000;
+sample[0][4].ms = 96.562500;
+
+/* pause */
+sample[0][5].hz = 0.000000;
+sample[0][5].ms = 10.729167;
+
+/* note G4, length 4 */
+sample[0][5].hz = 392.000000;
+sample[0][5].ms = 386.250000;
+
+/* pause */
+sample[0][6].hz = 0.000000;
+sample[0][6].ms = 42.916667;
+
+/* note E4, length 6 */
+sample[0][6].hz = 329.630000;
+sample[0][6].ms = 257.500000;
+
+/* pause */
+sample[0][7].hz = 0.000000;
+sample[0][7].ms = 28.611111;
+
+/* note A4, length 16 */
+sample[0][7].hz = 440.000000;
+sample[0][7].ms = 96.562500;
+
+/* pause */
+sample[0][8].hz = 0.000000;
+sample[0][8].ms = 10.729167;
+
+/* note G4, length 2 */
+sample[0][8].hz = 392.000000;
+sample[0][8].ms = 772.500000;
+
+/* pause */
+sample[0][9].hz = 0.000000;
+sample[0][9].ms = 85.833333;
+
+sample_sizes[0] = 10;
+//	set_hz(10);
 }
 
 /*
@@ -88,6 +156,7 @@ sampler_set_mode(int mode) {
 	{
 	case 1:
 		set_hz(261.63); //C
+		sample_index = 0;
 		break;
 	case 2:
 		set_hz(293.67); //D
@@ -117,11 +186,7 @@ sampler_set_mode(int mode) {
 	}
 }
 
-static float pull_counter = 0.0;
-static int sample_index = 0;
-static int current_sample_length = 0;
-static int j = 0;
-static int k = 0;
+
 /*
  * Will return a value between 0 an 2048
  */
@@ -136,7 +201,7 @@ sampler_get()
 		/*holds the remaining amount of millisecounds in the sample */
 		current_sample_length--;
 		/* true when the track needs to change sample */
-		if(current_sample_length <= 0 && sample_sizes[0] >= sample_index)
+		if(current_sample_length <= 0.0 && sample_sizes[0] >= sample_index)
 		{
 
 			current_sample_length = sample[0][sample_index].ms;
@@ -150,6 +215,7 @@ sampler_get()
 		return 0;
 	
 	++i;
+	i = i % threshold;
 	return (i * 1024) / threshold;
 	 
 //	++i;
