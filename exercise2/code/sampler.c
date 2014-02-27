@@ -1,3 +1,6 @@
+/* local include */
+#include "sampler.h"
+
 
 /*
  * we can save alot of data here.
@@ -6,12 +9,19 @@
 static int mode = 0;
 static int note_counter = 0;
 
+/*
+ * Initialize
+ */
+void
+sampler_init() {
+
+}
 
 /*
  * Sets sampler mode
  */
 void
-set_mode(int mode) {
+sampler_set_mode(int mode) {
 	mode = 0;
 	note_counter = 0;
 }
@@ -20,7 +30,7 @@ set_mode(int mode) {
  * Will return a value between 0 an 2048
  */
 int
-get_sample() {
+sampler_get() {
 	return 0;
 }
 
