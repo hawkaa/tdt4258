@@ -9,7 +9,7 @@ As described earlier, we decided to use a simlpe program that only copied the in
 		\caption{Verifying that the buttons and LEDs work correctly}
 		\label{fig:test_correctness}
 	\end{figure}
-Testing the correctness for this simple program was easy. On every build, we confirmed that each button press lit the LED with the same number. Each LED should be on as long as the corresponding button is pressed. Se figure \ref{fig:test_correctness}.
+	On every build, we confirmed that each button press lit the LED with the same number. Each LED should be on as long as the corresponding button is pressed. Se figure \ref{fig:test_correctness}.
 
 	\subsection{Testing the energy effectiveness}
 	In order to test the energy consumption of our system, we used the \emph{energyAware Profiler} provided by to us by Silicon Labs. We conducted the three following tests:
@@ -24,7 +24,7 @@ Testing the correctness for this simple program was easy. On every build, we con
 		The system was run for ten seconds, with button 1 pressed twice each second. We ran this test to check the power consumption on the interrupt handling and wakeup procedures.
 \\
 \\
-		All the tests was run without measuring the LED energy consumption (using the jumper configuration on the gamepad). We used a handheld stopwatch for all the tests. The sample trace was dumped into a raw text file and further processed in a spreadsheet.
+		All the tests were run without measuring the LED energy consumption (using the jumper configuration on the gamepad). We used a handheld stopwatch for all the tests. The sample trace was dumped into a raw text file and further processed in a spreadsheet.
 		\\
 		\\
 		The test results are presented in figure \ref{fig:test_results}.
@@ -54,7 +54,7 @@ Testing the correctness for this simple program was easy. On every build, we con
 		We measured slightly lower power consumption on the code using interrupts (section \ref{subsection:interrupts}) than with the one using polling. Test 2 increased the amperage by approximately $0.2mA$. This was expected behaviour, as the buttons are active low, and use the internal pull up registers, and would drain a small amount of energy when pressed. Test 3 increased the power consumption with about $20\mu A$. We expected the system to use exacly the same amount of energy as with the polling because of the continious instruction execution (the system ran in a tight loop when idle), but this was not the case.
 
 		\subsubsection{EM2}
-		Finally, we got some real power savings, three orders of magnitude lower than the previous tests. This is what we expected. We see that the pull-up resistors for the buttons still increase the energy consumption. The amperage was also higher for the rapid button press. We expected that the wakeup and interrupt procedure would consume some energy, but it is impossible to say whether the energy is consumed by this procedure or by the pull-up resistors.
+		EM2 offered some real power savings, three orders of magnitude lower than the previous tests. This is what we expected. We see that the pull-up resistors for the buttons still increase the energy consumption. The amperage was also higher for the rapid button press. We expected that the wakeup and interrupt procedure would consume some energy, but it is impossible to say whether the energy is consumed by this procedure or by the pull-up resistors.
 
 		\subsubsection{EM3}
 		The energy consumption in EM3 looks very alike the one we got in EM2, except that it is slightly lower. This is due to the fact that the low frequency oscilators is disabled in this EM3. These oscilators are not used in our simple test application, so the program continiued to run correctly.
@@ -70,7 +70,7 @@ Testing the correctness for this simple program was easy. On every build, we con
 		We tried out Energy Mode 4 (section \ref{subsubsection:em4}), but this would not pass the correctness test. The system was put to sleep and we found no way to wake it up again. The only way the system can return from EM4 pressing buttons on the gamepad is an interrupt via the GPIO wake-up pin \cite[p. 8]{reference_manual}, but this is not used in this application. Even though we were to find a way to make EM4 entry and return work, we have indications that this would not improve the energy efficiency of our system. The energy optimization application note from \emph{Silicon Labs} states that the average current is greater than EM2 if the system needs to wake up often (threshold around once a second, see figure \ref{fig:em2vsem4})  Either way, the EM4 idle energy efficiency is rather impressive; measured to only $70nA$!
 
 	\subsection{The LED rotation program}
-	Although the code complexity of the LED rotation program was higher than the previous example, it was quite easy to test for correctness. We had to check the following:
+	In order to test the correctness of the LED rotation program, we had to check the following:
 	\begin{itemize}
 		\item All LEDs were shifted to the right on each clock tick.
 		\item If the rightmost LED was lit, the next clock tick, it would appear lit at the leftmost position.
