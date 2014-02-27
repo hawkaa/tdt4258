@@ -13,6 +13,37 @@ static int i = 0;
 static const int FREQUENCY = 47945;
 
 static int
+get_sawtooth_signal(int i, int threshold, int max)
+{
+	return (i * max) / threshold;
+}
+
+static int
+get_triangle_signal(int i, int threshold, int max)
+{
+	if(2 * i < threshold) {
+		/* on the way up */
+		return (i * 2 * max) / threshold;
+	} else {
+		/* on the way down */
+		return (2 * threshold - 2 * i) * max / threshold;
+	}
+}
+
+static int
+get_square_signal(int i, int threshold, int max)
+{
+	if (2 * i < threshold) {
+		/* first half */
+		return max;
+	} else {
+		/* second half */
+		return 0;
+	}
+}
+
+
+static int
 get_threshold(float hz) 
 {
 	return FREQUENCY / hz;
