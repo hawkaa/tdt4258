@@ -27,13 +27,13 @@ for line in sys.stdin:
 	ms = getDuration(length, bpm);
 	
 	print("/* note %s, length %i */" % (note, length));
-	print("%s[%i][%i].hz = %f" % (variable_name, track, i, freq[note]))
-	print("%s[%i][%i].ms = %f" % (variable_name, track, i, 0.9*ms))
+	print("%s[%i][%i].hz = %f;" % (variable_name, track, i, freq[note]))
+	print("%s[%i][%i].ms = %f;" % (variable_name, track, i, 0.9*ms))
 	print();
 	i += 1;
 	print("/* pause */")
-	print("%s[%i][%i].hz = %f" % (variable_name, track, i, 0))
-	print("%s[%i][%i].ms = %f" % (variable_name, track, i, 0.1*ms))
+	print("%s[%i][%i].hz = %f;" % (variable_name, track, i, 0))
+	print("%s[%i][%i].ms = %f;" % (variable_name, track, i, 0.1*ms))
 	print();
 
 
