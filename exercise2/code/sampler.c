@@ -5,6 +5,7 @@
  * we can save alot of data here.
  */
 static sample_t sample[8][20]; 
+static int sample_sizes[8];
 static int mode = 0;
 static int note_counter = 0;
 static int threshold = 0;
@@ -34,9 +35,15 @@ set_hz(float hz)
 void
 sampler_init() {
 
-	sample[0][0].hz = 150.0;
-	sample[0][0].ms = 1000;
-	set_hz(150);
+	sample[0][0].hz = 361.0;
+	sample[0][0].ms = 1000;	
+	sample[0][1].hz = 220.0;
+	sample[0][1].ms = 1000;	
+	sample[0][2].hz = 361.0;
+	sample[0][2].ms = 1000;	
+
+	sample_sizes[0] = 3;
+	set_hz(10);
 }
 
 /*
@@ -49,25 +56,25 @@ sampler_set_mode(int mode) {
 	switch(mode)
 	{
 	case 1:
-		set_hz(261.63);
+		set_hz(261.63); //C
 		break;
 	case 2:
-		set_hz(293.67);
+		set_hz(293.67); //D
 		break;
 	case 3:
-		set_hz(329.63);
+		set_hz(329.63); //E
 		break;
 	case 4:
-		set_hz(349.23);
+		set_hz(349.23); //F
 		break;
 	case 5:
-		set_hz(392.00);
+		set_hz(392.00); //G
 		break;
 	case 6:
-		set_hz(440.00);
+		set_hz(440.00); //A
 		break;
 	case 7:
-		set_hz(493.88);
+		set_hz(493.88); //B
 		break;
 	case 8:
 		set_hz(523.25);
@@ -82,29 +89,63 @@ sampler_set_mode(int mode) {
 static float pull_counter = 0.0;
 static int sample_index = 0;
 static int current_sample_length = 0;
-
+static int j = 0;
+static int k = 0;
 /*
  * Will return a value between 0 an 2048
  */
 int
-sampler_get() {
+sampler_get() 
+{
+	pull_counter += 1.0;
+	/* true when one ms has passed */
 	if(pull_counter > (FREQUENCY / 1000))
 	{
-		pull_counter = 0;
+		pull_counter = 0.0;
+		/*holds the remaining amount of millisecounds in the sample */
 		current_sample_length--;
-
-		if(current_sample_length == 0)
+		/* true when the track needs to change sample */
+		if(current_sample_length <= 0 && sample_sizes[0] >= sample_index)
 		{
-			++sample_index;
+
 			current_sample_length = sample[0][sample_index].ms;
+			set_hz(sample[0][sample_index].hz);
+			/* the next sample is selected */
+			++sample_index;
 		}
 	}
+
 	if(threshold ==0)
 		return 0;
-	 
+	
 	++i;
-	i = i % threshold;
-
 	return (i * 1024) / threshold;
+	 
+//	++i;
+//	i = i % get_threshold(261.63);
+//	++j;
+//	j = j % get_threshold(329.63);
+//	++k;
+//	k = k % get_threshold(392.00);
+//	return ((i * 1024) / get_threshold(261.63)) + ((j * 1024) / get_threshold(329.63)) 
+//			+ ((k * 1024) / get_threshold(392.00));
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
