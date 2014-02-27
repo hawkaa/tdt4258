@@ -4,7 +4,6 @@
  */
 
 static int mode = 0;
-static int tick = 0;
 static int note_counter = 0;
 
 
@@ -14,7 +13,6 @@ static int note_counter = 0;
 void
 set_mode(int mode) {
 	mode = 0;
-	tick = 0;
 	node_counter = 0;
 }
 
