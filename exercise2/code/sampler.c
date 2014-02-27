@@ -13,7 +13,7 @@ static int note_counter = 0;
 void
 set_mode(int mode) {
 	mode = 0;
-	node_counter = 0;
+	note_counter = 0;
 }
 
 /*
