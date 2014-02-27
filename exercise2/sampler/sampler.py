@@ -5,7 +5,7 @@ FREQUENCY_FILE = "freq.csv"
 freq = {};
 for line in open(FREQUENCY_FILE):
 	split = line.strip().split(",");
-	freq[split[0]] = float(split[1]);
+	freq[split[0].strip()] = float(split[1]);
 
 
 def getDuration(length, bpm):
@@ -28,12 +28,12 @@ for line in sys.stdin:
 	
 	print("/* note %s, length %i */" % (note, length));
 	print("%s[%i][%i].hz = %f;" % (variable_name, track, i, freq[note]))
-	print("%s[%i][%i].ms = %f;" % (variable_name, track, i, 0.9*ms))
+	print("%s[%i][%i].ms = %f;" % (variable_name, track, i, 0.7*ms))
 	print();
 	i += 1;
 	print("/* pause */")
 	print("%s[%i][%i].hz = %f;" % (variable_name, track, i, 0))
-	print("%s[%i][%i].ms = %f;" % (variable_name, track, i, 0.1*ms))
+	print("%s[%i][%i].ms = %f;" % (variable_name, track, i, 0.3*ms))
 	print();
 
 
