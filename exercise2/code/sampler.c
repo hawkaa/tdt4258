@@ -1,13 +1,14 @@
 /* local include */
 #include "sampler.h"
 
-
 /*
  * we can save alot of data here.
  */
 
 static int mode = 0;
 static int note_counter = 0;
+
+static const int frequency = 47945;
 
 /*
  * Initialize
