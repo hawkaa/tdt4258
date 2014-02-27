@@ -38,3 +38,35 @@ sample[0][4].ms = 96.562500
 sample[0][5].hz = 0.000000
 sample[0][5].ms = 10.729167
 
+/* note G4, length 4 */
+sample[0][5].hz = 392.000000
+sample[0][5].ms = 386.250000
+
+/* pause */
+sample[0][6].hz = 0.000000
+sample[0][6].ms = 42.916667
+
+/* note E4, length 6 */
+sample[0][6].hz = 329.630000
+sample[0][6].ms = 257.500000
+
+/* pause */
+sample[0][7].hz = 0.000000
+sample[0][7].ms = 28.611111
+
+/* note A4, length 16 */
+sample[0][7].hz = 440.000000
+sample[0][7].ms = 96.562500
+
+/* pause */
+sample[0][8].hz = 0.000000
+sample[0][8].ms = 10.729167
+
+/* note G4, length 2 */
+sample[0][8].hz = 392.000000
+sample[0][8].ms = 772.500000
+
+/* pause */
+sample[0][9].hz = 0.000000
+sample[0][9].ms = 85.833333
+

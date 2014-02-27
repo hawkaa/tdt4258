@@ -13,14 +13,14 @@ def getDuration(length, bpm):
 	return 1000 * (bps / float(length))
 
 
-variable_name = input().split(",")[1];
-track = int(input().split(",")[1]);
-bpm = float(input().split(",")[1]);
+variable_name = input().split("\t")[1];
+track = int(input().split("\t")[1]);
+bpm = float(input().split("\t")[1]);
 
 
 i = 0;
 for line in sys.stdin:
-	sp = line.strip().split(",");
+	sp = line.strip().split("\t");
 	note = sp[0];
 	length = int(sp[1]);
 
