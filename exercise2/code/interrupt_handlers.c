@@ -4,6 +4,7 @@
 
 /* local headers */
 #include "efm32gg.h"
+#include "sampler.h"
 
 int pitch = 0;
 static void
@@ -96,8 +97,8 @@ TIMER1_IRQHandler(void)
 
 
 	*DAC0_CH0DATA = *DAC0_CH1DATA = (i * 1024) / pitch;
-
-	*TIMER1_IFC = 1; */
+*/
+	*TIMER1_IFC = 1; 
 }
 
 /* GPIO even pin interrupt handler */

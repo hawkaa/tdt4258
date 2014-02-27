@@ -13,4 +13,12 @@ sampler_set_mode(int mode);
 extern int
 sampler_get();
 
+typedef struct sample
+{
+	float hz;
+	int ms;
+} sample_t;
+
+
+
 #endif
