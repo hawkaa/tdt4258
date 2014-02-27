@@ -13,27 +13,27 @@ def getDuration(length, bpm):
 	return 1000 * (bps / float(length))
 
 
-variable_name = input().split(",")[1];
-track = int(input().split(",")[1]);
-bpm = float(input().split(",")[1]);
+variable_name = input().split("\t")[1];
+track = int(input().split("\t")[1]);
+bpm = float(input().split("\t")[1]);
 
 
 i = 0;
 for line in sys.stdin:
-	sp = line.strip().split(",");
+	sp = line.strip().split("\t");
 	note = sp[0];
 	length = int(sp[1]);
 
 	ms = getDuration(length, bpm);
 	
 	print("/* note %s, length %i */" % (note, length));
-	print("%s[%i][%i].hz = %f" % (variable_name, track, i, freq[note]))
-	print("%s[%i][%i].ms = %f" % (variable_name, track, i, 0.9*ms))
+	print("%s[%i][%i].hz = %f;" % (variable_name, track, i, freq[note]))
+	print("%s[%i][%i].ms = %f;" % (variable_name, track, i, 0.9*ms))
 	print();
 	i += 1;
 	print("/* pause */")
-	print("%s[%i][%i].hz = %f" % (variable_name, track, i, 0))
-	print("%s[%i][%i].ms = %f" % (variable_name, track, i, 0.1*ms))
+	print("%s[%i][%i].hz = %f;" % (variable_name, track, i, 0))
+	print("%s[%i][%i].ms = %f;" % (variable_name, track, i, 0.1*ms))
 	print();
 
 

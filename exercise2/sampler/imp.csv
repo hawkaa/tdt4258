@@ -1,8 +1,12 @@
-var,sample
-track,0
-bpm,103
-G4,4
-G4,4
-G4,4
-E4,6
-A4,16
+var	sample
+track	0
+bpm	103
+G4	4
+G4	4
+G4	4
+E4	6
+A4	16
+G4	4
+E4	6
+A4	16
+G4	2
