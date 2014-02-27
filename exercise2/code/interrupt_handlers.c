@@ -9,6 +9,37 @@ int pitch = 0;
 static void
 gpio_handler(void)
 {
+	switch (*GPIO_PC_DIN) {
+	case 0xfe:
+		sampler_set_mode(1);
+		break;
+	case 0xfd:
+		sampler_set_mode(2);
+		break;
+	case 0xfb:
+		sampler_set_mode(3);
+		break;
+	case 0xf7:
+		sampler_set_mode(4);
+		break;
+	case 0xef:
+		sampler_set_mode(5);
+		break;
+	case 0xdf:
+		sampler_set_mode(6);
+		break;
+	case 0xbf:
+		sampler_set_mode(7);
+		break;
+	case 0x7f:
+		sampler_set_mode(8);
+		break;		
+	default:
+		sampler_set_mode(0);
+		break;
+	}
+	*GPIO_IFC = 0xff;
+	/*
 	*GPIO_PA_DOUT = *GPIO_PC_DIN << 8;
 	*GPIO_IFC = 0xff;
 	switch(*GPIO_PC_DIN)
@@ -40,7 +71,7 @@ gpio_handler(void)
 		default:
 			pitch = 0;
 			break;
-	}
+	} */
 }
 
 
@@ -54,7 +85,9 @@ TIMER1_IRQHandler(void)
 	 * Feed new samples to the DAC. Remember to clear the pending
 	 * interrupt by writing 1 to TIMER1_IFC
 	 */
-
+	
+	*DAC0_CH0DATA = *DAC0_CH1DATA = sampler_get();
+	/*
 	++i;
 	i = i % pitch;
 
@@ -64,7 +97,7 @@ TIMER1_IRQHandler(void)
 
 	*DAC0_CH0DATA = *DAC0_CH1DATA = (i * 1024) / pitch;
 
-	*TIMER1_IFC = 1;
+	*TIMER1_IFC = 1; */
 }
 
 /* GPIO even pin interrupt handler */
