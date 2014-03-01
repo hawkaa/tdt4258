@@ -1,55 +1,63 @@
 /* local include */
 #include "sampler.h"
 
-#define NUM_TRACKS 3
 /* constants */
+#define NUM_TRACKS 3
 static const int FREQUENCY = 47945;
 static const int CHANNEL_RANGE = 2048;
 static const int SAMPLER_RANGE = 1524;
 
 /*
- * we can save alot of data here.
+ * Global data 
  */
+
 
 /* saving samples and sizes */
 static sample_t sample[NUM_TRACKS][50]; 
 static int sample_sizes[NUM_TRACKS];
 
-/* keeping track of wave state */
-static int wave_counter[NUM_TRACKS];
-static int wave_threshold[NUM_TRACKS];
+/* sample book-keeping */
+static int current_sample_length[NUM_TRACKS];
+static int current_sample_index[NUM_TRACKS];
+
+/* keeping track of wave state (height) */
+static int current_height[NUM_TRACKS];
+static int height_threshold[NUM_TRACKS];
 
 /* for calculating with MS */
 static int pull_counter = 0;
 
-/* current track book-keeping */
-static int sample_time_left[NUM_TRACKS];
-static int sample_index[NUM_TRACKS];
-
-
+/*
+ * Will generate a sawtooth signal
+ */
 static int
-get_sawtooth_signal(int j, int t, int max)
+get_sawtooth_signal(int height, int threshold, int max)
 {
-	return (j * max) / t;
+	return (height * max) / threshold;
 }
 
+/*
+ * Will generate a triangle signal
+ */
 static int
-get_triangle_signal(int j, int t, int max)
+get_triangle_signal(int height, int threshold, int max)
 {
-	if(2 * j < t) {
+	if(2 * height < threshold) {
 		/* on the way up */
-		return (j * 2 * max) / t;
+		return (height * 2 * max) / threshold;
 	} else {
 		/* on the way down */
-		return 0;
-		//return ((2 * t - 2 * j) * max) / t;
+		return ((height * threshold - 2 * threshold) * max) / threshold;
 	}
 }
 
+/*
+ * Will generate a square signal
+ */
 static int
-get_square_signal(int j, int t, int max)
+get_square_signal(int height, int threshold, int max)
 {
-	if (2 * j < t) {
+	if (2 * height < threshold) {
 		/* first half */
 		return max;
 	} else {
@@ -66,20 +74,29 @@ get_threshold(float hz)
 }
 
 /*
- * Sets the hz for all tracks
+ * Sets the hz for given track
  */
 static void
-set_hz(int track, float hz)
+set_hz(float hz, int track)
 {
 	/* reset counter */
-	wave_counter[track] = 0;
+	current_height[track] = 0;
 
 	/* generate new threshold */
 	if (hz < 0.01) {
 		/* hz is too low */
-		wave_threshold[track] = 0;
+		height_threshold[track] = 0;
 	} else {	
-		wave_threshold[track] = get_threshold(hz);
+		height_threshold[track] = get_threshold(hz);
+	}
+}
+
+static void
+reset_samples()
+{	
+	for (int i = 0; i < NUM_TRACKS; ++i) {
+		current_sample_index[i] = -1;
+		current_sample_length[i] = 0;
 	}
 }
 
@@ -90,51 +107,40 @@ void
 sampler_init(void)
 {
 	#include "../sampler/tetris.c"	
+
+	/* reset values */
 	for (int i = 0; i < NUM_TRACKS; ++i) {
-		sample_index[i] = -1;
-		sample_time_left[i] = 0;
+		height_threshold[i] = 0;
+		current_height[i] = 0;
 	}
+	reset_samples();
 }
 /*
  * Sets sampler mode
  */
 void
 sampler_set_mode(int mode) {
-	//mode = 0;
-/*	note_counter = 0;
 	switch(mode)
 	{
 	case 1:
-		set_hz(261.63, 0); //C
-		sample_index = 0;
 		break;
 	case 2:
-		set_hz(293.67, 0); //D
 		break;
 	case 3:
-		set_hz(329.63, 0); //E
 		break;
 	case 4:
-		set_hz(349.23, 0); //F
 		break;
 	case 5:
-		set_hz(392.00, 0); //G
 		break;
 	case 6:
-		set_hz(440.00, 0); //A
 		break;
 	case 7:
-		set_hz(493.88, 0); //B
 		break;
 	case 8:
-		set_hz(523.25, 0);
 		break;
-	
 	default:
-		set_hz(0, 0);
-	
+		break;	
 	}
-*/
 }
 /*
  * Decreases the remaing time in the sample. If there is none left,
@@ -144,28 +150,19 @@ void
 update_track(int track)
 {	
 	
-	--sample_time_left[track];
+	--current_sample_length[track];
 	
-	if (sample_time_left[track] <= 0) {
-		++sample_index[track];
-		sample_time_left[track] = sample[track][sample_index[track]].ms;
-		set_hz(track, sample[track][sample_index[track]].hz);
+	if (current_sample_length[track] <= 0) {
+		++current_sample_index[track];
+		if (current_sample_index[0] >= sample_sizes[0]) {
+			reset_samples();
+		} else {
+			current_sample_length[track] = sample[track][current_sample_index[track]].ms;
+			set_hz(sample[track][current_sample_index[track]].hz, track);
+		}
 	}
 }
 
-int
-update_height(void)
-{
-	return 0;
-/*	int height = 0;
-	for(int i = 0; i < 3; i++)
-	{
-		++height_current[i];
-		height += (height_current[i] % height_threshold[i]) * 1024 / height_threshold[i];
-	}
-
-	return height; */
-}
 
 /*
  * Occurs every millisecond
@@ -194,12 +191,12 @@ sampler_get()
 		ms_tick();
 	}
 
-
+	/* accumulate signals */
 	int signals = 0;
 	for (int i = 0; i < NUM_TRACKS; ++i) {
-		++wave_counter[i];
-		wave_counter[i] %= wave_threshold[i];
-		signals += get_square_signal(wave_counter[i], wave_threshold[i],
+		++current_height[i];
+		current_height[i] %= height_threshold[i];
+		signals += get_square_signal(current_height[i], height_threshold[i],
 				CHANNEL_RANGE);	
 	}
 
