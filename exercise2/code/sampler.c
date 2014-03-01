@@ -3,9 +3,9 @@
 
 /* constants */
 static const int FREQUENCY = 47945;
-static const int NUM_TRACKS 3
+#define NUM_TRACKS 3
 static const int CHANNEL_RANGE = 2048;
-static const int SAMPLER_RANGE = 1024;
+static const int SAMPLER_RANGE = 1524;
 
 /*
  * we can save alot of data here.
@@ -26,30 +26,7 @@ static int pull_counter = 0;
 static int sample_time_left[NUM_TRACKS];
 static int sample_index[NUM_TRACKS];
 
-/* kims, dunno what the do */
-//static int current_sample_length[NUM_TRACKS];
-//static int current_sample_index[NUM_TRACKS];
-static sample_t current_sample[8];
 
-static int mode = 0;
-static int note_counter = 0;
-static int threshold = 0;
-static int i = 0;
-
-static int sample_index = 0;
-
-
-/*
- * Initialize
- */
-void
-sampler_init(void)
-{
-	#include "../sampler/tetris.c"	
-	for (int i = 0; i < NUM_TRACKS; ++i) {
-		sample_index[i] = 0;
-	}
-}
 
 static int
 get_sawtooth_signal(int j, int t, int max)
@@ -60,7 +37,7 @@ get_sawtooth_signal(int j, int t, int max)
 static int
 get_triangle_signal(int j, int t, int max)
 {
-	if(2 * j < threshold) {
+	if(2 * j < t) {
 		/* on the way up */
 		return (j * 2 * max) / t;
 	} else {
@@ -73,7 +50,7 @@ get_triangle_signal(int j, int t, int max)
 static int
 get_square_signal(int j, int t, int max)
 {
-	if (2 * j < threshold) {
+	if (2 * j < t) {
 		/* first half */
 		return max;
 	} else {
@@ -104,6 +81,18 @@ set_hz(int track, float hz)
 	}
 }
 
+/*
+ * Initialize
+ */
+void
+sampler_init(void)
+{
+	#include "../sampler/tetris.c"	
+	for (int i = 0; i < NUM_TRACKS; ++i) {
+		sample_index[i] = -1;
+		sample_time_left[i] = 0;
+	}
+}
 /*
  * Sets sampler mode
  */
@@ -152,19 +141,15 @@ sampler_set_mode(int mode) {
  */
 void
 update_track(int track)
-{
-	/*
+{	
+	
 	--sample_time_left[track];
 	
-	if (current_sampe
-
-	if(current_sample_length[track] <= 0.0 && sample_sizes[track] >= current_sample_index[track])
-	{
-		current_sample_length[track] = sample[track][sample_index].ms;
-		set_hz(sample[track][sample_index].hz);
-		++sample_index;
+	if (sample_time_left[track] <= 0) {
+		++sample_index[track];
+		sample_time_left[track] = sample[track][sample_index[track]].ms;
+		set_hz(track, sample[track][sample_index[track]].hz);
 	}
-	*/
 }
 
 /*
@@ -173,7 +158,7 @@ update_track(int track)
 void
 ms_tick()
 {
-	for(int i = 0; i < NUM_TRACKS; ++i
+	for(int i = 0; i < NUM_TRACKS; ++i)
 		update_track(i);
 }
 
@@ -190,6 +175,18 @@ sampler_get()
 		pull_counter = 0;
 		ms_tick();
 	}
+
+	int signals = 0;
+//	int i = 2;
+	for (int i = 0; i < NUM_TRACKS; ++i) {
+		++wave_counter[i];
+		wave_counter[i] %= wave_threshold[i];
+		signals += get_square_signal(wave_counter[i], wave_threshold[i],
+				CHANNEL_RANGE);	
+	}
+
+	return (signals * SAMPLER_RANGE) / (NUM_TRACKS * CHANNEL_RANGE);
+
 	
 	return 0;
 	 
