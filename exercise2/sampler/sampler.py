@@ -31,9 +31,19 @@ i = 0;
 for line in sys.stdin:
 	sp = line.strip().split("\t");
 	note = sp[0];
+
 	length = int(sp[1]);
 
 	ms = getDuration(length, bpm);
+
+	if note == "0":
+		print("/* PAUSE, %s */" % (length))
+		print("%s[%i][%i].hz = %f;" % (variable_name, track, i, 0))
+		print("%s[%i][%i].ms = %f;" % (variable_name, track, i, ms))
+		print("")
+		i += 1;
+		continue;
+
 	
 	print("/* note %s, length %i */" % (note, length));
 	print("%s[%i][%i].hz = %f;" % (variable_name, track, i, freq[note]))

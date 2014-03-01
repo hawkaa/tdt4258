@@ -2,9 +2,13 @@
 #include "sampler.h"
 
 #define MAX_TRACKS 8
+
+#define NUM_TRACKS 3
+
 /*
  * we can save alot of data here.
  */
+/*
 static sample_t sample[MAX_TRACKS][20]; 
 static int sample_sizes[MAX_TRACKS];
 static int current_sample_length[MAX_TRACKS];
@@ -20,7 +24,7 @@ static float pull_counter = 0.0;
 static int sample_index = 0;
 
 static const int FREQUENCY = 47945;
-
+*/
 /*
  * Initialize
  */
