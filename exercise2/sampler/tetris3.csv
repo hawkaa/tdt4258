@@ -1,6 +1,7 @@
-name	Tetris Track 0
+name	Tetris Track 2
 var	sample
-track	0
+length_var	sample_sizes
+track	2
 bpm	120
 E2	8
 E3	8

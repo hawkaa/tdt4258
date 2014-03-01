@@ -17,6 +17,7 @@ def getDuration(length, bpm):
 
 track_name = raw_input().split("\t")[1];
 variable_name = raw_input().split("\t")[1];
+length_variable_name = raw_input().split("\t")[1];
 track = int(raw_input().split("\t")[1]);
 bpm = float(raw_input().split("\t")[1]);
 
@@ -44,4 +45,4 @@ for line in sys.stdin:
 	print("%s[%i][%i].ms = %f;" % (variable_name, track, i, 0.3*ms))
 	print("");
 
-
+print("%s[%i] = %i;" % (length_variable_name, track, i+1));
