@@ -13,7 +13,7 @@ static const int SAMPLER_RANGE = 1524;
 
 
 /* saving samples and sizes */
-static sample_t sample[NUM_TRACKS][50]; 
+static sample_t sample[NUM_TRACKS][100]; 
 static int sample_sizes[NUM_TRACKS];
 
 /* sample book-keeping */
@@ -27,10 +27,14 @@ static int height_threshold[NUM_TRACKS];
 /* for calculating with MS */
 static int pull_counter = 0;
 
+/* signal generating function */
+int (*signal_function)(int, int, int);
+
+
 /*
  * Will generate a sawtooth signal
  */
-static int
+int
 get_sawtooth_signal(int height, int threshold, int max)
 {
 	return (height * max) / threshold;
@@ -39,22 +43,22 @@ get_sawtooth_signal(int height, int threshold, int max)
 /*
  * Will generate a triangle signal
  */
-static int
+int
 get_triangle_signal(int height, int threshold, int max)
 {
-	if(2 * height < threshold) {
+	//return (height * max) / threshold;
+	if(2 * height <= threshold) {
 		/* on the way up */
-		return (height * 2 * max) / threshold;
+		return (2 * height * max) / threshold;
 	} else {
-		/* on the way down */
-		return ((height * threshold - 2 * threshold) * max) / threshold;
+		return 0;
 	}
 }
 
 /*
  * Will generate a square signal
  */
-static int
+int
 get_square_signal(int height, int threshold, int max)
 {
 	if (2 * height < threshold) {
@@ -106,6 +110,8 @@ reset_samples()
 void
 sampler_init(void)
 {
+	signal_function = &get_square_signal;
+
 	#include "../sampler/tetris.c"	
 
 	/* reset values */
@@ -125,10 +131,13 @@ sampler_set_mode(int mode) {
 	case 1:
 		break;
 	case 2:
+		signal_function = &get_square_signal;
 		break;
 	case 3:
+		signal_function = &get_sawtooth_signal;
 		break;
 	case 4:
+		signal_function = &get_triangle_signal;
 		break;
 	case 5:
 		break;
@@ -196,7 +205,7 @@ sampler_get()
 	for (int i = 0; i < NUM_TRACKS; ++i) {
 		++current_height[i];
 		current_height[i] %= height_threshold[i];
-		signals += get_square_signal(current_height[i], height_threshold[i],
+		signals += (*signal_function)(current_height[i], height_threshold[i],
 				CHANNEL_RANGE);	
 	}
 
