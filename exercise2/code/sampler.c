@@ -1,43 +1,32 @@
 /* local include */
 #include "sampler.h"
 
-#define MAX_TRACKS 8
-
+/* constants */
+static const int FREQUENCY = 47945;
 #define NUM_TRACKS 3
+static const int CHANNEL_RANGE = 2048;
+static const int SAMPLER_RANGE = 1524;
 
 /*
  * we can save alot of data here.
  */
-/*
-static sample_t sample[MAX_TRACKS][20]; 
-static int sample_sizes[MAX_TRACKS];
-static int current_sample_length[MAX_TRACKS];
-static int current_sample_index[MAX_TRACKS];
-static sample_t current_sample[8];
 
-static int mode = 0;
-static int note_counter = 0;
-static int threshold = 0;
-static int i = 0;
+/* saving samples and sizes */
+static sample_t sample[NUM_TRACKS][50]; 
+static int sample_sizes[NUM_TRACKS];
 
-static float pull_counter = 0.0;
-static int sample_index = 0;
+/* keeping track of wave state */
+static int wave_counter[NUM_TRACKS];
+static int wave_threshold[NUM_TRACKS];
 
-static const int FREQUENCY = 47945;
-*/
-/*
- * Initialize
- */
-void
-sampler_init() {
-	for(int j = 0; j < MAX_TRACKS; j++)
-	{
-		sample_sizes[j] = 0;
-		current_sample_length[j] = 0;
-		current_sample_index[j] = 0;
-	}
-	#include "../sampler/tetris.c"	
-}
+/* for calculating with MS */
+static int pull_counter = 0;
+
+/* current track book-keeping */
+static int sample_time_left[NUM_TRACKS];
+static int sample_index[NUM_TRACKS];
+
+
 
 static int
 get_sawtooth_signal(int j, int t, int max)
@@ -48,7 +37,7 @@ get_sawtooth_signal(int j, int t, int max)
 static int
 get_triangle_signal(int j, int t, int max)
 {
-	if(2 * j < threshold) {
+	if(2 * j < t) {
 		/* on the way up */
 		return (j * 2 * max) / t;
 	} else {
@@ -61,7 +50,7 @@ get_triangle_signal(int j, int t, int max)
 static int
 get_square_signal(int j, int t, int max)
 {
-	if (2 * j < threshold) {
+	if (2 * j < t) {
 		/* first half */
 		return max;
 	} else {
@@ -78,22 +67,39 @@ get_threshold(float hz)
 }
 
 static void
-set_hz(float hz)
+set_hz(int track, float hz)
 {
-	i = 0;
-	if(hz < 0.01)
-		threshold = 0;
-	else
-		threshold = get_threshold(hz);
+	/* reset counter */
+	wave_counter[track] = 0;
+
+	/* generate new threshold */
+	if (hz < 0.01) {
+		/* hz is too low */
+		wave_threshold[track] = 0;
+	} else {	
+		wave_threshold[track] = get_threshold(hz);
+	}
 }
 
+/*
+ * Initialize
+ */
+void
+sampler_init(void)
+{
+	#include "../sampler/tetris.c"	
+	for (int i = 0; i < NUM_TRACKS; ++i) {
+		sample_index[i] = -1;
+		sample_time_left[i] = 0;
+	}
+}
 /*
  * Sets sampler mode
  */
 void
 sampler_set_mode(int mode) {
 	//mode = 0;
-	note_counter = 0;
+/*	note_counter = 0;
 	switch(mode)
 	{
 	case 1:
@@ -126,6 +132,7 @@ sampler_set_mode(int mode) {
 		set_hz(0);
 	
 	}
+*/
 }
 
 /*
@@ -134,18 +141,25 @@ sampler_set_mode(int mode) {
  */
 void
 update_track(int track)
-{
-	pull_counter = 0.0;
-	/*holds the remaining amount of millisecounds in the sample */
-	current_sample_length[track]--;
-	/* true when the track needs to change sample */
-	if(current_sample_length[track] <= 0.0 && sample_sizes[track] >= current_sample_index[track])
-	{
-		current_sample_length[track] = sample[track][sample_index].ms;
-		set_hz(sample[track][sample_index].hz);
-		/* the next sample is selected */
-		++sample_index;
+{	
+	
+	--sample_time_left[track];
+	
+	if (sample_time_left[track] <= 0) {
+		++sample_index[track];
+		sample_time_left[track] = sample[track][sample_index[track]].ms;
+		set_hz(track, sample[track][sample_index[track]].hz);
 	}
+}
+
+/*
+ * Occurs every millisecond
+ */
+void
+ms_tick()
+{
+	for(int i = 0; i < NUM_TRACKS; ++i)
+		update_track(i);
 }
 
 /*
@@ -154,44 +168,27 @@ update_track(int track)
 int
 sampler_get() 
 {
-	pull_counter += 1.0;
-	/* true when one ms has passed */
-	if(pull_counter > (FREQUENCY / 1000))
-		for(int j = 0; j < MAX_TRACKS; j++)
-			update_track(j);
+	++pull_counter;
 
-	if(threshold ==0)
-		return 0;
+	if( pull_counter >= (FREQUENCY / 1000)) {
+		/* true when one ms has passed */
+		pull_counter = 0;
+		ms_tick();
+	}
+
+	int signals = 0;
+//	int i = 2;
+	for (int i = 0; i < NUM_TRACKS; ++i) {
+		++wave_counter[i];
+		wave_counter[i] %= wave_threshold[i];
+		signals += get_square_signal(wave_counter[i], wave_threshold[i],
+				CHANNEL_RANGE);	
+	}
+
+	return (signals * SAMPLER_RANGE) / (NUM_TRACKS * CHANNEL_RANGE);
+
 	
-	++i;
-	i = i % threshold;
-	return (i * 1024) / threshold;
+	return 0;
 	 
-//	++i;
-//	i = i % get_threshold(261.63);
-//	++j;
-//	j = j % get_threshold(329.63);
-//	++k;
-//	k = k % get_threshold(392.00);
-//	return ((i * 1024) / get_threshold(261.63)) + ((j * 1024) / get_threshold(329.63)) 
-//			+ ((k * 1024) / get_threshold(392.00));
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

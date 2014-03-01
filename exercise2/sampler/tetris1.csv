@@ -1,13 +1,28 @@
-name	Tetris Track 0
-var	sample
-length_var	sample_sizes
-track	0
-bpm	120
-B4	4
-G#4	8
-A4	8
-B4	8
-0	16
-0	16
-A4	8
-G4	8
+name	Tetris Track 1	
+var	sample	
+length_var	sample_sizes	
+track	1	
+bpm	120	
+B4	4	1
+G#4	8	
+A4	8	
+B4	8	
+E5	16	
+D5	16	
+A4	8	
+G4	8	
+E4	4	2
+E4	8	
+A4	8	
+C5	4	
+B4	8	
+A4	8	
+G#4	8	3
+E4	8	
+G4	8	
+A4	8	
+B4	4	
+C5	4	
+A4	4	4
+E4	4	
+E4	2	
