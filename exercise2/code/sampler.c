@@ -16,7 +16,7 @@ static int note_counter = 0;
 static int threshold = 0;
 static int i = 0;
 
-static float pull_counter = 0.0;
+static int pull_counter = 0;
 static int sample_index = 0;
 
 static const int FREQUENCY = 47945;
@@ -172,9 +172,7 @@ sampler_init() {
 	sample_sizes[0] = 18;
 	
 	for(int j = 1; j < MAX_TRACKS; j++)
-	{
 		sample_sizes[j] = 0;
-	}
 	
 	for(int j = 0; j < MAX_TRACKS; j++)
 	{
@@ -298,9 +296,9 @@ update_track(int track)
 int
 sampler_get() 
 {
-	pull_counter += 1.0;
+	++pull_counter;
 	/* true when one ms has passed */
-	if(pull_counter > (FREQUENCY / 1000))
+	if(pull_counter > (int) (FREQUENCY / 1000))
 //		for(int j = 0; j < MAX_TRACKS; j++)
 			update_track(0);
 
@@ -309,7 +307,7 @@ sampler_get()
 	
 	++i;
 	i = i % threshold;
-	return (i * 1024) / threshold;
+	return ( (pull_counter % threshold) * 1024) / threshold;
 	 
 //	++i;
 //	i = i % get_threshold(261.63);
@@ -317,7 +315,7 @@ sampler_get()
 //	j = j % get_threshold(329.63);
 //	++k;
 //	k = k % get_threshold(392.00);
-//	return ((i * 1024) / get_threshold(261.63)) + ((j * 1024) / get_threshold(329.63)) 
+//	return ((i * 1024) / get_threshpld(261.63)) + ((j * 1024) / get_threshold(329.63)) 
 //			+ ((k * 1024) / get_threshold(392.00));
 
 }
