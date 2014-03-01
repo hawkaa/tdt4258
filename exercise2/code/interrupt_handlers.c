@@ -82,3 +82,10 @@ GPIO_ODD_IRQHandler()
 	gpio_handler();
 }
 
+
+/* LETIMER interrupt handler */
+void __attribute__((interrupt))
+LETIMER0_IRQHandler()
+{
+	
+}

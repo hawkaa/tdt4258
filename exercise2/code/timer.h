@@ -4,4 +4,7 @@
 extern void
 setupTimer(uint16_t period);
 
+extern void 
+setupLETimer0(uint16_t period);
+
 #endif

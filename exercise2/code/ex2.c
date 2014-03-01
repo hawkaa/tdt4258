@@ -53,16 +53,17 @@ main(void)
 	/* Call the peripheral setup functions */
 	setupGPIO();
 	setupDAC();
-	setupTimer(SAMPLE_PERIOD);
-  	
+	//setupPRS();
+	//setupTimer(SAMPLE_PERIOD);
+  	setupLETimer0(SAMPLE_PERIOD);
 	/* Enable interrupt handling */
 	setupNVIC();
 
 	/* Enable EM2  */
-	//setupEM2();
+	setupEM2();
 	
 
-	//__WFI();
+	__asm__("wfi;");
 	return 0;
 }
 /* if other interrupt handlers are needed, use the following names: 
