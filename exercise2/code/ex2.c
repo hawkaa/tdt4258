@@ -18,7 +18,7 @@
 
 /* The period between sound samples, in clock cycles */
 
-#define   SAMPLE_PERIOD  292 
+#define   SAMPLE_PERIOD  1 
 
 static void
 setupNVIC(void)
@@ -38,7 +38,7 @@ setupNVIC(void)
 	*GPIO_EXTIFALL = 0xff;
 	*GPIO_EXTIRISE = 0xff;
 	*GPIO_IEN = 0xff; //interupt generation
-	*ISER0 |= 0x807;//(1<<1) | (1<<11) | (1<<12) ; //bits 1 and 11. odd and even gpiohandler		
+	*ISER0 |= (1<<1) | (1<<11) | (1<<12) | (1<<26) ; //bits 1 and 11. odd and even gpiohandler		
 }
 
 static void 
@@ -56,7 +56,7 @@ main(void)
 	setupDAC();
 	//setupPRS();
 	//setupTimer(SAMPLE_PERIOD);
-  	setupLETimer0(SAMPLE_PERIOD);
+  	setupLETimer(SAMPLE_PERIOD);
 	/* Enable interrupt handling */
 	setupNVIC();
 

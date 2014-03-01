@@ -120,6 +120,9 @@ GPIO_ODD_IRQHandler()
 /* LETIMER interrupt handler */
 void __attribute__((interrupt))
 LETIMER0_IRQHandler()
-{
-	
+{	
+	*DAC0_CH0DATA = *DAC0_CH1DATA = sampler_get();
+	//*GPIO_PA_DOUT = ~(*GPIO_PA_DOUT);	
+
+	*LETIMER0_IFC  = 1;
 }
