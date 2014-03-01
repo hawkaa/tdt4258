@@ -31,12 +31,19 @@ i = 0;
 for line in sys.stdin:
 	sp = line.strip().split("\t");
 	note = sp[0];
+
 	length = int(sp[1]);
 
 	ms = getDuration(length, bpm);
+
+	if note == "0":
+		f = 0.0;
+	else:
+		f = freq[note];
+
 	
 	print("/* note %s, length %i */" % (note, length));
-	print("%s[%i][%i].hz = %f;" % (variable_name, track, i, freq[note]))
+	print("%s[%i][%i].hz = %f;" % (variable_name, track, i, f))
 	print("%s[%i][%i].ms = %f;" % (variable_name, track, i, 0.7*ms))
 	print("");
 	i += 1;
