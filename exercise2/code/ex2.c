@@ -7,6 +7,7 @@
 #include "timer.h"
 #include "gpio.h"
 #include "dac.h"
+#include "sampler.h"
 
 /* 
   TODO calculate the appropriate sample period for the sound wave(s) 
@@ -58,6 +59,9 @@ main(void)
   	setupLETimer0(SAMPLE_PERIOD);
 	/* Enable interrupt handling */
 	setupNVIC();
+
+	/* Init sampler */
+	sampler_init();
 
 	/* Enable EM2  */
 	setupEM2();
