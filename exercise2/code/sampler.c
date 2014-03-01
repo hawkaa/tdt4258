@@ -1,9 +1,9 @@
 /* local include */
 #include "sampler.h"
 
+#define NUM_TRACKS 3
 /* constants */
 static const int FREQUENCY = 47945;
-#define NUM_TRACKS 3
 static const int CHANNEL_RANGE = 2048;
 static const int SAMPLER_RANGE = 1524;
 
@@ -25,7 +25,6 @@ static int pull_counter = 0;
 /* current track book-keeping */
 static int sample_time_left[NUM_TRACKS];
 static int sample_index[NUM_TRACKS];
-
 
 
 static int
@@ -66,6 +65,9 @@ get_threshold(float hz)
 	return FREQUENCY / hz;
 }
 
+/*
+ * Sets the hz for all tracks
+ */
 static void
 set_hz(int track, float hz)
 {
@@ -103,38 +105,37 @@ sampler_set_mode(int mode) {
 	switch(mode)
 	{
 	case 1:
-		set_hz(261.63); //C
+		set_hz(261.63, 0); //C
 		sample_index = 0;
 		break;
 	case 2:
-		set_hz(293.67); //D
+		set_hz(293.67, 0); //D
 		break;
 	case 3:
-		set_hz(329.63); //E
+		set_hz(329.63, 0); //E
 		break;
 	case 4:
-		set_hz(349.23); //F
+		set_hz(349.23, 0); //F
 		break;
 	case 5:
-		set_hz(392.00); //G
+		set_hz(392.00, 0); //G
 		break;
 	case 6:
-		set_hz(440.00); //A
+		set_hz(440.00, 0); //A
 		break;
 	case 7:
-		set_hz(493.88); //B
+		set_hz(493.88, 0); //B
 		break;
 	case 8:
-		set_hz(523.25);
+		set_hz(523.25, 0);
 		break;
 	
 	default:
-		set_hz(0);
+		set_hz(0, 0);
 	
 	}
 */
 }
-
 /*
  * Decreases the remaing time in the sample. If there is none left,
  * the next sample is set to current.
@@ -150,6 +151,20 @@ update_track(int track)
 		sample_time_left[track] = sample[track][sample_index[track]].ms;
 		set_hz(track, sample[track][sample_index[track]].hz);
 	}
+}
+
+int
+update_height(void)
+{
+	return 0;
+/*	int height = 0;
+	for(int i = 0; i < 3; i++)
+	{
+		++height_current[i];
+		height += (height_current[i] % height_threshold[i]) * 1024 / height_threshold[i];
+	}
+
+	return height; */
 }
 
 /*
@@ -169,15 +184,18 @@ int
 sampler_get() 
 {
 	++pull_counter;
-
+	
+	/*
+	 * The tracks are updated once per millisecound
+	 */	
 	if( pull_counter >= (FREQUENCY / 1000)) {
 		/* true when one ms has passed */
 		pull_counter = 0;
 		ms_tick();
 	}
 
+
 	int signals = 0;
-//	int i = 2;
 	for (int i = 0; i < NUM_TRACKS; ++i) {
 		++wave_counter[i];
 		wave_counter[i] %= wave_threshold[i];
@@ -186,9 +204,4 @@ sampler_get()
 	}
 
 	return (signals * SAMPLER_RANGE) / (NUM_TRACKS * CHANNEL_RANGE);
-
-	
-	return 0;
-	 
 }
-
