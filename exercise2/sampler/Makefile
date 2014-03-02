@@ -2,8 +2,9 @@
 .PHONY: tetris0.c tetris1.c tetris2.c imp.c clean
 
 
-tetris.c: tetris0.c tetris1.c tetris2.c
-	cat tetris0.c tetris1.c tetris2.c > tetris.c
+samplessc: tetris0.c tetris1.c tetris2.c imp.c
+	rm -f samples.c
+	cat *.c > samples.c
 
 tetris0.c:
 	python sampler.py < tetris0.csv > tetris0.c

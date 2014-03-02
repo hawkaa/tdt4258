@@ -7,7 +7,7 @@ typedef enum {SAWTOOTH, SQUARE, TRIANGLE} signal_t;
 /* constants */
 //static const int FREQUENCY = 47945;
 static const int FREQUENCY = 16000;
-#define NUM_TRACKS 3
+#define NUM_TRACKS 4 
 static const int CHANNEL_RANGE = 2048;
 static const int SAMPLER_RANGE = 2048;
 
@@ -17,7 +17,7 @@ static const int SAMPLER_RANGE = 2048;
 
 
 /* saving samples and sizes */
-static sample_t sample[NUM_TRACKS][150]; 
+static sample_t sample[NUM_TRACKS][100]; 
 static int sample_sizes[NUM_TRACKS];
 
 /* sample book-keeping */
@@ -34,7 +34,8 @@ static int pull_counter = 0;
 /* signal variable */
 signal_t signal;
 
-int stop = 0;
+int active_tracks = 0;
+int halted = 0;
 
 /*
  * Will generate a sawtooth signal
@@ -114,11 +115,20 @@ set_hz(float hz, int track)
 	}
 }
 
+static int
+is_active(int track)
+{
+	return ((1 << track) & active_tracks);
+}
+
 static void
-reset_samples()
+set_active(int tracks)
 {	
-	stop = 0;
+	active_tracks = tracks;
+	halted = 0;
 	for (int i = 0; i < NUM_TRACKS; ++i) {
+		if (!is_active(i))
+			continue;
 		current_sample_index[i] = -1;
 		current_sample_length[i] = 0;
 	}
@@ -131,15 +141,14 @@ void
 sampler_init(void)
 {
 	signal = SQUARE;
-
-	#include "../sampler/tetris.c"	
+	#include "../sampler/samples.c"	
 
 	/* reset values */
 	for (int i = 0; i < NUM_TRACKS; ++i) {
 		height_threshold[i] = 0;
 		current_height[i] = 0;
 	}
-	reset_samples();
+	set_active(0b1001);
 }
 /*
  * Sets sampler mode
@@ -149,7 +158,6 @@ sampler_set_mode(int mode) {
 	switch(mode)
 	{
 	case 1:
-		reset_samples();
 		break;
 	case 2:
 		signal = SAWTOOTH;
@@ -161,8 +169,10 @@ sampler_set_mode(int mode) {
 		signal = SQUARE;
 		break;
 	case 5:
+		set_active(0b1000);
 		break;
 	case 6:
+		set_active(0b0111);
 		break;
 	case 7:
 		break;
@@ -185,7 +195,7 @@ update_track(int track)
 	if (current_sample_length[track] <= 0) {
 		++current_sample_index[track];
 		if (current_sample_index[track] >= sample_sizes[track]) {
-			stop = 1;
+			halted = 1;
 
 		} else {
 			current_sample_length[track] = sample[track][current_sample_index[track]].ms;
@@ -198,11 +208,12 @@ update_track(int track)
 /*
  * Occurs every millisecond
  */
-void
+static void
 ms_tick()
 {
 	for(int i = 0; i < NUM_TRACKS; ++i)
-		update_track(i);
+		if (is_active(i))
+			update_track(i);
 }
 
 /*
@@ -211,10 +222,11 @@ ms_tick()
 int
 sampler_get() 
 {	
-	if (stop) {
+	if (halted) {
 		return -1;
 	}
 	++pull_counter;
+
 	
 	/*
 	 * The tracks are updated once per millisecound
@@ -226,13 +238,17 @@ sampler_get()
 	}
 
 	/* accumulate signals */
-	int signals = 0;
+	int signal_values = 0;
+	int active_signals = 0;
 	for (int i = 0; i < NUM_TRACKS; ++i) {
+		if (!is_active(i))
+			continue;
+		++active_signals;
 		++current_height[i];
 		current_height[i] %= height_threshold[i];
-		signals += get_signal(current_height[i], height_threshold[i],
+		signal_values += get_signal(current_height[i], height_threshold[i],
 				CHANNEL_RANGE, signal);
 	}
 
-	return (signals * SAMPLER_RANGE) / (NUM_TRACKS * CHANNEL_RANGE);
+	return (signal_values * SAMPLER_RANGE) / (active_signals * CHANNEL_RANGE);
 }
