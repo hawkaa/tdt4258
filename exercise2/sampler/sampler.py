@@ -1,7 +1,27 @@
+# imports
 import sys;
 
+# definitions
 FREQUENCY_FILE = "freq.csv"
 
+#
+# Stateless function that will calculate time in ms for given
+# note length.
+#
+def getDuration(length, bpm):
+	
+	# making variables floats
+	bps = float(bpm) / 60.0;
+	length = float(length);
+	
+	# One fourth should last one beat #
+	num_beats = 4.0 / length;
+
+	return 1000 * (num_beats / bps);
+
+#
+# Saving frequencies into datastructure
+#
 freq = {};
 for line in open(FREQUENCY_FILE):
 	split = line.strip().split(",");
@@ -10,19 +30,6 @@ for line in open(FREQUENCY_FILE):
 	freq[key] = float(split[1]);
 
 
-def getDuration(length, bpm):
-	
-	bps = float(bpm) / 60.0;
-	length = float(length);
-	
-	
-
-	# One fourth should last one beat #
-	num_beats = 4.0 / length;
-
-	return 1000 * (num_beats / bps);
-
-	return 1000 * (bps / float(length))
 
 
 track_name = raw_input().split("\t")[1];
@@ -54,12 +61,13 @@ for line in sys.stdin:
 	
 	print("/* note %s, length %i */" % (note, length));
 	print("%s[%i][%i].hz = %f;" % (variable_name, track, i, f))
-	print("%s[%i][%i].ms = %f;" % (variable_name, track, i, 0.7*ms))
+	print("%s[%i][%i].ms = %f;" % (variable_name, track, i, 0.9*ms))
 	print("");
 	i += 1;
 	print("/* pause */")
 	print("%s[%i][%i].hz = %f;" % (variable_name, track, i, 0))
-	print("%s[%i][%i].ms = %f;" % (variable_name, track, i, 0.3*ms))
+	print("%s[%i][%i].ms = %f;" % (variable_name, track, i, 0.1*ms))
 	print("");
+	i += 1;
 
 print("%s[%i] = %i;" % (length_variable_name, track, i+1));

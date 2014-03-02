@@ -6,10 +6,10 @@ typedef enum {SAWTOOTH, SQUARE, TRIANGLE} signal_t;
 
 /* constants */
 //static const int FREQUENCY = 47945;
-static const int FREQUENCY = 32767;
+static const int FREQUENCY = 16000;
 #define NUM_TRACKS 3
 static const int CHANNEL_RANGE = 2048;
-static const int SAMPLER_RANGE = 1524;
+static const int SAMPLER_RANGE = 2048;
 
 /*
  * Global data 
@@ -17,7 +17,7 @@ static const int SAMPLER_RANGE = 1524;
 
 
 /* saving samples and sizes */
-static sample_t sample[NUM_TRACKS][100]; 
+static sample_t sample[NUM_TRACKS][150]; 
 static int sample_sizes[NUM_TRACKS];
 
 /* sample book-keeping */
@@ -33,6 +33,8 @@ static int pull_counter = 0;
 
 /* signal variable */
 signal_t signal;
+
+int stop = 0;
 
 /*
  * Will generate a sawtooth signal
@@ -115,6 +117,7 @@ set_hz(float hz, int track)
 static void
 reset_samples()
 {	
+	stop = 0;
 	for (int i = 0; i < NUM_TRACKS; ++i) {
 		current_sample_index[i] = -1;
 		current_sample_length[i] = 0;
@@ -182,7 +185,8 @@ update_track(int track)
 	if (current_sample_length[track] <= 0) {
 		++current_sample_index[track];
 		if (current_sample_index[track] >= sample_sizes[track]) {
-			reset_samples();
+			stop = 1;
+
 		} else {
 			current_sample_length[track] = sample[track][current_sample_index[track]].ms;
 			set_hz(sample[track][current_sample_index[track]].hz, track);
@@ -206,7 +210,10 @@ ms_tick()
  */
 int
 sampler_get() 
-{
+{	
+	if (stop) {
+		return -1;
+	}
 	++pull_counter;
 	
 	/*

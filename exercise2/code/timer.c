@@ -33,11 +33,24 @@ setupTimer(uint16_t period)
 
 void setupLETimer(uint16_t period)
 {
+	/* enable clock for low energy timers */
 	*CMU_HFCORECLKEN0 |= 1 << 4; 
+
+	/* enable low energy oscilator */
 	*CMU_OSCENCMD |= 1 << 6;
+
+	/* enable low energy timer */
 	*CMU_LFACLKEN0 |= CMU_LETIMER0_EN;
+	
+	/* use free mode */
 	*LETIMER0_CTRL |= 1 << 9; 
+
+	/* set period */
 	*LETIMER0_TOP = period;
+
+	/* enable interrupts */
 	*LETIMER0_IEN = 1;
+
+	/* start timer */
 	*LETIMER0_CMD = 1;
 }
