@@ -2,7 +2,7 @@ name	Tetris Track 2
 var	sample	
 length_var	sample_sizes	
 track	2	
-bpm	180	
+bpm	150	
 E5	4	1
 B4	8	
 C5	8	
