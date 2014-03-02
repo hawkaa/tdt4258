@@ -130,6 +130,7 @@
 
 #define DAC_CH_PRSEN 1 << 2
 #define DAC_CH_PRSSEL 0x0
+
 // DMA
 
 #define DMA_BASE 0x400c2000
@@ -154,6 +155,7 @@
 #define PRS_CH0_CTRL ((volatile uint32_t*)(PRS_BASE + 0x010))
 #define PRS_SOURCE_TIMER1 0x0b011101
 #define PRS_SIGSEL_TIMER1_OF 0x0b001
+
 // System Control Block
 
 #define SCR          ((volatile uint32_t*)0xe000ed10)

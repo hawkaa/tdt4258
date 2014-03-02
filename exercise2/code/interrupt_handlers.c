@@ -135,7 +135,7 @@ void __attribute__((interrupt))
 LETIMER0_IRQHandler()
 {	
 	dac_value = sampler_get();
-	if(prev_dac_value == -1){
+	if(dac_value == -1){
 		/* played long enough, disable low energy timer */
 		*CMU_LFCLKSEL = 0;
 	}else{
