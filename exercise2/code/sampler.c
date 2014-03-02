@@ -34,6 +34,8 @@ static int pull_counter = 0;
 /* signal variable */
 signal_t signal;
 
+int stop = 0;
+
 /*
  * Will generate a sawtooth signal
  */
@@ -115,6 +117,7 @@ set_hz(float hz, int track)
 static void
 reset_samples()
 {	
+	stop = 0;
 	for (int i = 0; i < NUM_TRACKS; ++i) {
 		current_sample_index[i] = -1;
 		current_sample_length[i] = 0;
@@ -169,7 +172,6 @@ sampler_set_mode(int mode) {
 		break;	
 	}
 }
-int stop = 0;
 /*
  * Decreases the remaing time in the sample. If there is none left,
  * the next sample is set to current.
@@ -184,7 +186,6 @@ update_track(int track)
 		++current_sample_index[track];
 		if (current_sample_index[track] >= sample_sizes[track]) {
 			stop = 1;
-			reset_samples();
 
 		} else {
 			current_sample_length[track] = sample[track][current_sample_index[track]].ms;
