@@ -6,7 +6,7 @@ typedef enum {SAWTOOTH, SQUARE, TRIANGLE} signal_t;
 
 /* constants */
 //static const int FREQUENCY = 47945;
-static const int FREQUENCY = 16000;
+static const int FREQUENCY = 32768;
 #define NUM_TRACKS 4 
 static const int CHANNEL_RANGE = 2048;
 static const int SAMPLER_RANGE = 2048;
@@ -115,7 +115,7 @@ set_hz(float hz, int track)
 	}
 }
 
-static int
+static inline int
 is_active(int track)
 {
 	return ((1 << track) & active_tracks);
@@ -241,13 +241,12 @@ sampler_get()
 	int signal_values = 0;
 	int active_signals = 0;
 	for (int i = 0; i < NUM_TRACKS; ++i) {
-		if (!is_active(i))
+		if (!((1 << i) & active_tracks))
 			continue;
 		++active_signals;
 		++current_height[i];
 		current_height[i] %= height_threshold[i];
-		signal_values += get_signal(current_height[i], height_threshold[i],
-				CHANNEL_RANGE, signal);
+		signal_values += (current_height[i] * CHANNEL_RANGE) / height_threshold[i];
 	}
 
 	return (signal_values * SAMPLER_RANGE) / (active_signals * CHANNEL_RANGE);
