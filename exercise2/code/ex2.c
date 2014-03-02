@@ -16,10 +16,7 @@
  * registers are 16 bits.
  */
 
-/* The period between sound samples, in clock cycles. */
-#ifndef   SAMPLE_PERIOD
-#define   SAMPLE_PERIOD  0
-#endif
+#define SAMPLE_PERIOD 0
 
 /*
  * Sets up NVIC
