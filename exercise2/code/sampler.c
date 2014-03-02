@@ -6,7 +6,7 @@ typedef enum {SAWTOOTH, SQUARE, TRIANGLE} signal_t;
 
 /* constants */
 //static const int FREQUENCY = 47945;
-static const int FREQUENCY = 32767;
+static const int FREQUENCY = 16000;
 #define NUM_TRACKS 3
 static const int CHANNEL_RANGE = 2048;
 static const int SAMPLER_RANGE = 2048;
@@ -169,6 +169,7 @@ sampler_set_mode(int mode) {
 		break;	
 	}
 }
+int stop = 0;
 /*
  * Decreases the remaing time in the sample. If there is none left,
  * the next sample is set to current.
@@ -182,7 +183,9 @@ update_track(int track)
 	if (current_sample_length[track] <= 0) {
 		++current_sample_index[track];
 		if (current_sample_index[track] >= sample_sizes[track]) {
+			stop = 1;
 			reset_samples();
+
 		} else {
 			current_sample_length[track] = sample[track][current_sample_index[track]].ms;
 			set_hz(sample[track][current_sample_index[track]].hz, track);
@@ -206,7 +209,10 @@ ms_tick()
  */
 int
 sampler_get() 
-{
+{	
+	if (stop) {
+		return -1;
+	}
 	++pull_counter;
 	
 	/*
