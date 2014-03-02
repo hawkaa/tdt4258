@@ -197,7 +197,8 @@ sampler_get()
 	for (int i = 0; i < NUM_TRACKS; ++i) {
 		++current_height[i];
 		current_height[i] %= height_threshold[i];
-		signals += CHANNEL_RANGE * current_height[i] / height_threshold[i];
+		signals += get_square_signal(current_height[i], height_threshold[i],
+				CHANNEL_RANGE);
 	}
 
 	return (signals * SAMPLER_RANGE) / (NUM_TRACKS * CHANNEL_RANGE);
