@@ -31,4 +31,13 @@ setupTimer(uint16_t period)
 
 }
 
-
+void setupLETimer(uint16_t period)
+{
+	*CMU_HFCORECLKEN0 |= 1 << 4; 
+	*CMU_OSCENCMD |= 1 << 6;
+	*CMU_LFACLKEN0 |= CMU_LETIMER0_EN;
+	*LETIMER0_CTRL |= 1 << 9; 
+	*LETIMER0_TOP = period;
+	*LETIMER0_IEN = 1;
+	*LETIMER0_CMD = 1;
+}
