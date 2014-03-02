@@ -19,6 +19,6 @@ typedef struct sample
 	int ms;
 } sample_t;
 
-
+typedef enum {SAWTOOTH, SQUARE, TRIANGLE} waveform_t;
 
 #endif

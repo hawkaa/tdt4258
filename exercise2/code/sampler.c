@@ -1,23 +1,32 @@
 /* local include */
 #include "sampler.h"
 
-/* typedefs */
-typedef enum {SAWTOOTH, SQUARE, TRIANGLE} signal_t;
 
-/* constants */
-//static const int FREQUENCY = 47945;
-static const int FREQUENCY = 32768;
+/*
+ * Constants
+ */
+
+/* number of tracks */
 #define NUM_TRACKS 4 
-static const int CHANNEL_RANGE = 2048;
+
+/* max samples per track */
+#define MAX_SAMPLES 200
+
+/* expected sample pull frequency */
+static const int FREQUENCY = 32768;
+
+/* range per track */
+static const int TRACK_RANGE = 2048;
+
+/* sampler range */
 static const int SAMPLER_RANGE = 2048;
 
 /*
  * Global data 
  */
 
-
-/* saving samples and sizes */
-static sample_t sample[NUM_TRACKS][100]; 
+/* saving samples and track length */
+static sample_t sample[NUM_TRACKS][MAX_SAMPLES]; 
 static int sample_sizes[NUM_TRACKS];
 
 /* sample book-keeping */
@@ -28,13 +37,16 @@ static int current_sample_index[NUM_TRACKS];
 static int current_height[NUM_TRACKS];
 static int height_threshold[NUM_TRACKS];
 
-/* for calculating with MS */
+/* for calculating with milliseconds */
 static int pull_counter = 0;
 
-/* signal variable */
-signal_t signal;
+/* waveform variable */
+waveform_t waveform;
 
+/* bitmap for which tracks are currently active */
 int active_tracks = 0;
+
+/* boolean value to check if the sampler is stopped */
 int halted = 0;
 
 /*
@@ -58,7 +70,6 @@ get_triangle_signal(int height, int threshold, int max)
 		return (2 * height * max) / threshold;
 	} else {
 		return ((2 * threshold - 2 * height) * max) / threshold;
-		return 0;
 	}
 }
 
@@ -77,10 +88,13 @@ get_square_signal(int height, int threshold, int max)
 	}
 }
 
+/*
+ * Enumerates waveform and returns corresponding signal value
+ */
 static int
-get_signal(int height, int threshold, int max, signal_t sig)
+get_signal(int height, int threshold, int max, waveform_t wf)
 {
-	switch (sig) {
+	switch (wf) {
 	case SQUARE:
 		return get_square_signal(height, threshold, max);
 	case TRIANGLE:
@@ -91,6 +105,9 @@ get_signal(int height, int threshold, int max, signal_t sig)
 	}
 }
 
+/*
+ * Calculates threshold for given frequency
+ */
 static int
 get_threshold(float hz) 
 {
@@ -111,16 +128,23 @@ set_hz(float hz, int track)
 		/* hz is too low */
 		height_threshold[track] = 0;
 	} else {	
+		/* calculate threshold */
 		height_threshold[track] = get_threshold(hz);
 	}
 }
 
-static inline int
+/*
+ * Checks if current track is active
+ */
+static int
 is_active(int track)
 {
 	return ((1 << track) & active_tracks);
 }
 
+/*
+ * Activates a bitmap by resetting wave state
+ */
 static void
 set_active(int tracks)
 {	
@@ -140,7 +164,7 @@ set_active(int tracks)
 void
 sampler_init(void)
 {
-	signal = SQUARE;
+	/* load samples */
 	#include "../sampler/samples.c"	
 
 	/* reset values */
@@ -148,10 +172,16 @@ sampler_init(void)
 		height_threshold[i] = 0;
 		current_height[i] = 0;
 	}
-	set_active(0b1001);
+
+	/* default waveform */
+	waveform = SQUARE;
+
+	/* enable track 0,1,2 */
+	set_active(0b0111);
 }
 /*
  * Sets sampler mode
+ * This is set up to take input from GPIO
  */
 void
 sampler_set_mode(int mode) {
@@ -160,13 +190,13 @@ sampler_set_mode(int mode) {
 	case 1:
 		break;
 	case 2:
-		signal = SAWTOOTH;
+		waveform = SAWTOOTH;
 		break;
 	case 3:
-		signal = TRIANGLE;
+		waveform = TRIANGLE;
 		break;
 	case 4:
-		signal = SQUARE;
+		waveform = SQUARE;
 		break;
 	case 5:
 		set_active(0b1000);
@@ -182,22 +212,23 @@ sampler_set_mode(int mode) {
 		break;	
 	}
 }
+
 /*
  * Decreases the remaing time in the sample. If there is none left,
- * the next sample is set to current.
+ * current sample index is increased.
  */
 void
 update_track(int track)
-{	
-	
+{		
 	--current_sample_length[track];
-	
 	if (current_sample_length[track] <= 0) {
+		/* sample has played long enough, increase index */
 		++current_sample_index[track];
 		if (current_sample_index[track] >= sample_sizes[track]) {
+			/* no more samples left, halt the sampler */
 			halted = 1;
-
 		} else {
+			/* load new variables from next sample */
 			current_sample_length[track] = sample[track][current_sample_index[track]].ms;
 			set_hz(sample[track][current_sample_index[track]].hz, track);
 		}
@@ -211,26 +242,29 @@ update_track(int track)
 static void
 ms_tick()
 {
+	/* update all enabled tracks */
 	for(int i = 0; i < NUM_TRACKS; ++i)
 		if (is_active(i))
 			update_track(i);
 }
 
 /*
- * Will return a value between 0 an 2048
+ * Will return a value between 0 an 2048.
+ * Will return -1 if the sampler has nothing to play.
  */
 int
 sampler_get() 
 {	
 	if (halted) {
+		/* the sampler has nothing to play */
 		return -1;
 	}
+
+	/* keep track of how many times a sample has been pulled */
 	++pull_counter;
 
 	
-	/*
-	 * The tracks are updated once per millisecound
-	 */	
+	/* The tracks are updated once per millisecound */
 	if( pull_counter >= (FREQUENCY / 1000)) {
 		/* true when one ms has passed */
 		pull_counter = 0;
@@ -241,13 +275,20 @@ sampler_get()
 	int signal_values = 0;
 	int active_signals = 0;
 	for (int i = 0; i < NUM_TRACKS; ++i) {
-		if (!((1 << i) & active_tracks))
+		if (!is_active(i)) {
+			/* given track is not active, continue loop */
 			continue;
-		++active_signals;
+		}
+
+		/* update wave state (height) */
 		++current_height[i];
 		current_height[i] %= height_threshold[i];
-		signal_values += (current_height[i] * CHANNEL_RANGE) / height_threshold[i];
+		
+		/* calculate signal value for track */
+		++active_signals;
+		signal_values += get_signal(current_height[i], height_threshold[i], TRACK_RANGE, waveform);
 	}
-
-	return (signal_values * SAMPLER_RANGE) / (active_signals * CHANNEL_RANGE);
+	
+	/* returns scaled signal value of the accumulated signals */
+	return (signal_values * SAMPLER_RANGE) / (active_signals * TRACK_RANGE);
 }
