@@ -8,7 +8,7 @@ typedef enum {SAWTOOTH, SQUARE, TRIANGLE} signal_t;
 #define NUM_TRACKS 3
 static const int FREQUENCY = 47945;
 static const int CHANNEL_RANGE = 2048;
-static const int SAMPLER_RANGE = 1524;
+static const int SAMPLER_RANGE = 2048;
 
 /*
  * Global data 
@@ -16,7 +16,7 @@ static const int SAMPLER_RANGE = 1524;
 
 
 /* saving samples and sizes */
-static sample_t sample[NUM_TRACKS][100]; 
+static sample_t sample[NUM_TRACKS][150]; 
 static int sample_sizes[NUM_TRACKS];
 
 /* sample book-keeping */
