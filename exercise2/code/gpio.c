@@ -5,7 +5,9 @@
 /* local headers */
 #include "efm32gg.h"
 
-/* function to set up GPIO mode and interrupts*/
+/*
+ * Function to set up GPIO mode and interrupts
+ */
 void
 setupGPIO(void)
 {
