@@ -11,7 +11,17 @@ for line in open(FREQUENCY_FILE):
 
 
 def getDuration(length, bpm):
-	bps = bpm/60.0;
+	
+	bps = float(bpm) / 60.0;
+	length = float(length);
+	
+	
+
+	# One fourth should last one beat #
+	num_beats = 4.0 / length;
+
+	return 1000 * (num_beats / bps);
+
 	return 1000 * (bps / float(length))
 
 
