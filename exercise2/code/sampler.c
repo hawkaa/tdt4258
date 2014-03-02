@@ -1,6 +1,9 @@
 /* local include */
 #include "sampler.h"
 
+/* typedefs */
+typedef enum {SAWTOOTH, SQUARE, TRIANGLE} signal_t;
+
 /* constants */
 #define NUM_TRACKS 3
 static const int FREQUENCY = 47945;
@@ -27,10 +30,13 @@ static int height_threshold[NUM_TRACKS];
 /* for calculating with MS */
 static int pull_counter = 0;
 
+/* signal variable */
+signal_t signal;
+
 /*
  * Will generate a sawtooth signal
  */
-int
+static int
 get_sawtooth_signal(int height, int threshold, int max)
 {
 	return (height * max) / threshold;
@@ -39,7 +45,7 @@ get_sawtooth_signal(int height, int threshold, int max)
 /*
  * Will generate a triangle signal
  */
-int
+static int
 get_triangle_signal(int height, int threshold, int max)
 {
 	//return (height * max) / threshold;
@@ -47,6 +53,7 @@ get_triangle_signal(int height, int threshold, int max)
 		/* on the way up */
 		return (2 * height * max) / threshold;
 	} else {
+		return ((2 * threshold - 2 * height) * max) / threshold;
 		return 0;
 	}
 }
@@ -54,7 +61,7 @@ get_triangle_signal(int height, int threshold, int max)
 /*
  * Will generate a square signal
  */
-int
+static int
 get_square_signal(int height, int threshold, int max)
 {
 	if (2 * height < threshold) {
@@ -66,6 +73,19 @@ get_square_signal(int height, int threshold, int max)
 	}
 }
 
+static int
+get_signal(int height, int threshold, int max, signal_t sig)
+{
+	switch (sig) {
+	case SQUARE:
+		return get_square_signal(height, threshold, max);
+	case TRIANGLE:
+		return get_triangle_signal(height, threshold, max);
+	case SAWTOOTH:
+	default:
+		return get_sawtooth_signal(height, threshold, max);
+	}
+}
 
 static int
 get_threshold(float hz) 
@@ -106,6 +126,7 @@ reset_samples()
 void
 sampler_init(void)
 {
+	signal = SQUARE;
 
 	#include "../sampler/tetris.c"	
 
@@ -124,12 +145,16 @@ sampler_set_mode(int mode) {
 	switch(mode)
 	{
 	case 1:
+		reset_samples();
 		break;
 	case 2:
+		signal = SAWTOOTH;
 		break;
 	case 3:
+		signal = TRIANGLE;
 		break;
 	case 4:
+		signal = SQUARE;
 		break;
 	case 5:
 		break;
@@ -197,8 +222,8 @@ sampler_get()
 	for (int i = 0; i < NUM_TRACKS; ++i) {
 		++current_height[i];
 		current_height[i] %= height_threshold[i];
-		signals += get_square_signal(current_height[i], height_threshold[i],
-				CHANNEL_RANGE);
+		signals += get_signal(current_height[i], height_threshold[i],
+				CHANNEL_RANGE, signal);
 	}
 
 	return (signals * SAMPLER_RANGE) / (NUM_TRACKS * CHANNEL_RANGE);
