@@ -3,7 +3,8 @@
 
 #define NUM_TRACKS 3
 /* constants */
-static const int FREQUENCY = 47945;
+//static const int FREQUENCY = 47945;
+static const int FREQUENCY = 32767;
 static const int CHANNEL_RANGE = 2048;
 static const int SAMPLER_RANGE = 1524;
 
