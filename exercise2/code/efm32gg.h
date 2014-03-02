@@ -55,6 +55,7 @@
 #define CMU_OSCENCMD     ((volatile uint32_t*)(CMU_BASE2 + 0x020))
 #define CMU_LFRCOCTRL    ((volatile uint32_t*)(CMU_BASE2 + 0x010))
 #define CMU_LFCLKSEL     ((volatile uint32_t*)(CMU_BASE2 + 0x028))
+#define CMU_STATUS       ((volatile uint32_t*)(CMU_BASE2 + 0x02c))
 
 #define CMU2_HFPERCLKEN0_DAC0   (1 << 17)
 #define CMU2_HFPERCLKEN0_PRS    (1 << 15)
