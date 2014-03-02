@@ -6,10 +6,19 @@
 #include "efm32gg.h"
 #include "sampler.h"
 
+#ifndef SAMPLE_PERIOD
+#define SAMPLE_PERIOD 1
+#endif
+
+extern void setupLETimer(uint16_t period);
+
 int pitch = 0;
+static int dac_value = 0;
+
 static void
 gpio_handler(void)
-{
+{	
+	
 	switch (*GPIO_PC_DIN) {
 	case 0xfe:
 		sampler_set_mode(1);
@@ -39,11 +48,48 @@ gpio_handler(void)
 		sampler_set_mode(0);
 		break;
 	}
+	
+	if(*CMU_STATUS << 6){
+		/* we want to start the timer again after sleep  */
+		*CMU_LFCLKSEL = 1;
+		setupLETimer(SAMPLE_PERIOD);
+	}
 	*GPIO_IFC = 0xff;
+	/*
+	*GPIO_PA_DOUT = *GPIO_PC_DIN << 8;
+	*GPIO_IFC = 0xff;
+	switch(*GPIO_PC_DIN)
+	{
+		case 0xfe:
+			pitch =  100;
+			break;
+		case 0xfd:
+			pitch = 120;
+			break;
+		case 0xfb:
+			pitch = 140;
+			break;
+		case 0xf7:
+			pitch = 160;
+			break;
+		case 0xef:
+			pitch = 180;
+			break;
+		case 0xdf:
+			pitch = 200;
+			break;
+		case 0xbf:
+			pitch = 220;
+			break;
+		case 0x7f:
+			pitch = 240;
+			break;		
+		default:
+			pitch = 0;
+			break;
+	} */
 }
 
-
-static int i = 0;
 
 void __attribute__ ((interrupt))
 TIMER1_IRQHandler(void)
@@ -55,6 +101,16 @@ TIMER1_IRQHandler(void)
 	 */
 	
 	*DAC0_CH0DATA = *DAC0_CH1DATA = sampler_get();
+	/*
+	++i;
+	i = i % pitch;
+
+	if(i == 200)
+		*GPIO_PA_DOUT = *GPIO_PC_DIN << 8;
+
+
+	*DAC0_CH0DATA = *DAC0_CH1DATA = (i * 1024) / pitch;
+*/
 	*TIMER1_IFC = 1; 
 }
 
@@ -78,8 +134,13 @@ GPIO_ODD_IRQHandler()
 void __attribute__((interrupt))
 LETIMER0_IRQHandler()
 {	
-	*DAC0_CH0DATA = *DAC0_CH1DATA = sampler_get();
-	//*GPIO_PA_DOUT = ~(*GPIO_PA_DOUT);	
+	dac_value = sampler_get();
+	if(prev_dac_value == -1){
+		/* played long enough, disable low energy timer */
+		*CMU_LFCLKSEL = 0;
+	}else{
+		*DAC0_CH0DATA = *DAC0_CH1DATA = sampler_get();
+	}	
 
 	*LETIMER0_IFC  = 1;
 }
