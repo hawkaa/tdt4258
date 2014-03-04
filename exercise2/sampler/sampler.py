@@ -1,5 +1,5 @@
 # imports
-import sys;
+import sys
 
 # definitions
 FREQUENCY_FILE = "freq.csv"
@@ -11,63 +11,84 @@ FREQUENCY_FILE = "freq.csv"
 def getDuration(length, bpm):
 	
 	# making variables floats
-	bps = float(bpm) / 60.0;
-	length = float(length);
+	bps = float(bpm) / 60.0
+	length = float(length)
 	
-	# One fourth should last one beat #
-	num_beats = 4.0 / length;
-
-	return 1000 * (num_beats / bps);
+	# one fourth should last one beat
+	num_beats = 4.0 / length
+	
+	# scale to ms, return
+	return 1000 * (num_beats / bps)
 
 #
-# Saving frequencies into datastructure
+# Will generate and return a frequency dictionary
 #
-freq = {};
-for line in open(FREQUENCY_FILE):
-	split = line.strip().split(",");
-	key = split[0].strip().split("/")[0];
-	key = key.strip(" ");
-	freq[key] = float(split[1]);
+def getFrequencies(frequency_file):
+	freq = {}
+	for line in open(frequency_file):
+		split = line.strip().split(",")
+		key = split[0].strip().split("/")[0]
+		key = key.strip(" ")
+		freq[key] = float(split[1])
+	return freq
 
-
-
-
-track_name = raw_input().split("\t")[1];
-variable_name = raw_input().split("\t")[1];
-length_variable_name = raw_input().split("\t")[1];
-track = int(raw_input().split("\t")[1]);
-bpm = float(raw_input().split("\t")[1]);
-
-
-print("/*")
-print(" * %s" % (track_name));
-print(" */")
-print("");
-
-i = 0;
-for line in sys.stdin:
-	sp = line.strip().split("\t");
-	note = sp[0];
-
-	length = int(sp[1]);
-
-	ms = getDuration(length, bpm);
-
-	if note == "0":
-		f = 0.0;
-	else:
-		f = freq[note];
-
+def main():	
+	# getting frequencies
+	freq = getFrequencies(FREQUENCY_FILE)
 	
-	print("/* note %s, length %i */" % (note, length));
-	print("%s[%i][%i].hz = %f;" % (variable_name, track, i, f))
-	print("%s[%i][%i].ms = %f;" % (variable_name, track, i, 0.9*ms))
-	print("");
-	i += 1;
-	print("/* pause */")
-	print("%s[%i][%i].hz = %f;" % (variable_name, track, i, 0))
-	print("%s[%i][%i].ms = %f;" % (variable_name, track, i, 0.1*ms))
-	print("");
-	i += 1;
+	# header information	
+	track_name = raw_input().split("\t")[1]
+	variable_name = raw_input().split("\t")[1]
+	length_variable_name = raw_input().split("\t")[1]
+	track = int(raw_input().split("\t")[1])
+	bpm = float(raw_input().split("\t")[1])
+	
+	# track name
+	print("/*")
+	print(" * %s" % (track_name))
+	print(" */")
+	print("")
+	
+	# index counter
+	i = 0
 
-print("%s[%i] = %i;" % (length_variable_name, track, i+1));
+	# iterating notes
+	for line in sys.stdin:
+
+		# line split
+		sp = line.strip().split("\t")
+
+		# note key
+		note = sp[0]
+		
+		# note length
+		length = int(sp[1])
+	
+		# calculate duration in milliseconds
+		ms = getDuration(length, bpm)
+	
+		# get frequency
+		if note == "0":
+			f = 0.0
+		else:
+			f = freq[note]
+	
+		# add 0.9 of the duration with given frequency
+		print("/* note %s, length %i */" % (note, length))
+		print("%s[%i][%i].hz = %f;" % (variable_name, track, i, f))
+		print("%s[%i][%i].ms = %f;" % (variable_name, track, i, 0.9*ms))
+		print("")
+		i += 1
+
+		# add 0.1 of the duration with 0 frequency (pause)
+		print("/* pause */")
+		print("%s[%i][%i].hz = %f;" % (variable_name, track, i, 0))
+		print("%s[%i][%i].ms = %f;" % (variable_name, track, i, 0.1*ms))
+		print("")
+		i += 1
+
+	# add length	
+	print("%s[%i] = %i;" % (length_variable_name, track, i+1))
+
+if __name__ == "__main__":
+    main()
