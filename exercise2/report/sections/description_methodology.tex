@@ -49,7 +49,7 @@ As explained, all logic for calculating DAC output is located in \emph{code/samp
 typedef struct sample {
 	float hz;
 	int ms;
-} sample_t;
+} sample\_t;
 	\end{lstlisting}
 	\caption{Sample struct}
 	\label{file_format_struct}
@@ -74,4 +74,33 @@ Our file format for the samples is really easy to deal with, as the only informa
 \end{itemize}
 
 Please see the code for more details, and the corresponding Makefile to see how the script is used.
+
+\subsection{Low energy timer and sleep modes}
+
+To make our program more energy efficient, we made use of a low energy timer. This runs on a low frequency clock and, compared to the high frequency clock TIMER1 which have a frequency of 48 MHz, the low energy clock have a frequency of only 32 kHz. We expect that this timer should save some power as it runs on a lower frequency. \\
+
+We did the following to enable the low energy timer:
+
+\begin{enumerate}
+	\item {Write 16 to CMU\_HFCORECLKEN0 to enable clock for low energy timers.}
+	\item {Write 64 to CMU\_OSCENCMD to enable low energy oscilator LFRCO used by LFACLK (see figure 11.1 in the efm32gg reference manual). LFACLK is the clock used by LETIMER0.}
+	\item {Write 4 to CMU\_LFACLKEN0 to enable the clock for the LETIMER0.}
+	\item {Write 512 LETIMER0\_CTRL to set the top of the timer to the register COMP0. This makes it possible to use the LETimer as a regular timer. Since COMP0 is the top value, it will be reffered to as LETIMER0\_TOP.}
+	\item {Write the the top value to LETIMER0\_TOP.}
+	\item {Enable interrupts by writing 1 to LETIMER0\_IEN.}
+	\item {Start the timer by writing 1 to LETIMER\_CMD.} 
+\end{enumerate}
+
+An interrupt is triggered each time the timer is done counting. In our code this is ones every tick. When an interrupt is triggered the LETIMER0\_IRQHandler()-routine in \emph{interrupt\_handlers.c} is called. This writes the correct output to the DAC. \\
+
+If we are done playing a track there is no need to output anything to the DAC. Therefore the sampler signals the interrupt-routine if we are done playing a sound. The next interrupt we turn of the timer by calling stopLETimer()-routine in \emph{interrupt\_handlers.c}. This turns of the low frequency clock LFACLK.
+\\This makes it easy for us to enter lower energy modes when we are not playing any sound. To enter EM2, we enable deepsleep mode in the same fassion as in exercise 1 via the routine setupEM2() in \emph{ex2.c}. Since we also disable the low frequency clocks when not playing sound, we are enabling EM3. \\
+When a button is pressed, the sampler is filled with data again and it signals the timer to start with the startLETimer()-routine in \emph{interrupt\_handler.c}. This turns on the low frequency clock LFACLK. \\
+ 
+When we are feeding the DAC with samples, we are in EM0 which should consume alot energy when the CPU is feeding the DAC. Since the CPU cannot feed the DAC and sleep at the same time, we had to look for solutions when we do not have any samples to output. therefore we choosed to bring the system into EM3 when nothing is to be done, to minimize the energy consumed by the system. we concluded that since the low energy timer is active, the CPU will always be awake even though the sampler is empty. therefore we needed to make sure that the timer was disabled when there was no new samples to output to the DAC. in our code EM3 is the energy mode that allows us to do just that, making EM1 and EM2 undesirable as the low frequenzy clock LFACLK is still active. \\
+
+The problem with this solution is that it does not scale. If any other low frequent peripheral is using the LFACLK, we need to most likely need to rewrite the timer start- and stop-routines. We would have to make the timer start and stops more specific, and write to the registers of the low energy timer instead. The highest energy mode we could enter, if we just turned off the timer and not the low frequency clock, would be EM2. Since we only use the low energy timer in this assignment, we stick with our first solution to the energy consumption problem. 
+ 
+
+
 
