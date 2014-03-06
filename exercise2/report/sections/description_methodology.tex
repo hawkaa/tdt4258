@@ -18,6 +18,19 @@ In order to produce sound with the Digital-to-Analog converter, these waves need
 	\label{fig:adding_waves}
 \end{figure}
 To play multiple frequencies together, you exploit the addititive nature of waves. You calculate each signal for a frequency independently, and then add them together (See figure \ref{fig:adding_waves}).
+
+\subsection{Explanation of solution}
+We pictured two possible solutions to solve this exercise:
+
+\begin{itemize}
+	\item \textbf{Prestore the tracks in memory}: This requires us to generate the sample values that are to be written to the DAC before the program is started. The samples is then simply written to memory when the program starts. This solution requires a descent memory size. Since we got a total of 1024 bytes of flash storage, this solution enables us to store a total of 10 seconds of a track (48 000 samples per seconds and around 2 bytes per sample). Since we want to be able to play tracks that last longer then 10 seconds we did not choose this solution. The great advantage of this solution is the possibility of enabling the DMA, and let it handle all the transfers to the DAC. This completly frees the CPU to work on other tasks or go to sleep.
+	\item \textbf{Calculate the sample values continuously}: Each time we get a timer interrupt we calculate the value to output to the DAC. This is requires more computations and is expected to consume more energy compared to just copy values from memory. The advantage of this solution is that we can play tracks of longer length and it is also easy to change what kind of signal we want to output. This is the solutions we have chosen for this exercise.
+	   
+\end{itemize}
+
+It is possible to make a hybrid of the two with the DMA. This way the DMA can copy sample values from a memory buffer to the DAC each time it is ready. When the memory buffer is empty, the DMA interrupts the CPU and the CPU fills up the buffer with new values. We figured that we wanted a running program wich functioned properly, rather then take the leap with the chance of failure. The hybrid solution is probably more energy efficient than both of the mentioned solutions.  
+
+
 \subsection{Project structure}
 Here is a little overview of the files in the project. There will not be a thorough explanation of the code, as it is well documented. The project consist of two parts; the C code flashed to the \boardName\ (located in \emph{code/}) and a simple python script for generating samples from sheet music (located in \emph{sampler/}).
 
@@ -32,7 +45,6 @@ Here is a little overview of the files in the project. There will not be a thoro
 	\item \emph{sampler/freq.csv} - Contains frequency values for all notes.
 	\item \emph{sampler/Makefile} - Will generate and concatenate several tracks into one C source file which will be included in the data segment of the code uploaded to the board.
 	\item \emph{sampler/sampler.py} - Python script for generating samples from sheet music.
-
 \end{itemize}
 
 Most of the c source files has a corresponding header to define their external interfaces.
