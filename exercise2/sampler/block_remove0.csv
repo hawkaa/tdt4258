@@ -1,0 +1,17 @@
+name	Block_remove 0			
+var	sample			
+length_var	sample_sizes			
+track	6			
+bpm	150		F4	C4
+F4	32		E4	C#4
+E4	32		D#4	D4
+D#4	32		E4	C#4
+E4	32		D#4	D4
+D#4	32		D4	D#4
+D4	32		D#4	D4
+D#4	32		D4	D#4
+D4	32		C#4	E4
+C#4	32		D4	D#4
+D4	32		C#4	E4
+C#4	32		C4	F4
+C4	32			
