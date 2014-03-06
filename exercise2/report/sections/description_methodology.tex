@@ -1,8 +1,77 @@
 \section{Description and Methodology}
-Like last time, we initially developed a simple application with all the basics set up. The dac, timer and gpio was set up in the files dac.c, timer.c and gpio.c. The interrupts where handled in the interrupt\_handlers.c file. The main part of our program is the sampler.c. The interrupt handlers send and receive data to and from the sampler.c file. The gpiohandler set one of 9 modes in sampler.c and the timerhandler pulls information from the samper program and feeds it to the dac. \\
+
+\subsection{Theoretical background}
+Sound propagates through compressable and solid media as waves, and they are often described in terms of sinusoidal plane waves. The human ear can percept frequencies ranging from 20 Hz to 20,000 Hz, the higher frequency, the higher pitch.
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=8cm]{img/waveforms.png}
+	\caption{Sine, square, triangle, and sawtooth waveforms. Figure found at \cite{wikipedia_sawtooth}.}
+	\label{fig:sawtooth}
+\end{figure}
+
+In order to produce sound with the Digital-to-Analog converter, these waves need to be modeled. There are three simple ways: Square, triangle and sawtooth (see figure \ref{fig:sawtooth}). By repeatedly calculating the wave position(s) and write the result to the DAC, sound with the given frequency/frequencies are produced and can be percepted by the human ear if a headset is attached to the DAC. The more often write to the DAC, or the higher the sampling rate, the quality of the sound improves. \cite{compendium} states that a sampling rate of 48 kHz is a good reference value. 
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=8cm]{img/sumofsines.jpg}
+	\caption{Adding sound waves together. Figure found at \cite{fourier}.}
+	\label{fig:adding_waves}
+\end{figure}
+To play multiple frequencies together, you exploit the addititive nature of waves. You calculate each signal for a frequency independently, and then add them together (See figure \ref{fig:adding_waves}).
+\subsection{Project structure}
+Here is a little overview of the files in the project. There will not be a thorough explanation of the code, as it is well documented. The project consist of two parts; the C code flashed to the \boardName\ (located in \emph{code/}) and a simple python script for generating samples from sheet music (located in \emph{sampler/}).
+
+\begin{itemize}
+	\item \emph{code/dac.c} - DAC initialization.
+	\item \emph{code/ex2.c} - Contains the applications entry method. Sets up all pherepials and external modules. Will configure interrupt handling.
+	\item \emph{code/gpio.c} - GPIO initialization.
+	\item \emph{code/interrupt\_handlers.c} - Contains interrupt procedures for timers and GPIO. Will communicate with \emph{code/sampler.c} to set sampler modes and push samples onto the DAC.
+	\item \emph{code/Makefile} - Makefile for cross compiling and uploading binaries to \boardName .
+	\item \emph{code/sampler.c} - Independent module for sample calculation. Will generate sample values depending on the sampler mode.
+	\item \emph{code/timer.c} - High and low frequency timer setup. Also contains logic for turning the low energy timer on and off.
+	\item \emph{sampler/freq.csv} - Contains frequency values for all notes.
+	\item \emph{sampler/Makefile} - Will generate and concatenate several tracks into one C source file which will be included in the data segment of the code uploaded to the board.
+	\item \emph{sampler/sampler.py} - Python script for generating samples from sheet music.
+
+\end{itemize}
+
+Most of the c source files has a corresponding header to define their external interfaces.
+
+\subsection{Getting started}
+Like last time, we initially developed a simple application with all the basics set up. The DAC, timer and GPIO was set up in the files dac.c, timer.c and gpio.c. The interrupts where handled in the interrupt\_handlers.c file. The main part of our program is the sampler.c. The interrupt handlers send and receive data to and from the sampler.c file. The gpiohandler set one of 9 modes in sampler.c and the timerhandler pulls information from the samper program and feeds it to the dac. 
+
+\subsection{Sampler}
+As explained, all logic for calculating DAC output is located in \emph{code/sampler.h}.
+\subsubsection{Sample file format}
+\begin{figure}[h]
+	\centering
+	\begin{lstlisting}[language=C]
+typedef struct sample {
+	float hz;
+	int ms;
+} sample_t;
+	\end{lstlisting}
+	\caption{Sample struct}
+	\label{file_format_struct}
+\end{figure}
+To be able to play sound sequences, we invented our own, very simple, audio format. It consists of simple structs, each contaning frequency and duration (see figure \ref{file_format_struct}) To represent a sequence, we placed several different samples in an array. Then in the sampler\_get() function, a counter was set to increase each call. When the counter had been increased enough to call it a millisecound, the duration of the current playing sample decreased. This was because the  unit of the duration field in our sample struct where set to millisecounds.\\
+\\
+Now, The system supported sound-sequences, but there where no support for sound sequences with multiple tracks. To support multiple tracks, we figured the program should be able to play several samples in paralell. The one dimensional array containing samples was augmented to a two dimensional array. Also the variables containing the threshold and the remaining time for the current frequency was set to arrays. Now, all tracks would be updated every millisecound. To play different samples over each other, the different thresholds where scaled, added together and scaled once more before being sendt to the dac.\\
+\\
 All functionality that generates sound is found in the sampler.c file. To create sound, we had one variable increase \samplerPullsPerSecound times per secound. When this variable reached a threshold, it would be set to zero. This variable would the be sent to the dac, wich would  then produce a constant tone. TODO: Skriv noe om hvordan pitch ble kontorollert. \\
 
-To be able to play sound sequences, we created a struct to represent  a sample. This struct contained fields for duration and frequenzy. To represent a sequence, we placed several different samples in an array. Then in the sampler\_get() function, a counter was set to increase each call. When the counter had been increased enough to call it a millisecound, the duration of the current playing sample decreased. This was because the  unit of the duration field in our sample struct where set to millisecounds.
-Now, The system supported sound-sequences, but there where no support for sound sequences with multiple tracks. To support multiple tracks, we figured the program should be able to play several samples in paralell. The one dimensional array containing samples was augmented to a two dimensional array. Also the variables containing the threshold and the remaining time for the current frequency was set to arrays. Now, all tracks would be updated every millisecound. To play different samples over each other, the different thresholds where scaled, added together and scaled once more before being sendt to the dac.
+\subsubsection{Maintaining wave state}
 
+\subsubsection{Managing several tracks}
+
+\subsection{Generating samples}
+Our file format for the samples is really easy to deal with, as the only information you need to supply is the frequency and duration of the sample. However, we wanted to easier be able to play melodies in sheet music, so we made a python script simplifying this task for us. The python script accepts csv file format, which contains the following data:
+\begin{itemize}
+	\item Track name.
+	\item Variable names.
+	\item Beats per minute.
+	\item List of note keys with corresponding length.
+\end{itemize}
+
+Please see the code for more details, and the corresponding Makefile to see how the script is used.
 
