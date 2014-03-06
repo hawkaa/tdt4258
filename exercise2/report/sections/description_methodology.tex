@@ -49,11 +49,16 @@ Here is a little overview of the files in the project. There will not be a thoro
 
 Most of the C source files have a corresponding header to define their external interfaces.
 
-\subsection{Getting started}
-Like last time, we initially developed a simple application with all the basics set up. The DAC, timer and GPIO was set up in the files dac.c, timer.c and gpio.c. The interrupts where handled in the interrupt\_handlers.c file. The main part of our program is the sampler.c. The interrupt handlers send and receive data to and from the sampler.c file. The gpiohandler set one of 9 modes in sampler.c and the timerhandler pulls information from the sampler program and feeds it to the dac. 
+\subsection{Setup}
+Like last time, we initially developed a simple application with all the basics set up. The DAC, timer and GPIO was set up in the files dac.c, timer.c and gpio.c. The interrupts where handled in the interrupt\_handlers.c file. The main part of our program is the sampler.c. The interrupt handlers send and receive data to and from the sampler.c file. The GPIO handler set one of 9 modes in sampler.c and the timer interrupt handler pulls information from the sampler program and feeds it to the DAC.
 
 \subsection{Sampler}
-As explained, all logic for calculating DAC output is located in \emph{code/sampler.h}.
+As explained, all logic for calculating DAC output is located in \emph{code/sampler.h}. This module requires some extra attention due to its importance. The external interface defines three functions:
+\begin{itemize}
+	\item \emph{sampler\_init()} - Initializes the sampler and loads the data structures with samples and initial values.
+	\item \emph{sampler\_set\_mode(int mode)} - Interface for controlling the sampler behavior; that is changig waveforms and playing different sounds.
+	\item \emph{sampler\_get()} - Will return a value between 0 and 2048, which is meant to be put directly on the DAC. The sampler has an internal constant named \emph{FREQUENCY}, which is the frequency \emph{sampler\_get} should be called. \emph{sampler\_get()} will return -1 if there are no tracks active.
+\end{itemize}
 \subsubsection{Sample file format}
 \begin{figure}[h]
 	\centering
@@ -61,20 +66,24 @@ As explained, all logic for calculating DAC output is located in \emph{code/samp
 typedef struct sample {
 	float hz;
 	int ms;
-} sample\_t;
+} sample_t;
 	\end{lstlisting}
 	\caption{Sample struct}
 	\label{file_format_struct}
 \end{figure}
-To be able to play sound sequences, we invented our own, very simple, audio format. It consists of simple structs, each contaning frequency and duration (see figure \ref{file_format_struct}) To represent a sequence, we placed several different samples in an array. Then in the sampler\_get() function, a counter was set to increase each call. When the counter had been increased enough to call it a millisecound, the duration of the current playing sample decreased. This was because the  unit of the duration field in our sample struct where set to millisecounds.\\
+To be able to play sound sequences, we invented our own, very simple, audio format. It consists of simple structs, each contaning frequency and duration (see figure \ref{file_format_struct}) To represent a sequence, we placed several different samples in an array and kept track of the current index and elapsed time. The \emph{sampler\_get()}-function contains logic to call \emph{ms\_tick()} every millisecond, a function that decreases the current sample time left.\\
 \\
-Now, The system supported sound-sequences, but there where no support for sound sequences with multiple tracks. To support multiple tracks, we figured the program should be able to play several samples in paralell. The one dimensional array containing samples was augmented to a two dimensional array. Also the variables containing the threshold and the remaining time for the current frequency was set to arrays. Now, all tracks would be updated every millisecound. To play different samples over each other, the different thresholds where scaled, added together and scaled once more before being sendt to the dac.\\
-\\
-All functionality that generates sound is found in the sampler.c file. To create sound, we had one variable increase \samplerPullsPerSecound times per second. When this variable reached a threshold, it would be set to zero. This variable would then be sent to the dac, wich would then produce a constant tone. \\
+To support multiple tracks, the one dimensional array containing samples was augmented to a two dimensional array. Also the variables containing the threshold and the remaining time for the current frequency was set to arrays. Now, all tracks would be updated every millisecound. To play different samples over each other, the different thresholds where scaled (so every track would contribute the same), added together and scaled once more before being sendt to the DAC.
 
-\subsubsection{Maintaining wave state}
+\subsubsection{Setting track frequency and maintaining wave state}
+Each track could independently have their frequencies set by the internal \emph{set\_hz()} function. When this function is invoked, it would alter two values; \emph{current\_height} and \emph{height\_threshold}. Together, these variables form a frequencys wave state. The \emph{height\_threshold} keeps the number of pulls (\emph{sampler\_get()} calls) between each wavetop, and \emph{current\_height} keeps the current position at the wave. At each pull, the \emph{current\_height} will be incremented by one and a new value for the current frequency can be calculated using the wave state variable set. All waveform functions (\emph{get\_sawtooth\_signal()}, \emph{get\_triangle\_signal()} and \emph{get\_square\_signal()}) are designed to operate with these variables.
 
-\subsubsection{Managing several tracks}
+\subsubsection{Enabling and disabling tracks}
+In order to enable and disable tracks individually, a bitmap named \emph{active\_tracks} is used. On each pull, only tracks with their corresponding bit set to $1$ will be updated and contribute to the output. When this variable is updated using the \emph{set\_active} function, the sampler will also reset the sample indexes, making the tracks play audio from their starting position.
+
+\subsubsection{Waveforms}
+All tracks have their waves generated by the \emph{get\_signal()} function. This contains a switch on the \emph{waveform\_t} enum type, and returns the waveform as assigned in the global \emph{waveform} variable.
+
 
 \subsection{Low energy timer and sleep modes}
 
