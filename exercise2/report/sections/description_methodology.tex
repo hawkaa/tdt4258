@@ -58,7 +58,7 @@ To be able to play sound sequences, we invented our own, very simple, audio form
 \\
 Now, The system supported sound-sequences, but there where no support for sound sequences with multiple tracks. To support multiple tracks, we figured the program should be able to play several samples in paralell. The one dimensional array containing samples was augmented to a two dimensional array. Also the variables containing the threshold and the remaining time for the current frequency was set to arrays. Now, all tracks would be updated every millisecound. To play different samples over each other, the different thresholds where scaled, added together and scaled once more before being sendt to the dac.\\
 \\
-All functionality that generates sound is found in the sampler.c file. To create sound, we had one variable increase \samplerPullsPerSecound times per secound. When this variable reached a threshold, it would be set to zero. This variable would the be sent to the dac, wich would  then produce a constant tone. TODO: Skriv noe om hvordan pitch ble kontorollert. \\
+All functionality that generates sound is found in the sampler.c file. To create sound, we had one variable increase \samplerPullsPerSecound times per second. When this variable reached a threshold, it would be set to zero. This variable would then be sent to the dac, wich would then produce a constant tone. \\
 
 \subsubsection{Maintaining wave state}
 
