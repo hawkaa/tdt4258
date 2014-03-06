@@ -23,8 +23,8 @@ To play multiple frequencies together, you exploit the addititive nature of wave
 We pictured two possible approaches to solve this exercise:
 
 \begin{itemize}
-	\item \textbf{Prestore the tracks in memory}: This requires us to generate the sample values that are to be written to the DAC before the program is started. The samples is then simply written to memory when the program starts. This solution requires a decent memory size. Since we got a total of 1024 bytes of flash storage, this solution enables us to store a total of 10 seconds of a track (48 000 samples per seconds and around 2 bytes per sample). Since we want to be able to play tracks that last longer then 10 seconds we did not choose this solution. The great advantage of this solution is that it is possibily the easiest way to utilitize the DMA, and let it handle all the transfers to the DAC. This completly frees the CPU to work on other tasks or go to sleep.
-	\item \textbf{Calculate the sample values continuously}: Each time we get a timer interrupt we calculate the value to output to the DAC. This is requires more computations and is expected to consume more energy compared to just copy values from memory. The advantage of this solution is that we can play tracks of longer length and it is also easy to change what kind of signal we want to output. This is the solution we have chosen for this exercise.
+	\item \textbf{Prestore the tracks in memory}: This requires us to generate the sample values that are to be written to the DAC before the program is started. The samples is then simply written to memory when the program starts. This solution requires a decent memory size. Since we got a total of 1024 bytes of flash storage, this solution enables us to store a total of 10 seconds of a track (48 000 samples per seconds and around 2 bytes per sample). Since we want to be able to play tracks that last longer than 10 seconds we did not choose this solution. The great advantage of this solution is that it is possibily the easiest way to utilitize the DMA, and let it handle all the transfers to the DAC. This completly frees the CPU to work on other tasks or go to sleep.
+	\item \textbf{Calculate the sample values continuously}: Each time we get a timer interrupt we calculate the value to output to the DAC. This requires more computations and is expected to consume more energy compared to just copy values from memory. The advantage of this solution is that we can play tracks of longer length and it is also easy to change what kind of waveform we want to output. This is the solution we have chosen for this exercise.
 	   
 \end{itemize}
 
@@ -36,7 +36,7 @@ Here is a little overview of the files in the project. There will not be a thoro
 
 \begin{itemize}
 	\item \emph{code/dac.c} - DAC initialization.
-	\item \emph{code/ex2.c} - Contains the applications entry method. Sets up all pherepials and external modules. Will configure interrupt handling.
+	\item \emph{code/ex2.c} - Contains the applications entry method. Sets up all perephials and external modules. Will configure interrupt handling.
 	\item \emph{code/gpio.c} - GPIO initialization.
 	\item \emph{code/interrupt\_handlers.c} - Contains interrupt procedures for timers and GPIO. Will communicate with \emph{code/sampler.c} to set sampler modes and push samples onto the DAC.
 	\item \emph{code/Makefile} - Makefile for cross compiling and uploading binaries to \boardName .
@@ -50,7 +50,7 @@ Here is a little overview of the files in the project. There will not be a thoro
 Most of the C source files have a corresponding header to define their external interfaces.
 
 \subsection{Setup}
-Like last time, we initially developed a simple application with all the basics set up. The DAC, timer and GPIO was set up in the files dac.c, timer.c and gpio.c. The interrupts where handled in the interrupt\_handlers.c file. The main part of our program is the sampler.c. The interrupt handlers send and receive data to and from the sampler.c file. The GPIO handler set one of 9 modes in sampler.c and the timer interrupt handler pulls information from the sampler program and feeds it to the DAC.
+Like last time, we initially developed a simple application with all the basics set up. The interrupt handlers send and receive data to and from the sampler.c file. The GPIO handler set one of 9 modes in sampler.c and the timer interrupt handler pulls information from the sampler program and feeds it to the DAC.
 
 \subsection{Sampler}
 As explained, all logic for calculating DAC output is located in \emph{code/sampler.h}. This module requires some extra attention due to its importance. The external interface defines three functions:
@@ -76,13 +76,13 @@ To be able to play sound sequences, we invented our own, very simple, audio form
 To support multiple tracks, the one dimensional array containing samples was augmented to a two dimensional array. Also the variables containing the threshold and the remaining time for the current frequency was set to arrays. Now, all tracks would be updated every millisecound. To play different samples over each other, the different thresholds where scaled (so every track would contribute the same), added together and scaled once more before being sendt to the DAC.
 
 \subsubsection{Setting track frequency and maintaining wave state}
-Each track could independently have their frequencies set by the internal \emph{set\_hz()} function. When this function is invoked, it would alter two values; \emph{current\_height} and \emph{height\_threshold}. Together, these variables form a frequencys wave state. The \emph{height\_threshold} keeps the number of pulls (\emph{sampler\_get()} calls) between each wavetop, and \emph{current\_height} keeps the current position at the wave. At each pull, the \emph{current\_height} will be incremented by one and a new value for the current frequency can be calculated using the wave state variable set. All waveform functions (\emph{get\_sawtooth\_signal()}, \emph{get\_triangle\_signal()} and \emph{get\_square\_signal()}) are designed to operate with these variables.
+Each track can independently have their frequencies set by the internal \emph{set\_hz()} function. When this function is invoked, it would alter two values; \emph{current\_height} and \emph{height\_threshold}. Together, these variables form a frequency's wave state. The \emph{height\_threshold} keeps the number of pulls (\emph{sampler\_get()} calls) between each wavetop, and \emph{current\_height} keeps the current position at the wave. At each pull, the \emph{current\_height} will be incremented by one and a new value for the current frequency can be calculated using the wave state variable set. All waveform functions (\emph{get\_sawtooth\_signal()}, \emph{get\_triangle\_signal()} and \emph{get\_square\_signal()}) are designed to operate with these variables.
 
 \subsubsection{Enabling and disabling tracks}
 In order to enable and disable tracks individually, a bitmap named \emph{active\_tracks} is used. On each pull, only tracks with their corresponding bit set to $1$ will be updated and contribute to the output. When this variable is updated using the \emph{set\_active} function, the sampler will also reset the sample indexes, making the tracks play audio from their starting position.
 
 \subsubsection{Waveforms}
-All tracks have their waves generated by the \emph{get\_signal()} function. This contains a switch on the \emph{waveform\_t} enum type, and returns the waveform as assigned in the global \emph{waveform} variable.
+All tracks have their waves generated by the \emph{get\_signal()} function. This contains a switch on the \emph{waveform\_t} enum type, and returns a signal with the waveform assigned in the global \emph{waveform} variable.
 
 
 \subsection{Low energy timer and sleep modes}
@@ -101,14 +101,13 @@ To enable the low energy timer, following steps have to be done:
 	\item {Start the timer by writing 1 to LETIMER\_CMD.} 
 \end{enumerate}
 
-An interrupt is triggered each time the timer is done counting, which in our case means tick. When an interrupt is triggered the LETIMER0\_IRQHandler()-routine in \emph{interrupt\_handlers.c} is called. This pulls a value from the sampler and writes the correct output to the DAC. \\
+An interrupt is triggered each time the timer is done counting, which in our case means each tick. When an interrupt is triggered the LETIMER0\_IRQHandler()-routine in \emph{interrupt\_handlers.c} is called. This pulls a value from the sampler and writes the correct output to the DAC. \\
 \\
-Little energy efficiency optimizations when playing the auido could be done, because of the many calculations that the CPU have to do on each timer interrupt. Utilitizing the low frequency timer was the most convenient solution to lowering the amperage.\\
+Little energy efficiency optimizations when playing the audio could be done, because of the many calculations that the CPU have to do on each timer interrupt. Utilitizing the low frequency timer was the most convenient solution to lowering the amperage.\\
 \\
 As we could not get the system to sleep while playing audio, we tried out a solution to get the micro controller down to Energy Mode 3 when idle. If we are done playing a track there is no need to output anything to the DAC. Therefore the sampler signals the interrupt-routine if we are done playing a sound by returning -1. The handler would then turn off the timer by calling stopLETimer()-routine in \emph{timer.c}. This turns off the low frequency clock LFACLK. With both the low and high frequency oscilators disabled, we end up in Energy Mode 3.
 When a button is pressed, the sampler pontentially has been filled with data again so it signals the timer to start with the startLETimer()-routine in \emph{timer.c}. This turns on the low frequency clock LFACLK, and makes the sound system active again.
-\\
-The problem with this solution is that it does not scale. If any other low frequent peripheral is using the LFACLK, we need to most likely need to rewrite the timer start- and stop-routines. We would have to make the timer start and stops more specific, and write to the registers of the low energy timer instead. The highest energy mode we could enter, if we just turned off the timer and not the low frequency clock, would be EM2. Since we only use the low energy timer in this assignment, we stick with our first solution to the energy consumption problem. 
+
  
 
 
