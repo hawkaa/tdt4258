@@ -22,4 +22,46 @@ When we tested the different waveforms (button 2, 3 and 4), none of us had any i
 We have no knowledge of how to scientifically test the audio correctness and quality, so we used our own ears. We accepted the music and sound effects if they "sounded allright". By that we mean that all the tones in the audio was pure, playing in the correct tempo and having the expected pitch. 
 
 \subsection{Testing energy efficiency}
-Gå igjennom høyfrekvent, lavfrekvent og sovning etter ferdig avspilling.
+\begin{figure}[t]
+	\centering
+	\begin{tabular}{c | c  c}
+			& Tetris Theme Song & Idle \\
+		\hline
+		\hline
+		High frequency timer & $4.628mA$ & $4.990mA$ \\
+		Energy Mode 3 & $2.980mA$ & $1.213mA$ \\
+		Energy Mode 3 with sleep & $2.988mA$ & $0.213mA$ \\
+
+	\end{tabular}
+	\label{fig:energy_results}
+	\caption{Average amperage in different modes.}
+
+\end{figure}
+During the development of the system, we tested energy efficiency using the \emph{energyAware Profiler}. We recorded the amperage when the system was at two different states; playing the three tracked Tetris Theme Song and when idle. The results can be found in figure \ref{fig:energy_results}. \\
+\\
+The results were as expected, and we are satisified that our final solution (Energy mode with sleep) only has an average power consupmtion of $0.213mA$ when idle. Turning off the low frequency oscilators when idle gave us five times the better energy efficiency; waking up from Energy Mode 3 32,000 a second is indeed costly.\\
+\\
+Although using the low frequency timers forced us to reduce the sampling rate from $48kHz$ to $32kHz$, we that the amperage when playing the Tetris Theme Song is close to half with the low frequency timers. Here, we see a tradeoff between energy effectiveness and audio quality. We chose the energy effective solution, as $32kHz$ was enough for the audio we are generating.
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=8cm]{img/hf.png}
+	\caption{High frequency timer energy consumption.}
+	\label{fig:hf}
+\end{figure}
+	
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=8cm]{img/em3.png}
+	\caption{Energy Mode 3 energy consumption.}
+	\label{fig:hf}
+\end{figure}
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=8cm]{img/em3_sleep.png}
+	\caption{Energy Mode 3 with sleep energy consumption.}
+	\label{fig:hf}
+\end{figure}
+\subsection{Discussion - Room for improvements?}
+
