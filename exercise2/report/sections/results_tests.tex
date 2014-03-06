@@ -28,8 +28,8 @@ We have no knowledge of how to scientifically test the audio correctness and qua
 		\hline
 		\hline
 		High frequency timer & $4.628mA$ & $4.990mA$ \\
-		Energy Mode 2 & $2.980mA$ & $1.213mA$ \\
-		Energy Mode 2 (3 when idle) & $2.988mA$ & $0.213mA$ \\
+		Low frequency timer & $2.980mA$ & $1.213mA$ \\
+		Energy Mode 3 when idle & $2.988mA$ & $0.213mA$ \\
 
 	\end{tabular}
 	\caption{Average amperage in different modes.}
@@ -38,9 +38,9 @@ We have no knowledge of how to scientifically test the audio correctness and qua
 \end{figure}
 
 \subsection{Testing energy efficiency}
-During the development of the system, we tested energy efficiency using the \emph{energyAware Profiler}. We recorded the amperage at two different situations; when the system was playing the three tracked Tetris Theme Song and when it was idle. The results can be found in figure \ref{fig:energy_results}. \\
+During the development of the system, we tested the energy efficiency using the \emph{energyAware Profiler}. We recorded the amperage at two different situations; when the system was playing the three tracked Tetris Theme Song and when it was idle. The results can be found in figure \ref{fig:energy_results}. \\
 \\
-The results were as expected, and we are satisified that our final solution (Energy Mode 2/3) only has an average power consupmtion of $0.213mA$ when idle. Turning off the low frequency oscilators when idle gave us five times better energy efficiency; having interrupts generated 32,000 times a second is costly.\\
+The results were as expected, and we are satisified that our final solution only has an average power consupmtion of $0.213mA$ when idle (Energy Mode 3). Turning off the low frequency oscilators when idle gave us five times better energy efficiency; having interrupts generated 32,000 times a second is costly.\\
 \\
 Although using the low frequency timers forced us to reduce the sampling rate from $48kHz$ to $32kHz$, we observed that the amperage when playing the Tetris Theme Song is close to half with the low frequency timers. Here, we see a tradeoff between energy effectiveness and audio quality. We chose the energy effective solution, as $32kHz$ was enough for the audio we are generating.
 

@@ -19,16 +19,16 @@ In order to produce sound with the Digital-to-Analog converter, these waves need
 \end{figure}
 To play multiple frequencies together, you exploit the addititive nature of waves. You calculate each signal for a frequency independently, and then add them together (See figure \ref{fig:adding_waves}).
 
-\subsection{Explanation of solution}
-We pictured two possible solutions to solve this exercise:
+\subsection{Possible approaches}
+We pictured two possible approaches to solve this exercise:
 
 \begin{itemize}
-	\item \textbf{Prestore the tracks in memory}: This requires us to generate the sample values that are to be written to the DAC before the program is started. The samples is then simply written to memory when the program starts. This solution requires a descent memory size. Since we got a total of 1024 bytes of flash storage, this solution enables us to store a total of 10 seconds of a track (48 000 samples per seconds and around 2 bytes per sample). Since we want to be able to play tracks that last longer then 10 seconds we did not choose this solution. The great advantage of this solution is the possibility of enabling the DMA, and let it handle all the transfers to the DAC. This completly frees the CPU to work on other tasks or go to sleep.
-	\item \textbf{Calculate the sample values continuously}: Each time we get a timer interrupt we calculate the value to output to the DAC. This is requires more computations and is expected to consume more energy compared to just copy values from memory. The advantage of this solution is that we can play tracks of longer length and it is also easy to change what kind of signal we want to output. This is the solutions we have chosen for this exercise.
+	\item \textbf{Prestore the tracks in memory}: This requires us to generate the sample values that are to be written to the DAC before the program is started. The samples is then simply written to memory when the program starts. This solution requires a decent memory size. Since we got a total of 1024 bytes of flash storage, this solution enables us to store a total of 10 seconds of a track (48 000 samples per seconds and around 2 bytes per sample). Since we want to be able to play tracks that last longer then 10 seconds we did not choose this solution. The great advantage of this solution is that it is possibily the easiest way to utilitize the DMA, and let it handle all the transfers to the DAC. This completly frees the CPU to work on other tasks or go to sleep.
+	\item \textbf{Calculate the sample values continuously}: Each time we get a timer interrupt we calculate the value to output to the DAC. This is requires more computations and is expected to consume more energy compared to just copy values from memory. The advantage of this solution is that we can play tracks of longer length and it is also easy to change what kind of signal we want to output. This is the solution we have chosen for this exercise.
 	   
 \end{itemize}
 
-It is possible to make a hybrid of the two with the DMA. This way the DMA can copy sample values from a memory buffer to the DAC each time it is ready. When the memory buffer is empty, the DMA interrupts the CPU and the CPU fills up the buffer with new values. We figured that we wanted a running program wich functioned properly, rather then take the leap with the chance of failure. The hybrid solution is probably more energy efficient than both of the mentioned solutions.  
+It is possible to make a hybrid of the two with the DMA. This way the DMA can copy sample values from a memory buffer to the DAC each time it is ready. When the memory buffer is empty, the DMA interrupts the CPU and the CPU fills up the buffer with new values. We figured that we wanted a running program wich functioned properly, rather then take the leap of faith with the chance of failure. The hybrid solution is probably more convenient than the first approach, and more energy efficient than the latter.  
 
 
 \subsection{Project structure}
@@ -47,7 +47,7 @@ Here is a little overview of the files in the project. There will not be a thoro
 	\item \emph{sampler/sampler.py} - Python script for generating samples from sheet music.
 \end{itemize}
 
-Most of the c source files has a corresponding header to define their external interfaces.
+Most of the C source files have a corresponding header to define their external interfaces.
 
 \subsection{Getting started}
 Like last time, we initially developed a simple application with all the basics set up. The DAC, timer and GPIO was set up in the files dac.c, timer.c and gpio.c. The interrupts where handled in the interrupt\_handlers.c file. The main part of our program is the sampler.c. The interrupt handlers send and receive data to and from the sampler.c file. The gpiohandler set one of 9 modes in sampler.c and the timerhandler pulls information from the sampler program and feeds it to the dac. 
@@ -76,6 +76,34 @@ All functionality that generates sound is found in the sampler.c file. To create
 
 \subsubsection{Managing several tracks}
 
+\subsection{Low energy timer and sleep modes}
+
+To make our program more energy efficient, we made use of a low energy timer. This runs on a low frequency clock and, compared to the high frequency clock TIMER1 which have a frequency of 48 MHz, the low energy clock have a frequency of only 32 kHz. We expect that this timer should be more energy efficient.\\
+\\
+To enable the low energy timer, following steps have to be done:
+
+\begin{enumerate}
+	\item {Write 16 to CMU\_HFCORECLKEN0 to enable clock for low energy timers.}
+	\item {Write 64 to CMU\_OSCENCMD to enable low energy oscilator LFRCO used by LFACLK. LFACLK is the clock used by LETIMER0. (See figure 11.1 in \cite{reference_manual})}
+	\item {Write 4 to CMU\_LFACLKEN0 to enable the clock for the LETIMER0.}
+	\item {Write 512 LETIMER0\_CTRL to set the top of the timer to the register COMP0. This makes it possible to use the LETimer as a regular timer. Since COMP0 is the top value, it will be reffered to as LETIMER0\_TOP.}
+	\item {Write the the top value to LETIMER0\_TOP.}
+	\item {Enable interrupts by writing 1 to LETIMER0\_IEN.}
+	\item {Start the timer by writing 1 to LETIMER\_CMD.} 
+\end{enumerate}
+
+An interrupt is triggered each time the timer is done counting, which in our case means tick. When an interrupt is triggered the LETIMER0\_IRQHandler()-routine in \emph{interrupt\_handlers.c} is called. This pulls a value from the sampler and writes the correct output to the DAC. \\
+\\
+Little energy efficiency optimizations when playing the auido could be done, because of the many calculations that the CPU have to do on each timer interrupt. Utilitizing the low frequency timer was the most convenient solution to lowering the amperage.\\
+\\
+As we could not get the system to sleep while playing audio, we tried out a solution to get the micro controller down to Energy Mode 3 when idle. If we are done playing a track there is no need to output anything to the DAC. Therefore the sampler signals the interrupt-routine if we are done playing a sound by returning -1. The handler would then turn off the timer by calling stopLETimer()-routine in \emph{timer.c}. This turns off the low frequency clock LFACLK. With both the low and high frequency oscilators disabled, we end up in Energy Mode 3.
+When a button is pressed, the sampler pontentially has been filled with data again so it signals the timer to start with the startLETimer()-routine in \emph{timer.c}. This turns on the low frequency clock LFACLK, and makes the sound system active again.
+\\
+The problem with this solution is that it does not scale. If any other low frequent peripheral is using the LFACLK, we need to most likely need to rewrite the timer start- and stop-routines. We would have to make the timer start and stops more specific, and write to the registers of the low energy timer instead. The highest energy mode we could enter, if we just turned off the timer and not the low frequency clock, would be EM2. Since we only use the low energy timer in this assignment, we stick with our first solution to the energy consumption problem. 
+ 
+
+
+
 \subsection{Generating samples}
 Our file format for the samples is really easy to deal with, as the only information you need to supply is the frequency and duration of the sample. However, we wanted to easier be able to play melodies in sheet music, so we made a python script simplifying this task for us. The python script accepts csv file format, which contains the following data:
 \begin{itemize}
@@ -86,33 +114,4 @@ Our file format for the samples is really easy to deal with, as the only informa
 \end{itemize}
 
 Please see the code for more details, and the corresponding Makefile to see how the script is used.
-
-\subsection{Low energy timer and sleep modes}
-
-To make our program more energy efficient, we made use of a low energy timer. This runs on a low frequency clock and, compared to the high frequency clock TIMER1 which have a frequency of 48 MHz, the low energy clock have a frequency of only 32 kHz. We expect that this timer should save some power as it runs on a lower frequency. \\
-
-We did the following to enable the low energy timer:
-
-\begin{enumerate}
-	\item {Write 16 to CMU\_HFCORECLKEN0 to enable clock for low energy timers.}
-	\item {Write 64 to CMU\_OSCENCMD to enable low energy oscilator LFRCO used by LFACLK (see figure 11.1 in the efm32gg reference manual). LFACLK is the clock used by LETIMER0.}
-	\item {Write 4 to CMU\_LFACLKEN0 to enable the clock for the LETIMER0.}
-	\item {Write 512 LETIMER0\_CTRL to set the top of the timer to the register COMP0. This makes it possible to use the LETimer as a regular timer. Since COMP0 is the top value, it will be reffered to as LETIMER0\_TOP.}
-	\item {Write the the top value to LETIMER0\_TOP.}
-	\item {Enable interrupts by writing 1 to LETIMER0\_IEN.}
-	\item {Start the timer by writing 1 to LETIMER\_CMD.} 
-\end{enumerate}
-
-An interrupt is triggered each time the timer is done counting. In our code this is ones every tick. When an interrupt is triggered the LETIMER0\_IRQHandler()-routine in \emph{interrupt\_handlers.c} is called. This writes the correct output to the DAC. \\
-
-If we are done playing a track there is no need to output anything to the DAC. Therefore the sampler signals the interrupt-routine if we are done playing a sound. The next interrupt we turn of the timer by calling stopLETimer()-routine in \emph{interrupt\_handlers.c}. This turns of the low frequency clock LFACLK.
-\\This makes it easy for us to enter lower energy modes when we are not playing any sound. To enter EM2, we enable deepsleep mode in the same fassion as in exercise 1 via the routine setupEM2() in \emph{ex2.c}. Since we also disable the low frequency clocks when not playing sound, we are enabling EM3. \\
-When a button is pressed, the sampler is filled with data again and it signals the timer to start with the startLETimer()-routine in \emph{interrupt\_handler.c}. This turns on the low frequency clock LFACLK. \\
- 
-When we are feeding the DAC with samples, we are in EM0 which should consume alot energy when the CPU is feeding the DAC. Since the CPU cannot feed the DAC and sleep at the same time, we had to look for solutions when we do not have any samples to output. therefore we choosed to bring the system into EM3 when nothing is to be done, to minimize the energy consumed by the system. we concluded that since the low energy timer is active, the CPU will always be awake even though the sampler is empty. therefore we needed to make sure that the timer was disabled when there was no new samples to output to the DAC. in our code EM3 is the energy mode that allows us to do just that, making EM1 and EM2 undesirable as the low frequenzy clock LFACLK is still active. \\
-
-The problem with this solution is that it does not scale. If any other low frequent peripheral is using the LFACLK, we need to most likely need to rewrite the timer start- and stop-routines. We would have to make the timer start and stops more specific, and write to the registers of the low energy timer instead. The highest energy mode we could enter, if we just turned off the timer and not the low frequency clock, would be EM2. Since we only use the low energy timer in this assignment, we stick with our first solution to the energy consumption problem. 
- 
-
-
 
