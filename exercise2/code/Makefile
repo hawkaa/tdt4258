@@ -9,10 +9,7 @@ OBJCOPY=arm-none-eabi-objcopy
 CFLAGS=-mcpu=cortex-m3 -mthumb -g -std=c99 -Wall -O2
 LDFLAGS=-mcpu=cortex-m3 -mthumb -g -lgcc -lc -lcs3 -lcs3unhosted -lefm32gg -Llib
 ASFLAGS=-mcpu=cortex-m3 -mthumb -g
-LINKERSCRIPT=lib/efm32gg.ld
-
-test: 
-	make -C ../sampler 
+LINKERSCRIPT=lib/efm32gg.ld 
 
 ex2.bin : ex2.elf
 	${OBJCOPY} -O binary $< $@
@@ -22,6 +19,13 @@ ex2.elf : ex2.o timer.o dac.o gpio.o interrupt_handlers.o sampler.o
 
 %.o : %.c
 	${CC} ${CFLAGS} -c $< -o $@
+
+.PHONY : ex2.c
+ex2.c : sample
+
+.PHONY : sample
+sample :
+	make -C ../sampler
 
 .PHONY : upload
 upload :
