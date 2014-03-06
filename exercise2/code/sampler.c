@@ -7,7 +7,7 @@
  */
 
 /* number of tracks */
-#define NUM_TRACKS 4 
+#define NUM_TRACKS 7 
 
 /* max samples per track */
 #define MAX_SAMPLES 200
@@ -165,7 +165,7 @@ void
 sampler_init(void)
 {
 	/* load samples */
-	#include "../sampler/samples.c"	
+	 #include "../sampler/samples.c"	
 
 	/* reset values */
 	for (int i = 0; i < NUM_TRACKS; ++i) {
@@ -205,8 +205,10 @@ sampler_set_mode(int mode) {
 		set_active(0b0111);
 		break;
 	case 7:
+		set_active(0b110000);
 		break;
 	case 8:
+		set_active(0b11000000);
 		break;
 	default:
 		break;	

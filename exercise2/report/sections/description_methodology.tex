@@ -50,7 +50,7 @@ Here is a little overview of the files in the project. There will not be a thoro
 Most of the c source files has a corresponding header to define their external interfaces.
 
 \subsection{Getting started}
-Like last time, we initially developed a simple application with all the basics set up. The DAC, timer and GPIO was set up in the files dac.c, timer.c and gpio.c. The interrupts where handled in the interrupt\_handlers.c file. The main part of our program is the sampler.c. The interrupt handlers send and receive data to and from the sampler.c file. The gpiohandler set one of 9 modes in sampler.c and the timerhandler pulls information from the samper program and feeds it to the dac. 
+Like last time, we initially developed a simple application with all the basics set up. The DAC, timer and GPIO was set up in the files dac.c, timer.c and gpio.c. The interrupts where handled in the interrupt\_handlers.c file. The main part of our program is the sampler.c. The interrupt handlers send and receive data to and from the sampler.c file. The gpiohandler set one of 9 modes in sampler.c and the timerhandler pulls information from the sampler program and feeds it to the dac. 
 
 \subsection{Sampler}
 As explained, all logic for calculating DAC output is located in \emph{code/sampler.h}.
