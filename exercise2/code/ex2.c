@@ -18,6 +18,7 @@
 
 #define SAMPLE_PERIOD 0
 
+
 /*
  * Sets up NVIC
  */
@@ -65,6 +66,7 @@ setupEM2(void)
 int
 main(void) 
 {  
+
 	/* Call the peripheral setup functions */
 
 	/* GPIO */
