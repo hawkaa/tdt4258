@@ -54,15 +54,18 @@ Although using the low frequency timers forced us to reduce the sampling rate fr
 \begin{figure}[hf]
 	\centering
 	\includegraphics[width=8cm]{img/em3.png}
-	\caption{Energy Mode 2 energy consumption.}
+	\caption{Low frequency timer energy consumption.}
 	\label{fig:em3}
 \end{figure}
 
 \begin{figure}[hf]
 	\centering
 	\includegraphics[width=8cm]{img/em3_sleep.png}
-	\caption{Energy Mode 2 (3 when idle) energy consumption.}
+	\caption{Energy Mode 3 when idle energy consumption.}
 	\label{fig:em3_sleep}
 \end{figure}
-\subsection{Discussion - Room for improvements?}
 
+\subsection{Further development}
+We are well happy with our solution for the assignment. However, some development could be done to improve both the application and the report. The DAC has an ability to be turned off when not in use. This could improve energy-efficiency for the silent parts during execution. The EFM32GG development board contains a Direct Memory Access unit wich can be used to copy data without CPU intervention. As it was not a requirement for this assignment, we have not used the DMA. \\
+\\
+Another detail worth mentioning in this section, is that the solution that puts the system to Energy Mode 3 when idle does not scale. If any other low frequent peripheral is using the LFACLK, we most likely need to rewrite the timer start- and stop-routines. We would then have to specifically start and stop the timer individually, keeping the low frequency oscilator enabled. We would then end up in Energy Mode 2. Since we only use the low energy timer in this assignment, we stick with our first solution that disables the low frequency oscilators. 
