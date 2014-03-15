@@ -1,0 +1,21 @@
+# vim: set fdm=marker fdl=1:
+{{{ 2014-03-15T11:04:53+0100 /opt/ex3/ptxdist-2013/lib/ptxdist-2013.07.1/bin/ptxdist select configs/ptxconfig
+{{{ 2014-03-15T11:04:53+0100 /opt/ex3/ptxdist-2013/lib/ptxdist-2013.07.1/bin/ptxdist select configs/ptxconfig
+
+}}} 2014-03-15T11:04:53+0100 /opt/ex3/ptxdist-2013/lib/ptxdist-2013.07.1/bin/ptxdist select configs/ptxconfig; (exit value: 0)
+
+
+
+{{{ 2014-03-15T11:05:12+0100 /opt/ex3/ptxdist-2013/lib/ptxdist-2013.07.1/bin/ptxdist platform configs/platform-energymicro-efm32gg-dk3750/platformconfig
+{{{ 2014-03-15T11:05:12+0100 /opt/ex3/ptxdist-2013/lib/ptxdist-2013.07.1/bin/ptxdist platform configs/platform-energymicro-efm32gg-dk3750/platformconfig
+
+}}} 2014-03-15T11:05:12+0100 /opt/ex3/ptxdist-2013/lib/ptxdist-2013.07.1/bin/ptxdist platform configs/platform-energymicro-efm32gg-dk3750/platformconfig; (exit value: 0)
+
+
+
+{{{ 2014-03-15T11:05:36+0100 /opt/ex3/ptxdist-2013/lib/ptxdist-2013.07.1/bin/ptxdist toolchain /opt/ex3/OSELAS.Toolchain-2012.12.0/arm-cortexm3-uclinuxeabi/gcc-4.7.2-uclibc-0.9.33.2-binutils-2.22-kernel-3.6-sanitized/bin
+
+}}} 2014-03-15T11:05:36+0100 /opt/ex3/ptxdist-2013/lib/ptxdist-2013.07.1/bin/ptxdist toolchain /opt/ex3/OSELAS.Toolchain-2012.12.0/arm-cortexm3-uclinuxeabi/gcc-4.7.2-uclibc-0.9.33.2-binutils-2.22-kernel-3.6-sanitized/bin; (exit value: 0)
+
+
+
