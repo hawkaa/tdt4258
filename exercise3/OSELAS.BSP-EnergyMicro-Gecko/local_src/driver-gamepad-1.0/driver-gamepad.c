@@ -18,6 +18,7 @@
 static int __init template_init(void)
 {
 	printk("Hello World, here is your module speaking\n");
+	printk("Sindrepupp har også lyst til å snakke!!\n");
 	return 0;
 }
 
