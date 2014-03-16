@@ -8,24 +8,53 @@
 #include <linux/ioport.h>
 #include <linux/platform_device.h>
 
-#define GPIO_PA_BASE 0x40006000
-#define GPIO_PA_DOUT ((unsigned int*)GPIO_PA_BASE + 0x0c)
 
-#define GPIO_PC_BASE 0x40006048
-#define GPIO_PC_DIN ((unsigned long)(GPIO_PC_BASE + 0x1c))
+#define PLATFORM_MEM_INDEX_GPIO 0
+#define PLATFORM_IRQ_INDEX_GPIO_EVEN 0
+#define PLATFORM_IRQ_INDEX_GPIO_ODD 1
 
+struct port_range {
+	int start;
+	int end;
+};
+
+
+/* static variables */
+static struct port_range port_range_gpio;
+static int irq_gpio_even;
+static int irq_gpio_odd;
+
+/*
+ * Probe function
+ */
 static int
-my_probe(struct platform_device *dev)
+tdt4258_gamepad_probe(struct platform_device *dev)
 {
-	struct resource *res = platform_get_resource(dev, IORESOURCE_MEM, 0);
+	printk(KERN_INFO "Probing tdt4258_gamepad_driver...\n");
 
-	printk("IO Start: %i, IO End: %i.", res->start, res->end);
-	printk("my_probe called\n");
+	struct resource *res = platform_get_resource(dev, IORESOURCE_MEM, PLATFORM_MEM_INDEX_GPIO);
+
+	/* save the variables */
+	port_range_gpio.start = res->start;
+	port_range_gpio.end = res->end;
+	printk(KERN_INFO "GPIO start port: %i\n", port_range_gpio.start);
+	printk(KERN_INFO "GPIO end port: %i\n", port_range_gpio.end);
+
+	/* irq numbers */
+	irq_gpio_even = platform_get_irq(dev, PLATFORM_IRQ_INDEX_GPIO_EVEN);
+	irq_gpio_odd = platform_get_irq(dev, PLATFORM_IRQ_INDEX_GPIO_ODD);
+	printk(KERN_INFO "GPIO even IRQ: %i\n", irq_gpio_even);
+	printk(KERN_INFO "GPIO odd IRQ: %i\n", irq_gpio_odd);
+
+
 
 }
 
+/*
+ * Remove function
+ */
 static int
-my_remove(struct platform_device *dev)
+tdt4258_gamepad_remove(struct platform_device *dev)
 {
 	printk("my_remove called\n");
 
@@ -37,11 +66,11 @@ static const struct of_device_id my_of_match[] = {
 };
 MODULE_DEVICE_TABLE(of, my_of_match);
 
-static struct platform_driver my_driver = {
-	.probe = my_probe,
-	.remove = my_remove,
+static struct platform_driver tdt4258_gamepad_driver = {
+	.probe = tdt4258_gamepad_probe,
+	.remove = tdt4258_gamepad_remove,
 	.driver = {
-		.name = "driver_gamepad",
+		.name = "tdt4258_gamepad_driver",
 		.owner = THIS_MODULE,
 		.of_match_table = my_of_match,
 	},
@@ -63,7 +92,8 @@ static int __init template_init(void)
 
 	printk("Hello World, here is your module speaking\n");
 	
-	platform_driver_register(&my_driver);
+	/* initiate gamepad driver */
+	platform_driver_register(&tdt4258_gamepad_driver);
 
 	return 0;
 }
