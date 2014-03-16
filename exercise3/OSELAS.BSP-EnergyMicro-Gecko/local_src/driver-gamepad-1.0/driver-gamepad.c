@@ -28,6 +28,9 @@ static void *gpio_pc_base;
 static int memory_region_base;
 static int memory_region_size;
 
+/* for testing only */
+unsigned int button_value;
+
 static int
 tdt4258_gamepad_open(struct inode *inode, struct file *filp)
 {
@@ -52,7 +55,8 @@ tdt4258_gamepad_read(struct file *filp, char __user *buff,
 {
 	/* TODO */
 	printk(KERN_INFO "tdt4258_gamepad_read called...\n");
-
+	button_value = ioread32(gpio_pc_base+GPIO_DIN);
+	printk(KERN_INFO "current GPIO_DIN value: %u", button_value);
 	return 0;
 }
 
