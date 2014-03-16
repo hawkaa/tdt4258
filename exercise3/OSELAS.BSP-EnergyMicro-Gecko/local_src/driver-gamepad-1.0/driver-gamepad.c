@@ -10,14 +10,13 @@
 #include <asm/io.h>
 
 /* local includes */
-#include "efm32gg.h"
 #include "driver-gamepad.h"
 
 /* static variables */
 static struct port_range port_range_gpio;
 static int irq_gpio_even;
 static int irq_gpio_odd;
-
+static void *gpio_pc_base;
 /*
  * Probe function
  */
@@ -42,29 +41,19 @@ tdt4258_gamepad_probe(struct platform_device *dev)
 	printk(KERN_INFO "GPIO even IRQ: %i\n", irq_gpio_even);
 	printk(KERN_INFO "GPIO odd IRQ: %i\n", irq_gpio_odd);
 
-	/*	
-	res = request_region(port_range_gpio.start, 1, "tdt4258_gamepad_driver");
-	if (res == NULL) {
-		printk(KERN_INFO "Could not gain access to GPIO ports...\n");
-		return 1;
-	} else {
-		printk(KERN_INFO "Got access to GPIO ports...\n");
-	}*/
-	
-	
-	/* set high drive strength */
-	iowrite32(1, GPIO_PA_CTRL);
-
-	iowrite32(0x55555555, GPIO_PA_MODEH); /* set pins A8-15 as output */
-
-	/* turn off all LEDs */
-	iowrite32(0x0f0f, GPIO_PA_DOUT);
+	/* memory map */
+	gpio_pc_base = ioremap_nocache(GPIO_PC_BASE, 9);
+	printk(KERN_INFO "PC base address: %i\n", gpio_pc_base);
 
 	/* set pins 8-15 to input */
-	iowrite32(0x33333333, GPIO_PC_MODEL);
+	iowrite32(0x33333333, gpio_pc_base + GPIO_MODEL);
 
 	/* enable internal pull up register */
-	iowrite32(0xff, GPIO_PC_DOUT);
+	iowrite32(0xff, gpio_pc_base + GPIO_DOUT);
+
+	for (;;) {
+		printk(KERN_INFO "%i\n", ioread32(gpio_pc_base + GPIO_DIN));
+	}
 
 	return 0;
 
