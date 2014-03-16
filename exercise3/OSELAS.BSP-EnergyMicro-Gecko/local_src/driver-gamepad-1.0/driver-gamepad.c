@@ -33,6 +33,8 @@ tdt4258_gamepad_open(struct inode *inode, struct file *filp)
 {
 	/* TODO */
 	printk(KERN_INFO "tdt4258_gamepad_open called...\n");
+
+	return 0;
 }
 
 static int
@@ -40,6 +42,8 @@ tdt4258_gamepad_release(struct inode *inode, struct file *filp)
 {
 	/* TODO */
 	printk(KERN_INFO "tdt4258_gamepad_release called...\n");
+
+	return 0;
 }
 
 static ssize_t
@@ -48,6 +52,8 @@ tdt4258_gamepad_read(struct file *filp, char __user *buff,
 {
 	/* TODO */
 	printk(KERN_INFO "tdt4258_gamepad_read called...\n");
+
+	return 0;
 }
 
 static ssize_t
@@ -56,6 +62,8 @@ tdt4258_gamepad_write(struct file *filp, char __user *buff,
 {
 	/* TODO */
 	printk(KERN_INFO "tdt4258_gamepad_write called...\n");
+
+	return 0;
 }
 
 static struct file_operations tdt4258_gamepad_fops = {
@@ -130,7 +138,7 @@ tdt4258_gamepad_probe(struct platform_device *dev)
 
 	struct class *cl;
 	cl = class_create(THIS_MODULE, DEVICE_NAME);
-	device_create(cl, NULL, my_device, NULL, "gp");
+	device_create(cl, NULL, my_device, NULL, DEVICE_NAME);
 
 	return 0;
 
