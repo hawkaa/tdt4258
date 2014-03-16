@@ -1,6 +1,11 @@
-.PHONY : all driver-gamepad game
+.PHONY : all driver-gamepad game driver-gamepad-flash
 
 all: driver-gamepad game
+
+driver-gamepad-flash: 
+	make driver-gamepad
+	make install
+	make flash
 
 
 driver-gamepad :
