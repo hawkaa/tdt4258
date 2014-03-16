@@ -128,17 +128,17 @@ tdt4258_gamepad_probe(struct platform_device *dev)
 	
 
 	/* allocate char region */
-	dev_t my_device;
-	alloc_chrdev_region(&my_device, 0, 1, DEVICE_NAME);
-	printk(KERN_INFO "Major: %i\n", MAJOR(my_device));
-	printk(KERN_INFO "Minor: %i\n", MINOR(my_device));
+	dev_t device_number;
+	alloc_chrdev_region(&device_number, 0, 1, DEVICE_NAME);
+	printk(KERN_INFO "Major: %i\n", MAJOR(device_number));
+	printk(KERN_INFO "Minor: %i\n", MINOR(device_number));
 	
 	cdev_init(&tdt4258_gamepad_cdev, &tdt4258_gamepad_fops);
-	cdev_add(&tdt4258_gamepad_cdev, my_device, 1);
+	cdev_add(&tdt4258_gamepad_cdev, device_number, 1);
 
 	struct class *cl;
 	cl = class_create(THIS_MODULE, DEVICE_NAME);
-	device_create(cl, NULL, my_device, NULL, DEVICE_NAME);
+	device_create(cl, NULL, device_number, NULL, DEVICE_NAME);
 
 	return 0;
 
