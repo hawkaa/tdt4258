@@ -7,10 +7,17 @@
 #include <linux/init.h>
 #include <linux/ioport.h>
 #include <linux/platform_device.h>
+#include <linux/fs.h>
+#include <linux/kdev_t.h>
+#include <linux/cdev.h>
 #include <asm/io.h>
+
 
 /* local includes */
 #include "driver-gamepad.h"
+
+/* constasts */
+static char DEVICE_NAME[] = "tdt4258_gamepad";
 
 /* static variables */
 static int irq_gpio_even;
@@ -20,6 +27,47 @@ static void *gpio_pc_base;
 
 static int memory_region_base;
 static int memory_region_size;
+
+static int
+tdt4258_gamepad_open(struct inode *inode, struct file *filp)
+{
+	/* TODO */
+	printk(KERN_INFO "tdt4258_gamepad_open called...\n");
+}
+
+static int
+tdt4258_gamepad_release(struct inode *inode, struct file *filp)
+{
+	/* TODO */
+	printk(KERN_INFO "tdt4258_gamepad_release called...\n");
+}
+
+static ssize_t
+tdt4258_gamepad_read(struct file *filp, char __user *buff,
+		size_t count, loff_t *offp)
+{
+	/* TODO */
+	printk(KERN_INFO "tdt4258_gamepad_read called...\n");
+}
+
+static ssize_t
+tdt4258_gamepad_write(struct file *filp, char __user *buff,
+		size_t count, loff_t *offp)
+{
+	/* TODO */
+	printk(KERN_INFO "tdt4258_gamepad_write called...\n");
+}
+
+static struct file_operations tdt4258_gamepad_fops = {
+	.owner = THIS_MODULE,
+	.read = tdt4258_gamepad_read,
+	.write = tdt4258_gamepad_write,
+	.open = tdt4258_gamepad_open,
+	.release = tdt4258_gamepad_release
+};
+
+static struct cdev tdt4258_gamepad_cdev;
+
 
 /*
  * Probe function
@@ -48,7 +96,7 @@ tdt4258_gamepad_probe(struct platform_device *dev)
 
 	/* reserve */
 	res = request_mem_region(memory_region_base,
-				memory_region_size, "tdt4258_gamepad_driver");
+				memory_region_size, DEVICE_NAME);
 	if (res == NULL) {
 		printk(KERN_INFO "Could not allocate memory region...\n");
 		return 1;
@@ -69,6 +117,20 @@ tdt4258_gamepad_probe(struct platform_device *dev)
 
 	/* enable internal pull up register */
 	iowrite32(0xff, gpio_pc_base + GPIO_DOUT);
+	
+
+	/* allocate char region */
+	dev_t my_device;
+	alloc_chrdev_region(&my_device, 0, 1, DEVICE_NAME);
+	printk(KERN_INFO "Major: %i\n", MAJOR(my_device));
+	printk(KERN_INFO "Minor: %i\n", MINOR(my_device));
+	
+	cdev_init(&tdt4258_gamepad_cdev, &tdt4258_gamepad_fops);
+	cdev_add(&tdt4258_gamepad_cdev, 0, 1);
+
+	struct class *cl;
+	cl = class_create(THIS_MODULE, DEVICE_NAME);
+	device_create(cl, NULL, my_device, NULL, DEVICE_NAME);
 
 	return 0;
 
@@ -89,9 +151,19 @@ tdt4258_gamepad_remove(struct platform_device *dev)
 	printk(KERN_INFO "Release size: %i\n", memory_region_size);
 	release_mem_region(memory_region_base, memory_region_size);
 
+	/* TODO Release memory map ? */
+
+	/* TODO release char region */
+
+	/* TODO remove cdev (inverce cdev_add) */
+
+	/* TODO inverse class and device create */
+
 	return 0;
 
 }
+
+
 
 static const struct of_device_id my_of_match[] = {
 	{ .compatible = "tdt4258", },
