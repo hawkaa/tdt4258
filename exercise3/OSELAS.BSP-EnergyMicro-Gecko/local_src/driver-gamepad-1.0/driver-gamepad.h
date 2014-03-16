@@ -6,7 +6,9 @@
 #define PLATFORM_IRQ_INDEX_GPIO_EVEN 0
 #define PLATFORM_IRQ_INDEX_GPIO_ODD 1
 
-#define GPIO_PC_BASE 0x40006048
+#define GPIO_PA 0x00
+#define GPIO_PB 0x24
+#define GPIO_PC 0x48
 
 #define GPIO_CTRL 0x00
 #define GPIO_MODEL 0x04
@@ -17,11 +19,6 @@
 #define GPIO_DOUTTGL 0x18
 #define GPIO_DIN 0x1c
 #define GPIO_PINLOCKN 0x20
-
-struct port_range {
-	int start;
-	int end;
-};
 
 
 #endif
