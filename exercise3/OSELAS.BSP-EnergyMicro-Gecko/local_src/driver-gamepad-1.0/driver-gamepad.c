@@ -15,9 +15,11 @@
 /* static variables */
 static int irq_gpio_even;
 static int irq_gpio_odd;
-static struct resource *gamepad_memory_resource;
 static void *gpio_base;
 static void *gpio_pc_base;
+
+static int memory_region_base;
+static int memory_region_size;
 
 /*
  * Probe function
@@ -26,19 +28,17 @@ static int
 tdt4258_gamepad_probe(struct platform_device *dev)
 {
 	struct resource *res;
-
-	int base, n;
-
 	
 	printk(KERN_INFO "Probing tdt4258_gamepad_driver...\n");
 
-	res = platform_get_resource(dev, IORESOURCE_MEM, PLATFORM_MEM_INDEX_GPIO);
+	res = platform_get_resource(dev, IORESOURCE_MEM,
+				PLATFORM_MEM_INDEX_GPIO);
 
 	/* save the variables */
-	base = res->start;
-	n = (res->end - res->start) / 4;
-	printk(KERN_INFO "GPIO Base address: %#010x\n", base);
-	printk(KERN_INFO "GPIO memory address size: %i\n", n);
+	memory_region_base = res->start;
+	memory_region_size = (res->end - res->start) / 4;
+	printk(KERN_INFO "GPIO Base address: %#010x\n", memory_region_base);
+	printk(KERN_INFO "GPIO memory address size: %i\n", memory_region_size);
 
 	/* irq numbers */
 	irq_gpio_even = platform_get_irq(dev, PLATFORM_IRQ_INDEX_GPIO_EVEN);
@@ -47,8 +47,9 @@ tdt4258_gamepad_probe(struct platform_device *dev)
 	printk(KERN_INFO "GPIO odd IRQ: %i\n", irq_gpio_odd);
 
 	/* reserve */
-	gamepad_memory_resource = request_mem_region(base, n, "tdt4258_gamepad_driver");
-	if (gamepad_memory_resource == NULL) {
+	res = request_mem_region(memory_region_base,
+				memory_region_size, "tdt4258_gamepad_driver");
+	if (res == NULL) {
 		printk(KERN_INFO "Could not allocate memory region...\n");
 		return 1;
 	} else {
@@ -57,7 +58,7 @@ tdt4258_gamepad_probe(struct platform_device *dev)
 
 
 	/* memory map */
-	gpio_base = ioremap_nocache(base, n);
+	gpio_base = ioremap_nocache(memory_region_base, memory_region_size);
 	
 	/* save pointers for gpio pc base so we dont have to calculate it all the time*/
 	gpio_pc_base = gpio_base + GPIO_PC;
@@ -69,11 +70,6 @@ tdt4258_gamepad_probe(struct platform_device *dev)
 	/* enable internal pull up register */
 	iowrite32(0xff, gpio_pc_base + GPIO_DOUT);
 
-	/*
-	for (;;) {
-		printk(KERN_INFO "%i\n", ioread32(gpio_pc_base + GPIO_DIN));
-	}
-	*/
 	return 0;
 
 }
@@ -84,16 +80,14 @@ tdt4258_gamepad_probe(struct platform_device *dev)
 static int
 tdt4258_gamepad_remove(struct platform_device *dev)
 {
-	int base, n;
 	printk("my_remove called\n");
 
-	base = gamepad_memory_resource->start;
-	n = (gamepad_memory_resource->end - gamepad_memory_resource->start) / 4;
 
 	/* remove memory region alloc */
-	printk(KERN_INFO "Releasing base address: %#010x\n", base);
-	printk(KERN_INFO "Release size: %i\n", n);
-	release_region(base, n);
+	printk(KERN_INFO "Releasing base address: %#010x\n",
+					memory_region_base);
+	printk(KERN_INFO "Release size: %i\n", memory_region_size);
+	release_mem_region(memory_region_base, memory_region_size);
 
 	return 0;
 
