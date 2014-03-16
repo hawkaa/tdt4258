@@ -15,6 +15,7 @@
 /* static variables */
 static int irq_gpio_even;
 static int irq_gpio_odd;
+static struct resource *gamepad_memory_resource;
 static void *gpio_base;
 static void *gpio_pc_base;
 
@@ -46,8 +47,8 @@ tdt4258_gamepad_probe(struct platform_device *dev)
 	printk(KERN_INFO "GPIO odd IRQ: %i\n", irq_gpio_odd);
 
 	/* reserve */
-	res = request_mem_region(base, n, "tdt4258_gamepad_driver");
-	if (res == NULL) {
+	gamepad_memory_resource = request_mem_region(base, n, "tdt4258_gamepad_driver");
+	if (gamepad_memory_resource == NULL) {
 		printk(KERN_INFO "Could not allocate memory region...\n");
 		return 1;
 	} else {
@@ -83,7 +84,18 @@ tdt4258_gamepad_probe(struct platform_device *dev)
 static int
 tdt4258_gamepad_remove(struct platform_device *dev)
 {
+	int base, n;
 	printk("my_remove called\n");
+
+	base = gamepad_memory_resource->start;
+	n = (gamepad_memory_resource->end - gamepad_memory_resource->start) / 4;
+
+	/* remove memory region alloc */
+	printk(KERN_INFO "Releasing base address: %#010x\n", base);
+	printk(KERN_INFO "Release size: %i\n", n);
+	release_region(base, n);
+
+	return 0;
 
 }
 
@@ -134,7 +146,9 @@ static int __init template_init(void)
 
 static void __exit template_cleanup(void)
 {
-	 printk("Short life for a small module...\n");
+	printk("Short life for a small module...\n");
+	platform_driver_unregister(&tdt4258_gamepad_driver);
+	
 	
 }
 module_init(template_init);
