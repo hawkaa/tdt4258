@@ -126,11 +126,11 @@ tdt4258_gamepad_probe(struct platform_device *dev)
 	printk(KERN_INFO "Minor: %i\n", MINOR(my_device));
 	
 	cdev_init(&tdt4258_gamepad_cdev, &tdt4258_gamepad_fops);
-	cdev_add(&tdt4258_gamepad_cdev, 0, 1);
+	cdev_add(&tdt4258_gamepad_cdev, my_device, 1);
 
 	struct class *cl;
 	cl = class_create(THIS_MODULE, DEVICE_NAME);
-	device_create(cl, NULL, my_device, NULL, DEVICE_NAME);
+	device_create(cl, NULL, my_device, NULL, "gp");
 
 	return 0;
 
