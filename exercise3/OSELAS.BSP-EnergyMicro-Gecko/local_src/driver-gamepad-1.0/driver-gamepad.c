@@ -201,7 +201,6 @@ static int
 tdt4258_gamepad_probe(struct platform_device *dev)
 {
 	struct resource *res;
-	struct class *cl;
 	
 	printk(KERN_INFO "Probing tdt4258_gamepad_driver...\n");
 
