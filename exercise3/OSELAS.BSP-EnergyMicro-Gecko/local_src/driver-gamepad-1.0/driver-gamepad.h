@@ -19,6 +19,10 @@
 #define GPIO_DOUTTGL 0x18
 #define GPIO_DIN 0x1c
 #define GPIO_PINLOCKN 0x20
-
+#define GPIO_EXTIPSELL 0x100
+#define GPIO_EXTIFALL 0x10c
+#define GPIO_EXTIRISE 0x108
+#define GPIO_IEN 0x110
+#define GPIO_IFC 0x11c
 
 #endif

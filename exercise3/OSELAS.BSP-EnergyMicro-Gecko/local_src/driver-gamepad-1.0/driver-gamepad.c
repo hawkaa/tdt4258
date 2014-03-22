@@ -10,6 +10,7 @@
 #include <linux/fs.h>
 #include <linux/kdev_t.h>
 #include <linux/cdev.h>
+#include <linux/interrupt.h>
 #include <asm/io.h>
 #include <asm/uaccess.h>
 
@@ -39,6 +40,13 @@ static int device_open = 0;
 static char button_value;
 static int is_eof;
 
+irqreturn_t gpio_interrupt_handler(unsigned int irq, struct pt_reg *reg)
+{
+	button_value = ioread32(gpio_pc_base + GPIO_DIN);
+	iowrite32(0xff, gpio_base + GPIO_IFC);
+	return IRQ_HANDLED;	
+}
+
 static int
 tdt4258_gamepad_open(struct inode *inode, struct file *filp)
 {
@@ -51,15 +59,19 @@ tdt4258_gamepad_open(struct inode *inode, struct file *filp)
 		return -EBUSY;
 	}
 
+	if(request_irq(irq_gpio_odd, gpio_interrupt_handler, 0, DEVICE_NAME, NULL) || 
+	   request_irq(irq_gpio_even, gpio_interrupt_handler, 0 , DEVICE_NAME, NULL)){
+		printk(KERN_INFO "The device cannot register the IRQ's: %d, %d\n", irq_gpio_odd, irq_gpio_even);
+		return -EIO;
+	}
+	printk(KERN_INFO "Interrupts enabled. ");
+
 	/* log that the device is open */
 	++device_open;
 
-	/* tell the kernel that the module cant be unloaded when the file is open */
-	//MOD_INC_USE_COUNT;
-
 	/* reset values */
 	is_eof = 0;
-	button_value = ioread32(gpio_pc_base + GPIO_DIN);
+	//button_value = ioread32(gpio_pc_base + GPIO_DIN);
 
 	printk(KERN_INFO "Device successfully opened!");
 
@@ -72,9 +84,13 @@ tdt4258_gamepad_release(struct inode *inode, struct file *filp)
 	/* TODO */
 	printk(KERN_INFO "tdt4258_gamepad_release called...\n");
 
-	//MOD_DEC_USE_COUNT;
 
 	--device_open;
+	if(device_open == 0){
+		free_irq(irq_gpio_even, NULL);
+		free_irq(irq_gpio_odd, NULL);
+		printk(KERN_INFO "Interrupts disabled.");
+	}
 
 	printk(KERN_INFO "Device successfully released!");
 
@@ -172,6 +188,11 @@ tdt4258_gamepad_probe(struct platform_device *dev)
 	/* enable internal pull up register */
 	iowrite32(0xff, gpio_pc_base + GPIO_DOUT);
 	
+	/* enable interrupt generation */
+	iowrite32(0x22222222, gpio_base + GPIO_EXTIPSELL);
+	iowrite32(0xff, gpio_base + GPIO_EXTIFALL);
+	iowrite32(0xff, gpio_base + GPIO_EXTIRISE);
+	iowrite32(0xff, gpio_base + GPIO_IEN);
 
 	/* allocate char region */
 	alloc_chrdev_region(&device_number, 0, 1, DEVICE_NAME);
