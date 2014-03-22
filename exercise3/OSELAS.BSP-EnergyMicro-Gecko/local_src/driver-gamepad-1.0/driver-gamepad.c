@@ -124,7 +124,8 @@ tdt4258_gamepad_read(struct file *filp, char __user *buff,
 {
 	/* TODO */
 	printk(KERN_INFO "tdt4258_gamepad_read called...\n");
-
+	
+	signal_user_application();
 
 	printk(KERN_INFO "Reading %i data.\n", count);
 

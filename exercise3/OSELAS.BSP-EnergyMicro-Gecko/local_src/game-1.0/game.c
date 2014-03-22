@@ -1,3 +1,4 @@
+/* global includes */
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -7,37 +8,22 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <linux/fb.h>
-#include <linux/sched.h>
 #include <signal.h>
+
+/* local includes */
+#include "signal.h"
+
+/* constants */
 
 #define FILEPATH "/dev/fb0"
 #define FILESIZE 320*240*2
 
 #define GAMEPAD_DRIVER "/dev/tdt4258_gamepad"
 
-
-void
-signal_handler(int signum)
-{
-	printf("Received signal(%i)\n", signum);
-	exit(0);
-}
-
-
-int main(int argc, char *argv[])
+static void
+run()
 {
 	int retval;
-	struct sigaction signal_action;
-	
-	signal_action.sa_handler = signal_handler;
-	sigemptyset(&signal_action);
-	signal_action.sa_flags = 0;
-	retval = sigaction(SIGUSR1, &signal_action, NULL);
-
-	if (retval < 0) {
-		printf("Sigaction error\n");
-	}
-
 
 	int fd = open(GAMEPAD_DRIVER, O_RDWR, (mode_t)0600);
 
@@ -51,10 +37,24 @@ int main(int argc, char *argv[])
 	char *val_pointer = &val;
 	retval = read(fd, val_pointer, 1);
 	printf("%c\n", val);
-
+	
 	for (;;) {
 		sleep(1000);
 	}
+}
+
+
+int
+main(int argc, char *argv[])
+{
+	
+	/* init signal handler */
+	if (signal_handler_init()) {
+		perror("Error initiating signal handler");
+		exit(EXIT_FAILURE);
+	}
+	
+	run();
 	
 	exit(EXIT_SUCCESS);
 
