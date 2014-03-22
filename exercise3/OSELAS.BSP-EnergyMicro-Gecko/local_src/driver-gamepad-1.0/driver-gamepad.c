@@ -50,22 +50,23 @@ static int is_eof;
  * The signal contains no data.
  */
 static void
-signal_user_application()
+signal_user_application(void)
 {
 	struct siginfo info;
 	struct task_struct *t;
-	int return_value;
+	int retval;
 
 	/* info */
 	info.si_signo = SIGUSR1;
+	info.si_code = SI_QUEUE;
 
 	/* task */
 	t = pid_task(find_pid_ns(pid, &init_pid_ns), PIDTYPE_PID);
 
 	/* send the signal */
-	int ret = send_sig_info(SIGUSR1, &info, t);    //send the signal
+	retval = send_sig_info(SIGUSR1, &info, t);    //send the signal
 
-	if (ret < 0) {
+	if (retval < 0) {
 		printk(KERN_INFO "Error sending signal(%i)\n", SIGUSR1);
 	}
 }
@@ -166,7 +167,7 @@ tdt4258_gamepad_read(struct file *filp, char __user *buff,
 }
 
 static ssize_t
-tdt4258_gamepad_write(struct file *filp, char __user *buff,
+tdt4258_gamepad_write(struct file *filp, const char __user *buff,
 		size_t count, loff_t *offp)
 {
 	/* TODO */
@@ -194,6 +195,7 @@ static int
 tdt4258_gamepad_probe(struct platform_device *dev)
 {
 	struct resource *res;
+	struct class *cl;
 	
 	printk(KERN_INFO "Probing tdt4258_gamepad_driver...\n");
 
@@ -250,7 +252,6 @@ tdt4258_gamepad_probe(struct platform_device *dev)
 	cdev_init(&tdt4258_gamepad_cdev, &tdt4258_gamepad_fops);
 	cdev_add(&tdt4258_gamepad_cdev, device_number, 1);
 
-	struct class *cl;
 	cl = class_create(THIS_MODULE, DEVICE_NAME);
 	device_create(cl, NULL, device_number, NULL, DEVICE_NAME);
 

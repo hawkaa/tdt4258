@@ -23,7 +23,6 @@
 static void
 run()
 {
-	int retval;
 
 	int fd = open(GAMEPAD_DRIVER, O_RDWR, (mode_t)0600);
 
@@ -32,11 +31,6 @@ run()
 		exit(EXIT_FAILURE);
 	}
 
-	
-	char val;
-	char *val_pointer = &val;
-	retval = read(fd, val_pointer, 1);
-	printf("%c\n", val);
 	
 	for (;;) {
 		sleep(1000);
@@ -58,6 +52,12 @@ main(int argc, char *argv[])
 	
 	exit(EXIT_SUCCESS);
 
+	/*	
+	char val;
+	char *val_pointer = &val;
+	retval = read(fd, val_pointer, 1);
+	printf("%c\n", val);
+	*/
 	/*
 	
 	printf("Starting framebuffer test..\n");
