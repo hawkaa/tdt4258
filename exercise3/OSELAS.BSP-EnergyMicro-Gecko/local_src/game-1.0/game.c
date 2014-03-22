@@ -21,6 +21,12 @@
 
 #define GAMEPAD_DRIVER "/dev/tdt4258_gamepad"
 
+static void
+button_1_down(void)
+{
+	printf("Herregud, som du trykker på knapp nr ÉN!!\n");
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -36,6 +42,9 @@ main(int argc, char *argv[])
 		perror("Error loading input module");
 		exit(EXIT_FAILURE);
 	}
+
+	/* register button handlers */
+	register_button_down_handler(1, button_1_down);
 	
 	for (;;) {
 		pause();
