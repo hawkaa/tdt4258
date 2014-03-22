@@ -36,6 +36,8 @@ static dev_t device_number;
 /* checks if device is open or not */
 static int device_open = 0;
 
+static struct class *cl;
+
 /* for testing only */
 static char button_value;
 static int is_eof;
@@ -58,12 +60,15 @@ tdt4258_gamepad_open(struct inode *inode, struct file *filp)
 		printk(KERN_INFO "The device is already opened by another process.");
 		return -EBUSY;
 	}
-
-	if(request_irq(irq_gpio_odd, gpio_interrupt_handler, 0, DEVICE_NAME, NULL) || 
-	   request_irq(irq_gpio_even, gpio_interrupt_handler, 0 , DEVICE_NAME, NULL)){
-		printk(KERN_INFO "The device cannot register the IRQ's: %d, %d\n", irq_gpio_odd, irq_gpio_even);
-		return -EIO;
+	
+	if(device_open == 0) {
+		if(request_irq(irq_gpio_odd, gpio_interrupt_handler, 0, DEVICE_NAME, NULL) || 
+	           request_irq(irq_gpio_even, gpio_interrupt_handler, 0 , DEVICE_NAME, NULL)){
+			printk(KERN_INFO "The device cannot register the IRQ's: %d, %d\n", irq_gpio_odd, irq_gpio_even);
+			return -EIO;
+		}
 	}
+
 	printk(KERN_INFO "Interrupts enabled. ");
 
 	/* log that the device is open */
@@ -202,7 +207,7 @@ tdt4258_gamepad_probe(struct platform_device *dev)
 	cdev_init(&tdt4258_gamepad_cdev, &tdt4258_gamepad_fops);
 	cdev_add(&tdt4258_gamepad_cdev, device_number, 1);
 
-	struct class *cl;
+	
 	cl = class_create(THIS_MODULE, DEVICE_NAME);
 	device_create(cl, NULL, device_number, NULL, DEVICE_NAME);
 
@@ -225,14 +230,18 @@ tdt4258_gamepad_remove(struct platform_device *dev)
 	printk(KERN_INFO "Release size: %i\n", memory_region_size);
 	release_mem_region(memory_region_base, memory_region_size);
 
-	/* TODO Release memory map ? */
-
-	/* TODO release char region */
-
-	/* TODO remove cdev (inverse cdev_add) */
-	unregister_chrdev_region(device_number, 1);
-
-	/* TODO inverse class and device create */
+	/* Release memory map  */
+        iounmap(memory_region_base);
+ 
+        /* Release char region */
+        unregister_chrdev_region(device_number, 1);
+ 
+        /* Remove cdev  */
+        cdev_del(&tdt4258_gamepad_cdev);
+ 
+        /* Destroy class and device */
+        device_destroy(cl, device_number);
+        class_destroy(cl);
 
 	return 0;
 
