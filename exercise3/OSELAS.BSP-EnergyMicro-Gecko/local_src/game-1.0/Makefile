@@ -13,7 +13,7 @@ LDFLAGS +=
 
 all: game
 
-game: signal.c
+game: signal.c input.c
 
 clean:
 	-rm -f game

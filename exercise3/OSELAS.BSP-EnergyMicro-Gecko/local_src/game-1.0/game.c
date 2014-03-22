@@ -12,6 +12,7 @@
 
 /* local includes */
 #include "signal.h"
+#include "input.h"
 
 /* constants */
 
@@ -19,24 +20,6 @@
 #define FILESIZE 320*240*2
 
 #define GAMEPAD_DRIVER "/dev/tdt4258_gamepad"
-
-static void
-run()
-{
-
-	int fd = open(GAMEPAD_DRIVER, O_RDWR, (mode_t)0600);
-
-	if (fd == -1) {
-		perror("Error opening");
-		exit(EXIT_FAILURE);
-	}
-
-	
-	for (;;) {
-		sleep(1000);
-	}
-}
-
 
 int
 main(int argc, char *argv[])
@@ -47,9 +30,17 @@ main(int argc, char *argv[])
 		perror("Error initiating signal handler");
 		exit(EXIT_FAILURE);
 	}
+
+	/* init input module */
+	if (input_init() == -1) {
+		perror("Error loading input module");
+		exit(EXIT_FAILURE);
+	}
 	
-	run();
-	
+	for (;;) {
+		pause();
+	}
+
 	exit(EXIT_SUCCESS);
 
 	/*	
@@ -64,15 +55,15 @@ main(int argc, char *argv[])
 
 	int i;
     	int fd;
-    	short *map;  /* mmapped array of int's */
+    	short *map;   mmapped array of int's 
 
-    	/* Open a file for writing.
+    	* Open a file for writing.
      	*  - Creating the file if it doesn't exist.
      	*  - Truncating it to 0 size if it already exists. (not really needed)
      	*
      	* Note: "O_WRONLY" mode is not sufficient when mmaping.
-     	*/
-	/*
+     	*
+	*
     	fd = open(FILEPATH, O_RDWR, (mode_t)0600);
     	if (fd == -1) {
 		perror("Error opening file for writing");

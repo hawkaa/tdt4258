@@ -2,6 +2,6 @@
 #define SIGNAL_H_
 
 extern int
-signal_handler_init();
+signal_handler_init(void);
 
 #endif
