@@ -11,9 +11,39 @@
 #define FILEPATH "/dev/fb0"
 #define FILESIZE 320*240*2
 
+#define GAMEPAD_DRIVER "/dev/tdt4258_gamepad"
+
 int main(int argc, char *argv[])
 {
+
+
+	int fd = open(GAMEPAD_DRIVER, O_RDWR, (mode_t)0600);
+
+	if (fd == -1) {
+		perror("Error opening");
+		exit(EXIT_FAILURE);
+	}
+
+	char val;
+	char *val_pointer = &val;
+	int retval = read(fd, val_pointer, 1);
+	printf("%c\n", val);
+
+
+	char *map = (char*)mmap(0, 1, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	if (map == MAP_FAILED) {
+		close(fd);
+		perror("Error mapping the file");
+		exit(EXIT_FAILURE);
+	}
+
+	printf("%s\n", map);
+	exit(EXIT_SUCCESS);
+
+	/*
+	
 	printf("Starting framebuffer test..\n");
+
 	int i;
     	int fd;
     	short *map;  /* mmapped array of int's */
@@ -24,6 +54,7 @@ int main(int argc, char *argv[])
      	*
      	* Note: "O_WRONLY" mode is not sufficient when mmaping.
      	*/
+	/*
     	fd = open(FILEPATH, O_RDWR, (mode_t)0600);
     	if (fd == -1) {
 		perror("Error opening file for writing");
@@ -51,5 +82,5 @@ int main(int argc, char *argv[])
 	ioctl(fd, 0x4680, &rect);
 	
 	printf("Ending framebuffer test..\n");
-	exit(EXIT_SUCCESS);
+	exit(EXIT_SUCCESS);*/
 }

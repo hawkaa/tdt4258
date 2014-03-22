@@ -7,6 +7,11 @@ driver-gamepad-flash:
 	make install
 	make flash
 
+game-flash:
+	make game
+	make install
+	make flash
+
 
 driver-gamepad :
 	
