@@ -11,6 +11,7 @@
 #include <linux/kdev_t.h>
 #include <linux/cdev.h>
 #include <linux/sched.h>
+#include <linux/interrupt.h>
 #include <asm/io.h>
 #include <asm/uaccess.h>
 #include <asm/siginfo.h>
@@ -21,7 +22,6 @@
 
 /* constasts */
 static char DEVICE_NAME[] = "tdt4258_gamepad";
-#define BUFFER_LENGTH 80
 
 /* static variables */
 static int irq_gpio_even;
@@ -66,9 +66,22 @@ signal_user_application()
 	int ret = send_sig_info(SIGUSR1, &info, t);    //send the signal
 
 	if (ret < 0) {
-		printk(KERN_INFO "Error sending ignal(%i)\n", SIGUSR1);
+		printk(KERN_INFO "Error sending signal(%i)\n", SIGUSR1);
 	}
+}
 
+irqreturn_t
+gpio_interrupt_handler(unsigned int irq, struct pt_reg *reg)
+{
+	button_value = ioread32(gpio_pc_base + GPIO_DIN);
+	is_eof = 0;
+
+	/* signal user application that new input is available */
+	signal_user_application();
+
+	/* clear interrupt */
+	iowrite32(0xff, gpio_base + GPIO_IFC);
+	return IRQ_HANDLED;	
 }
 
 static int
@@ -78,7 +91,6 @@ tdt4258_gamepad_open(struct inode *inode, struct file *filp)
 	printk(KERN_INFO "tdt4258_gamepad_open called...\n");
 	
 
-	printk(KERN_INFO "Registered PID %i\n", pid);
 
 	/* only one can have the device open at once */
 	if (device_open) {
@@ -86,21 +98,31 @@ tdt4258_gamepad_open(struct inode *inode, struct file *filp)
 		return -EBUSY;
 	}
 
-	/* log that the device is open */
-	++device_open;
-
 	/*
 	 * Device is now ready to open
 	 */
 
+	/* register interrupts */
+	if(request_irq(irq_gpio_odd, gpio_interrupt_handler, 0, DEVICE_NAME, NULL) || 
+	   request_irq(irq_gpio_even, gpio_interrupt_handler, 0 , DEVICE_NAME, NULL)){
+		printk(KERN_INFO "The device cannot register the IRQ's: %d, %d\n", irq_gpio_odd, irq_gpio_even);
+		return -EIO;
+	}
+	printk(KERN_INFO "Interrupts enabled. ");
+
+
+
 	/* save pid of the process that opened the driver */
 	pid = current->pid;
-
+	printk(KERN_INFO "Registered PID %i\n", pid);
+	
 	/* reset values */
 	is_eof = 0;
-	button_value = ioread32(gpio_pc_base + GPIO_DIN);
 
 	printk(KERN_INFO "Device successfully opened!");
+
+	/* log that the device is open */
+	++device_open;
 
 	return 0;
 }
@@ -112,6 +134,12 @@ tdt4258_gamepad_release(struct inode *inode, struct file *filp)
 	printk(KERN_INFO "tdt4258_gamepad_release called...\n");
 
 	--device_open;
+	if(device_open == 0){
+		/* free interrupt channels */
+		free_irq(irq_gpio_even, NULL);
+		free_irq(irq_gpio_odd, NULL);
+		printk(KERN_INFO "Interrupts disabled.");
+	}
 
 	printk(KERN_INFO "Device successfully released!");
 
@@ -125,8 +153,6 @@ tdt4258_gamepad_read(struct file *filp, char __user *buff,
 	/* TODO */
 	printk(KERN_INFO "tdt4258_gamepad_read called...\n");
 	
-	signal_user_application();
-
 	printk(KERN_INFO "Reading %i data.\n", count);
 
 	if (count && !is_eof) {
@@ -210,6 +236,11 @@ tdt4258_gamepad_probe(struct platform_device *dev)
 	/* enable internal pull up register */
 	iowrite32(0xff, gpio_pc_base + GPIO_DOUT);
 	
+	/* enable interrupt generation */
+	iowrite32(0x22222222, gpio_base + GPIO_EXTIPSELL);
+	iowrite32(0xff, gpio_base + GPIO_EXTIFALL);
+	iowrite32(0xff, gpio_base + GPIO_EXTIRISE);
+	iowrite32(0xff, gpio_base + GPIO_IEN);
 
 	/* allocate char region */
 	alloc_chrdev_region(&device_number, 0, 1, DEVICE_NAME);
@@ -241,6 +272,8 @@ tdt4258_gamepad_remove(struct platform_device *dev)
 					memory_region_base);
 	printk(KERN_INFO "Release size: %i\n", memory_region_size);
 	release_mem_region(memory_region_base, memory_region_size);
+
+	/* TODO Disable interrupt generation */
 
 	/* TODO Release memory map ? */
 
