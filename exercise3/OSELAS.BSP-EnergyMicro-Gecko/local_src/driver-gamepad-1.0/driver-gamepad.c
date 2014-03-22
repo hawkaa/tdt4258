@@ -11,6 +11,7 @@
 #include <linux/kdev_t.h>
 #include <linux/cdev.h>
 #include <asm/io.h>
+#include <asm/uaccess.h>
 
 
 /* local includes */
@@ -18,6 +19,7 @@
 
 /* constasts */
 static char DEVICE_NAME[] = "tdt4258_gamepad";
+#define BUFFER_LENGTH 80
 
 /* static variables */
 static int irq_gpio_even;
@@ -28,14 +30,38 @@ static void *gpio_pc_base;
 static int memory_region_base;
 static int memory_region_size;
 
+static dev_t device_number;
+
+/* checks if device is open or not */
+static int device_open = 0;
+
 /* for testing only */
-unsigned int button_value;
+static char button_value;
+static int is_eof;
 
 static int
 tdt4258_gamepad_open(struct inode *inode, struct file *filp)
 {
 	/* TODO */
 	printk(KERN_INFO "tdt4258_gamepad_open called...\n");
+	
+	/* only one can have the device open at once */
+	if (device_open) {
+		printk(KERN_INFO "The device is already opened by another process.");
+		return -EBUSY;
+	}
+
+	/* log that the device is open */
+	++device_open;
+
+	/* tell the kernel that the module cant be unloaded when the file is open */
+	//MOD_INC_USE_COUNT;
+
+	/* reset values */
+	is_eof = 0;
+	button_value = ioread32(gpio_pc_base + GPIO_DIN);
+
+	printk(KERN_INFO "Device successfully opened!");
 
 	return 0;
 }
@@ -46,6 +72,12 @@ tdt4258_gamepad_release(struct inode *inode, struct file *filp)
 	/* TODO */
 	printk(KERN_INFO "tdt4258_gamepad_release called...\n");
 
+	//MOD_DEC_USE_COUNT;
+
+	--device_open;
+
+	printk(KERN_INFO "Device successfully released!");
+
 	return 0;
 }
 
@@ -55,9 +87,18 @@ tdt4258_gamepad_read(struct file *filp, char __user *buff,
 {
 	/* TODO */
 	printk(KERN_INFO "tdt4258_gamepad_read called...\n");
-	button_value = ioread32(gpio_pc_base+GPIO_DIN);
-	printk(KERN_INFO "current GPIO_DIN value: %u", button_value);
-	return 0;
+
+
+	printk(KERN_INFO "Reading %i data.\n", count);
+
+	if (count && !is_eof) {
+		put_user(button_value, buff);
+		++is_eof;
+		return 1;
+	} else {
+		return 0;
+	}
+
 }
 
 static ssize_t
@@ -67,7 +108,8 @@ tdt4258_gamepad_write(struct file *filp, char __user *buff,
 	/* TODO */
 	printk(KERN_INFO "tdt4258_gamepad_write called...\n");
 
-	return 0;
+	printk(KERN_INFO "Writing to the driver is not supported!");
+	return -EINVAL;
 }
 
 static struct file_operations tdt4258_gamepad_fops = {
@@ -132,7 +174,6 @@ tdt4258_gamepad_probe(struct platform_device *dev)
 	
 
 	/* allocate char region */
-	dev_t device_number;
 	alloc_chrdev_region(&device_number, 0, 1, DEVICE_NAME);
 	printk(KERN_INFO "Major: %i\n", MAJOR(device_number));
 	printk(KERN_INFO "Minor: %i\n", MINOR(device_number));
@@ -167,7 +208,8 @@ tdt4258_gamepad_remove(struct platform_device *dev)
 
 	/* TODO release char region */
 
-	/* TODO remove cdev (inverce cdev_add) */
+	/* TODO remove cdev (inverse cdev_add) */
+	unregister_chrdev_region(device_number, 1);
 
 	/* TODO inverse class and device create */
 
