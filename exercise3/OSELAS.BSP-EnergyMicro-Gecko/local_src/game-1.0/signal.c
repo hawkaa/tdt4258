@@ -12,7 +12,6 @@ static void
 signal_handler(int signum)
 {
 	printf("Received signal(%i)\n", signum);
-	exit(0);
 }
 
 int
