@@ -7,14 +7,36 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <linux/fb.h>
+#include <linux/sched.h>
+#include <signal.h>
 
 #define FILEPATH "/dev/fb0"
 #define FILESIZE 320*240*2
 
 #define GAMEPAD_DRIVER "/dev/tdt4258_gamepad"
 
+
+void
+signal_handler(int signum)
+{
+	printf("Received signal(%i)\n", signum);
+	exit(0);
+}
+
+
 int main(int argc, char *argv[])
 {
+	int retval;
+	struct sigaction signal_action;
+	
+	signal_action.sa_handler = signal_handler;
+	sigemptyset(&signal_action);
+	signal_action.sa_flags = 0;
+	retval = sigaction(SIGUSR1, &signal_action, NULL);
+
+	if (retval < 0) {
+		printf("Sigaction error\n");
+	}
 
 
 	int fd = open(GAMEPAD_DRIVER, O_RDWR, (mode_t)0600);
@@ -24,20 +46,16 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	
 	char val;
 	char *val_pointer = &val;
-	int retval = read(fd, val_pointer, 1);
+	retval = read(fd, val_pointer, 1);
 	printf("%c\n", val);
 
-
-	char *map = (char*)mmap(0, 1, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-	if (map == MAP_FAILED) {
-		close(fd);
-		perror("Error mapping the file");
-		exit(EXIT_FAILURE);
+	for (;;) {
+		sleep(1000);
 	}
-
-	printf("%s\n", map);
+	
 	exit(EXIT_SUCCESS);
 
 	/*

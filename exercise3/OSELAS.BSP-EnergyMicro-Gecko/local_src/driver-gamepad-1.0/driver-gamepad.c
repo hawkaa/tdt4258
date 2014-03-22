@@ -10,8 +10,10 @@
 #include <linux/fs.h>
 #include <linux/kdev_t.h>
 #include <linux/cdev.h>
+#include <linux/sched.h>
 #include <asm/io.h>
 #include <asm/uaccess.h>
+#include <asm/siginfo.h>
 
 
 /* local includes */
@@ -35,9 +37,39 @@ static dev_t device_number;
 /* checks if device is open or not */
 static int device_open = 0;
 
+/* pid for the current process that has the file open */
+pid_t pid = 0;
+
 /* for testing only */
 static char button_value;
 static int is_eof;
+
+
+/*
+ * Signals the user application that opened the file with SIGUSR1 
+ * The signal contains no data.
+ */
+static void
+signal_user_application()
+{
+	struct siginfo info;
+	struct task_struct *t;
+	int return_value;
+
+	/* info */
+	info.si_signo = SIGUSR1;
+
+	/* task */
+	t = pid_task(find_pid_ns(pid, &init_pid_ns), PIDTYPE_PID);
+
+	/* send the signal */
+	int ret = send_sig_info(SIGUSR1, &info, t);    //send the signal
+
+	if (ret < 0) {
+		printk(KERN_INFO "Error sending ignal(%i)\n", SIGUSR1);
+	}
+
+}
 
 static int
 tdt4258_gamepad_open(struct inode *inode, struct file *filp)
@@ -45,6 +77,9 @@ tdt4258_gamepad_open(struct inode *inode, struct file *filp)
 	/* TODO */
 	printk(KERN_INFO "tdt4258_gamepad_open called...\n");
 	
+
+	printk(KERN_INFO "Registered PID %i\n", pid);
+
 	/* only one can have the device open at once */
 	if (device_open) {
 		printk(KERN_INFO "The device is already opened by another process.");
@@ -54,8 +89,12 @@ tdt4258_gamepad_open(struct inode *inode, struct file *filp)
 	/* log that the device is open */
 	++device_open;
 
-	/* tell the kernel that the module cant be unloaded when the file is open */
-	//MOD_INC_USE_COUNT;
+	/*
+	 * Device is now ready to open
+	 */
+
+	/* save pid of the process that opened the driver */
+	pid = current->pid;
 
 	/* reset values */
 	is_eof = 0;
@@ -71,8 +110,6 @@ tdt4258_gamepad_release(struct inode *inode, struct file *filp)
 {
 	/* TODO */
 	printk(KERN_INFO "tdt4258_gamepad_release called...\n");
-
-	//MOD_DEC_USE_COUNT;
 
 	--device_open;
 
