@@ -77,7 +77,7 @@ signal_user_application(void)
 irqreturn_t
 gpio_interrupt_handler(unsigned int irq, struct pt_reg *reg)
 {
-	button_value = ioread32(gpio_pc_base + GPIO_DIN);
+	button_value = ~ioread32(gpio_pc_base + GPIO_DIN);
 	is_eof = 0;
 
 	/* signal user application that new input is available */
