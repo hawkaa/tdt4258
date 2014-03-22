@@ -40,6 +40,9 @@ static int device_open = 0;
 /* pid for the current process that has the file open */
 pid_t pid = 0;
 
+/* device class */
+static struct class *cl;
+
 /* for testing only */
 static char button_value;
 static int is_eof;
@@ -103,12 +106,15 @@ tdt4258_gamepad_open(struct inode *inode, struct file *filp)
 	 * Device is now ready to open
 	 */
 
-	/* register interrupts */
-	if(request_irq(irq_gpio_odd, gpio_interrupt_handler, 0, DEVICE_NAME, NULL) || 
-	   request_irq(irq_gpio_even, gpio_interrupt_handler, 0 , DEVICE_NAME, NULL)){
-		printk(KERN_INFO "The device cannot register the IRQ's: %d, %d\n", irq_gpio_odd, irq_gpio_even);
-		return -EIO;
+	/* register interrupts */	
+	if(device_open == 0) {
+		if(request_irq(irq_gpio_odd, gpio_interrupt_handler, 0, DEVICE_NAME, NULL) || 
+	           request_irq(irq_gpio_even, gpio_interrupt_handler, 0 , DEVICE_NAME, NULL)){
+			printk(KERN_INFO "The device cannot register the IRQ's: %d, %d\n", irq_gpio_odd, irq_gpio_even);
+			return -EIO;
+		}
 	}
+
 	printk(KERN_INFO "Interrupts enabled. ");
 
 
@@ -274,16 +280,18 @@ tdt4258_gamepad_remove(struct platform_device *dev)
 	printk(KERN_INFO "Release size: %i\n", memory_region_size);
 	release_mem_region(memory_region_base, memory_region_size);
 
-	/* TODO Disable interrupt generation */
-
-	/* TODO Release memory map ? */
-
-	/* TODO release char region */
-
-	/* TODO remove cdev (inverse cdev_add) */
-	unregister_chrdev_region(device_number, 1);
-
-	/* TODO inverse class and device create */
+	/* Release memory map  */
+        iounmap(memory_region_base);
+ 
+        /* Release char region */
+        unregister_chrdev_region(device_number, 1);
+ 
+        /* Remove cdev  */
+        cdev_del(&tdt4258_gamepad_cdev);
+ 
+        /* Destroy class and device */
+        device_destroy(cl, device_number);
+        class_destroy(cl);
 
 	return 0;
 
