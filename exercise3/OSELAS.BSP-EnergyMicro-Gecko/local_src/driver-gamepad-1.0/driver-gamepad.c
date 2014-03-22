@@ -44,7 +44,7 @@ pid_t pid = 0;
 static struct class *cl;
 
 /* for testing only */
-static char button_value;
+static volatile char button_value;
 static int is_eof;
 
 
@@ -164,7 +164,7 @@ tdt4258_gamepad_read(struct file *filp, char __user *buff,
 
 	if (count && !is_eof) {
 		put_user(button_value, buff);
-		++is_eof;
+		//++is_eof;
 		return 1;
 	} else {
 		return 0;

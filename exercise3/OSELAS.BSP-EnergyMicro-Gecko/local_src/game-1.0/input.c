@@ -12,13 +12,14 @@
 static char GAMEPAD_DRIVER[] = "/dev/tdt4258_gamepad";
 
 static int fd;
-static char button_value;
+static volatile char button_value;
 
 static char
 get_button_value(void)
 {
 	char v;
 	read(fd, &v, 1);
+	printf("Read: %i\n", v);
 	return v;
 }
 
