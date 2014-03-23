@@ -15,6 +15,7 @@
 #include "input.h"
 #include "timer.h"
 #include "pong.h"
+#include "handlers.h"
 
 /* constants */
 
@@ -33,8 +34,8 @@ int
 main(int argc, char *argv[])
 {
 	
-/* init button signal handler */
-if (button_signal_init()) {
+	/* init button signal handler */
+	if (button_signal_init()) {
 		perror("Error initiating button signal handler");
 		exit(EXIT_FAILURE);
 	}
@@ -51,7 +52,7 @@ if (button_signal_init()) {
 		exit(EXIT_FAILURE);
 	}
 
-	if (timer_init(1000000)) {
+	if (timer_init(1000)) {
 		perror("Error initiating timer module");
 		exit(EXIT_FAILURE);
 	}
@@ -59,6 +60,19 @@ if (button_signal_init()) {
 	/* register button handlers */
 	register_button_down_handler(2, &up_left_button_press);
 	
+	/*
+	 * Register handlers
+	 */
+	register_button_down_handler(1, &button_1_down_handler);
+	register_button_down_handler(2, &button_2_down_handler);
+	register_button_down_handler(3, &button_3_down_handler);
+	register_button_down_handler(4, &button_4_down_handler);
+	register_button_down_handler(5, &button_5_down_handler);
+	register_button_down_handler(6, &button_6_down_handler);
+	register_button_down_handler(7, &button_7_down_handler);
+	register_button_down_handler(8, &button_8_down_handler);
+	register_timer_handler(&timer_tick_handler);
+
 	for (;;) {
 		pause();
 	}

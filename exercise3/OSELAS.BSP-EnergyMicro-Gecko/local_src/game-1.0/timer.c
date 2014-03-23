@@ -12,7 +12,7 @@ static void (*timer_handler)(void);
 int
 timer_init(long int usec)
 {
-
+	
 
 	struct itimerval val;
 	val.it_value.tv_usec = usec;
@@ -26,7 +26,6 @@ timer_init(long int usec)
 void
 timer_tick(void)
 {
-	printf("Timer tick!\n");
 	if (timer_handler != NULL) {
 		(*timer_handler)();
 	}
