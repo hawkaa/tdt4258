@@ -14,6 +14,7 @@
 #include "signal.h"
 #include "input.h"
 #include "timer.h"
+#include "handlers.h"
 
 /* constants */
 
@@ -32,8 +33,8 @@ int
 main(int argc, char *argv[])
 {
 	
-/* init button signal handler */
-if (button_signal_init()) {
+	/* init button signal handler */
+	if (button_signal_init()) {
 		perror("Error initiating button signal handler");
 		exit(EXIT_FAILURE);
 	}
@@ -55,6 +56,9 @@ if (button_signal_init()) {
 		exit(EXIT_FAILURE);
 	}
 
+	/*
+	 * Register handlers
+	 */
 	/* register button handlers */
 	register_button_down_handler(1, button_1_down);
 	
