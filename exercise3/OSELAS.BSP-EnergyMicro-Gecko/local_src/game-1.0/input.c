@@ -1,3 +1,11 @@
+/*
+ * MODULE INPUT
+ * 
+ * This module is the interface from the gamepad to the rest of the
+ * application. It will take care of all calculation and generating
+ * the respective button up and button down events.
+ */
+
 /* global includes */
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,14 +48,17 @@ static char
 get_button_value(void)
 {
 	char v;
-	int retval;
-	retval = read(fd, &v, 1);
-	if (retval == 0) {
+	/* read one byte */
+	if (read(fd, &v, 1)) {
 		perror("Could not read button value");
 	}
 	return v;
 }
 
+/*
+ * Button down
+ * Will call the handler defined for the specific button
+ */
 static void
 button_down(int button)
 {
@@ -56,6 +67,10 @@ button_down(int button)
 	}
 }
 
+/*
+ * Button up
+ * Will call the handler defined for the specific button
+ */
 static void
 button_up(int button)
 {
@@ -73,9 +88,11 @@ int
 input_init(void)
 {
 	int i;
+
 	/* ønsker en gjennomgang på flaggene her */
 	fd = open(GAMEPAD_DRIVER, O_RDWR, (mode_t)0600);
 	
+	/* set null pointers */
 	for (i = 0; i < NUM_BUTTONS; ++i) {
 		button_down_function_pointers[i] = NULL;
 		button_up_function_pointers[i] = NULL;
@@ -84,45 +101,59 @@ input_init(void)
 	return fd;
 }
 
+/*
+ * Process input
+ * Called on each driver signal, and will not be interrupted by another
+ * gamepad driver signal. Will read the current button value and calculat
+ * which button was pressed/released.
+ */
 void
 process_input(void)
 {
 
+	/* get new button value */
 	char new_button_value;
 	new_button_value = get_button_value();
 
-	/* xor */
+	/* get the difference between old and new value */
 	char value_diff = button_value ^ new_button_value;
 	
 	
 	if (!value_diff) {
 		/*
-		 * Nothing have hoppened. There is no good reason for this to
+		 * Nothing have happened. There is no good reason for this to
 		 * happen, but nonetheless, we may just return.
 		 */
 		return;
 	}
+
 
 	/* iterate over bits */
 	int z;
 	int i = 7;
 	for (z = 128; z > 0; z>>=1, --i) {
 		if (z & value_diff) {
+			/* current bit has changed */
 			if (z & new_button_value) {
+				/* current bit has been changed to 1 */
 				button_down(i);
 			} else {
+				/* current bit has been changed to 0 */
 				button_up(i);
 			}
 		}
 	}
 
 
-	/* update value */
+	/* update button value */
 	button_value = new_button_value;
 
 
 }
 
+/*
+ * Register button down handler
+ */
 void
 register_button_down_handler(int button, void (*handler)(void))
 {
@@ -133,6 +164,9 @@ register_button_down_handler(int button, void (*handler)(void))
 
 }
 
+/*
+ * Register button up handler
+ */
 void
 register_button_up_handler(int button, void (*handler)(void))
 {
