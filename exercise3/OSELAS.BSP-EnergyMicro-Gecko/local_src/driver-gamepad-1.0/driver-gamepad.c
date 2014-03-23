@@ -234,7 +234,7 @@ tdt4258_gamepad_probe(struct platform_device *dev)
 	gpio_pc_base = gpio_base + GPIO_PC;
 
 	/*
-	 * GPIO initialization
+	 * GPIO initialization.
 	 */
 
 	/* set pins 8-15 to input */
