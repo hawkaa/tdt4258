@@ -11,42 +11,31 @@
 /* local includes */
 #include "input.h"
 
-/* constants */
+/*
+ * Constants
+ */
 #define NUM_BUTTONS 8
 static char GAMEPAD_DRIVER[] = "/dev/tdt4258_gamepad";
 
+/*
+ * Static variables
+ */
 
+/* file descriptor for the driver */
 static int fd;
+
+/* current button value */
 static volatile char button_value;
 
+/* array of button up function pointers */
+static void (*button_up_function_pointers[NUM_BUTTONS]) (void);
+
+/* array of button down function pointers */
 static void (*button_down_function_pointers[NUM_BUTTONS]) (void);
 
-static int
-get_bit_position(char c)
-{
-	if (c == 1) return 0;
-	if (c == 2) return 1;
-	if (c == 4) return 2;
-	if (c == 8) return 3;
-	if (c == 16) return 4;
-	if (c == 32) return 5;
-	if (c == 64) return 6;
-	if (c == 128) return 7;
-	return -1;
-}
-
-const char* 
-byte_to_binary(int x)
-{
-	static char b[9];
-	b[0] = '\0';
-	int z;
-	for (z = 128; z > 0; z >>= 1) {
-		strcat(b, ((x & z) == z) ? "1" : "0");
-	}
-	return b;
-}
-
+/* 
+ * Returns the byte value of the buttons
+ */
 static char
 get_button_value(void)
 {
@@ -59,7 +48,29 @@ get_button_value(void)
 	return v;
 }
 
-int input_init(void)
+static void
+button_down(int button)
+{
+	if (button_down_function_pointers[button] != NULL) {
+		(*button_down_function_pointers[button])();
+	}
+}
+
+static void
+button_up(int button)
+{
+	if (button_up_function_pointers[button] != NULL) {
+		(*button_up_function_pointers[button])();
+	}
+
+}
+
+/*
+ * Initialize function
+ * Opens the driver and initiates the function pointers
+ */
+int
+input_init(void)
 {
 	int i;
 	/* ønsker en gjennomgang på flaggene her */
@@ -67,6 +78,7 @@ int input_init(void)
 	
 	for (i = 0; i < NUM_BUTTONS; ++i) {
 		button_down_function_pointers[i] = NULL;
+		button_up_function_pointers[i] = NULL;
 	}
 
 	return fd;
@@ -75,7 +87,6 @@ int input_init(void)
 void
 process_input(void)
 {
-	printf("process_input called.\n");
 
 	char new_button_value;
 	new_button_value = get_button_value();
@@ -83,30 +94,27 @@ process_input(void)
 	/* xor */
 	char value_diff = button_value ^ new_button_value;
 	
-	printf("Old value: %s\n", byte_to_binary(button_value));
-	printf("New value: %s\n", byte_to_binary(new_button_value));
-	printf("Diff value: %s\n", byte_to_binary(value_diff));
 	
 	if (!value_diff) {
-		/* nothing has happend */
+		/*
+		 * Nothing have hoppened. There is no good reason for this to
+		 * happen, but nonetheless, we may just return.
+		 */
 		return;
 	}
+
+	/* iterate over bits */
 	int z;
 	int i = 7;
 	for (z = 128; z > 0; z>>=1, --i) {
 		if (z & value_diff) {
 			if (z & new_button_value) {
-				printf("Button %i was pressed\n", i + 1);
+				button_down(i);
 			} else {
-				printf("Button %i was released\n", i + 1);
+				button_up(i);
 			}
 		}
 	}
-
-	int position = get_bit_position(value_diff);
-	if (position == -1)
-		/* we have more than one button to update, choosing to skip */
-		return;
 
 
 	/* update value */
