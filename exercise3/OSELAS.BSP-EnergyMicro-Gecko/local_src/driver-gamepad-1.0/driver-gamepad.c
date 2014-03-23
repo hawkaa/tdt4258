@@ -270,18 +270,14 @@ tdt4258_gamepad_probe(struct platform_device *dev)
 }
 
 /*
- * Remove function
+ * Remove gamepad function
  */
 static int
 tdt4258_gamepad_remove(struct platform_device *dev)
 {
-	printk("my_remove called\n");
 
 
 	/* remove memory region alloc */
-	printk(KERN_INFO "Releasing base address: %#010x\n",
-					memory_region_base);
-	printk(KERN_INFO "Release size: %i\n", memory_region_size);
 	release_mem_region(memory_region_base, memory_region_size);
 
 	/* Release memory map  */
@@ -297,16 +293,20 @@ tdt4258_gamepad_remove(struct platform_device *dev)
         device_destroy(cl, device_number);
         class_destroy(cl);
 
+	/* return success */
 	return 0;
 
 }
 
-
+/*
+ * Driver structures
+ */
 
 static const struct of_device_id my_of_match[] = {
 	{ .compatible = "tdt4258", },
 	{ },
 };
+
 MODULE_DEVICE_TABLE(of, my_of_match);
 
 static struct platform_driver tdt4258_gamepad_driver = {
@@ -319,45 +319,38 @@ static struct platform_driver tdt4258_gamepad_driver = {
 	},
 };
 
-
-
 /*
- * template_init - function to insert this module into kernel space
- *
- * This is the first of two exported functions to handle inserting this
- * code into a running kernel
- *
- * Returns 0 if successfull, otherwise -1
+ * Module init
+ * This function will do nothing but register the driver
  */
-
-static int __init template_init(void)
-{
-
-	printk("Hello World, here is your module speaking\n");
-	
+static int __init
+template_init(void)
+{	
 	/* initiate gamepad driver */
 	platform_driver_register(&tdt4258_gamepad_driver);
 
+	/* return success */
 	return 0;
 }
 
 /*
- * template_cleanup - function to cleanup this module from kernel space
- *
- * This is the second of two exported functions to handle cleanup this
- * code from a running kernel
+ * Module cleanup
+ * Will unregister the driver
  */
-
-static void __exit template_cleanup(void)
+static void __exit
+template_cleanup(void)
 {
-	printk("Short life for a small module...\n");
 	platform_driver_unregister(&tdt4258_gamepad_driver);
 	
 	
 }
+
+/*
+ * Module data
+ */
 module_init(template_init);
 module_exit(template_cleanup);
 
-MODULE_DESCRIPTION("Small module, demo only, not very useful.");
+MODULE_DESCRIPTION("Kernel module for the TDT4258 gamepad driver.");
 MODULE_LICENSE("GPL");
 
