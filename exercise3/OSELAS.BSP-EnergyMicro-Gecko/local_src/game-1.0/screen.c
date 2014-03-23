@@ -77,14 +77,16 @@ void close_screen()
 
 void draw_element(const screen_elem *old_elem, const screen_elem *new_elem) 
 {
-	if(old_elem != NULL){	
+	if(old_elem != NULL){
+		printf("clearing x=%d, y=%d\n", old_elem->x, old_elem->y);	
 		update_display(old_elem->x, old_elem->y, 
 				old_elem->x+old_elem->width, old_elem->y+old_elem->height, 0);
 		update_square(old_elem->x, old_elem->y, old_elem->width, old_elem->height);
 		ioctl(fd, 0x4680, &update_sq);		
 	}
 
-	if(new_elem != NULL){	
+	if(new_elem != NULL){
+		printf("drawing x=%d, y=%d\n", new_elem->x, new_elem->y);	
 		update_display(new_elem->x, new_elem->x+new_elem->width, 
 				new_elem->y, new_elem->y+new_elem->height, new_elem->c);
 		update_square(new_elem->x, new_elem->y, new_elem->width, new_elem->height);
