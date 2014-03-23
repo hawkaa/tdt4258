@@ -10,10 +10,9 @@
 static void (*timer_handler)(void);
 
 int
-timer_init(unsigned long int usec)
+timer_init(long int usec)
 {
 	
-	printf("Received %i\n", usec);
 
 	struct itimerval val;
 	val.it_value.tv_usec = usec;
