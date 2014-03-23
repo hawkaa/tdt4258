@@ -6,7 +6,6 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <sys/mman.h>
 #include <linux/fb.h>
 #include <signal.h>
 
@@ -15,6 +14,7 @@
 #include "input.h"
 #include "timer.h"
 #include "pong.h"
+#include "screen.h"
 
 /* constants */
 
@@ -26,35 +26,40 @@
 int
 main(int argc, char *argv[])
 {
-	
+
+	init_screen();
+	printf("closing..\n");
+	close_screen();	
+	printf("done.\n");
+	return 0;	
 	/* init button signal handler */
-	if (button_signal_init()) {
+	/*if (button_signal_init()) {
 		perror("Error initiating button signal handler");
 		exit(EXIT_FAILURE);
-	}
+	}*/
 
 	/* init timer signal handler */
-	if (timer_signal_init()) {
+	/*if (timer_signal_init()) {
 		perror("Error initiating timer signal handler");
 		exit(EXIT_FAILURE);
-	}
+	}*/
 
 	/* init input module */
-	if (input_init() == -1) {
+	/*if (input_init() == -1) {
 		perror("Error loading input module");
 		exit(EXIT_FAILURE);
-	}
+	}*/
 
-	if (timer_init(1000)) {
+	/*if (timer_init(1000)) {
 		perror("Error initiating timer module");
 		exit(EXIT_FAILURE);
-	}
+	}*/
 
 	/*
 	 * Register handlers for the pong game
 	 */
 
-	register_button_down_handler(2, &up_left_button_press);
+	/*register_button_down_handler(2, &up_left_button_press);
 	register_button_up_handler(2, &up_left_button_release);
 
 	register_button_down_handler(4, &down_left_button_press);
@@ -74,7 +79,7 @@ main(int argc, char *argv[])
 	}
 
 	exit(EXIT_SUCCESS);
-
+	*/
 	/*	
 	char val;
 	char *val_pointer = &val;

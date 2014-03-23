@@ -1,7 +1,4 @@
-/*
- * This is a demo Linux kernel module.
- */
-
+/* global includes */
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/init.h>
@@ -18,35 +15,46 @@
 
 
 /* local includes */
-#include "driver-gamepad.h"
+#include "gamepad.h"
 
-/* constasts */
+/*
+ * Constants
+ */
 static char DEVICE_NAME[] = "tdt4258_gamepad";
 
-/* static variables */
+/*
+ * Static variables
+ */
+
+/* interrupt channels for odd and even */
 static int irq_gpio_even;
 static int irq_gpio_odd;
+
+/* base addresses for GPIO (and port C) */
 static void *gpio_base;
 static void *gpio_pc_base;
 
+/* information about allocated memory region */
 static int memory_region_base;
 static int memory_region_size;
 
+/* device number */
 static dev_t device_number;
 
 /* checks if device is open or not */
-static int device_open = 0;
+static volatile int device_open = 0;
 
 /* pid for the current process that has the file open */
 pid_t pid = 0;
 
+/* current button value */
+static volatile char button_value;
+
 /* device class */
 static struct class *cl;
 
-/* for testing only */
-static volatile char button_value;
-static int is_eof;
-
+/* character device structure */
+static struct cdev tdt4258_gamepad_cdev;
 
 /*
  * Signals the user application that opened the file with SIGUSR1 
@@ -74,11 +82,13 @@ signal_user_application(void)
 	}
 }
 
+/*
+ * Interrupt handler
+ */
 irqreturn_t
 gpio_interrupt_handler(unsigned int irq, struct pt_reg *reg)
 {
 	button_value = ~ioread32(gpio_pc_base + GPIO_DIN);
-	is_eof = 0;
 
 	/* signal user application that new input is available */
 	signal_user_application();
@@ -88,13 +98,13 @@ gpio_interrupt_handler(unsigned int irq, struct pt_reg *reg)
 	return IRQ_HANDLED;	
 }
 
+/*
+ * Open driver handler.
+ * Only one handler can open the device at once.
+ */
 static int
 tdt4258_gamepad_open(struct inode *inode, struct file *filp)
 {
-	/* TODO */
-	printk(KERN_INFO "tdt4258_gamepad_open called...\n");
-	
-
 
 	/* only one can have the device open at once */
 	if (device_open) {
@@ -115,56 +125,48 @@ tdt4258_gamepad_open(struct inode *inode, struct file *filp)
 		}
 	}
 
-	printk(KERN_INFO "Interrupts enabled. ");
-
-
-
 	/* save pid of the process that opened the driver */
 	pid = current->pid;
-	printk(KERN_INFO "Registered PID %i\n", pid);
 	
-	/* reset values */
-	is_eof = 0;
-
-	printk(KERN_INFO "Device successfully opened!");
 
 	/* log that the device is open */
 	++device_open;
 
+	/* return success */
 	return 0;
 }
 
+/*
+ * Release driver handler.
+ */
 static int
 tdt4258_gamepad_release(struct inode *inode, struct file *filp)
 {
-	/* TODO */
-	printk(KERN_INFO "tdt4258_gamepad_release called...\n");
-
+	
+	/* decrease number of devices open */
 	--device_open;
-	if(device_open == 0){
+
+	if (device_open == 0) {
 		/* free interrupt channels */
 		free_irq(irq_gpio_even, NULL);
 		free_irq(irq_gpio_odd, NULL);
-		printk(KERN_INFO "Interrupts disabled.");
 	}
 
-	printk(KERN_INFO "Device successfully released!");
-
+	/* return success */
 	return 0;
 }
 
+/*
+ * Read device handler.
+ * This will never return EOF, and can be called indefinitely.
+ * Will return only one byte of data (char).
+ */
 static ssize_t
 tdt4258_gamepad_read(struct file *filp, char __user *buff,
 		size_t count, loff_t *offp)
 {
-	/* TODO */
-	printk(KERN_INFO "tdt4258_gamepad_read called...\n");
-	
-	printk(KERN_INFO "Reading %i data.\n", count);
-
-	if (count && !is_eof) {
+	if (count) {
 		put_user(button_value, buff);
-		//++is_eof;
 		return 1;
 	} else {
 		return 0;
@@ -172,17 +174,21 @@ tdt4258_gamepad_read(struct file *filp, char __user *buff,
 
 }
 
+/*
+ * Write device handler
+ * Writing to the gamepad is not supported
+ */
 static ssize_t
 tdt4258_gamepad_write(struct file *filp, const char __user *buff,
 		size_t count, loff_t *offp)
 {
-	/* TODO */
-	printk(KERN_INFO "tdt4258_gamepad_write called...\n");
-
 	printk(KERN_INFO "Writing to the driver is not supported!");
+
+	/* return failure */
 	return -EINVAL;
 }
 
+/* file operations for the gamepad driver */
 static struct file_operations tdt4258_gamepad_fops = {
 	.owner = THIS_MODULE,
 	.read = tdt4258_gamepad_read,
@@ -191,51 +197,45 @@ static struct file_operations tdt4258_gamepad_fops = {
 	.release = tdt4258_gamepad_release
 };
 
-static struct cdev tdt4258_gamepad_cdev;
-
-
 /*
- * Probe function
+ * Gamepad probe function
  */
 static int
 tdt4258_gamepad_probe(struct platform_device *dev)
 {
 	struct resource *res;
 	
-	printk(KERN_INFO "Probing tdt4258_gamepad_driver...\n");
-
+	/* requesting resource info */
 	res = platform_get_resource(dev, IORESOURCE_MEM,
 				PLATFORM_MEM_INDEX_GPIO);
 
-	/* save the variables */
+	/* save memory region address and size */
 	memory_region_base = res->start;
 	memory_region_size = (res->end - res->start) / 4;
-	printk(KERN_INFO "GPIO Base address: %#010x\n", memory_region_base);
-	printk(KERN_INFO "GPIO memory address size: %i\n", memory_region_size);
 
-	/* irq numbers */
+	/* query irq numbers */
 	irq_gpio_even = platform_get_irq(dev, PLATFORM_IRQ_INDEX_GPIO_EVEN);
 	irq_gpio_odd = platform_get_irq(dev, PLATFORM_IRQ_INDEX_GPIO_ODD);
-	printk(KERN_INFO "GPIO even IRQ: %i\n", irq_gpio_even);
-	printk(KERN_INFO "GPIO odd IRQ: %i\n", irq_gpio_odd);
 
-	/* reserve */
+	/* reserve memory region */
 	res = request_mem_region(memory_region_base,
 				memory_region_size, DEVICE_NAME);
 	if (res == NULL) {
+		/* request faied */
 		printk(KERN_INFO "Could not allocate memory region...\n");
 		return 1;
-	} else {
-		printk(KERN_INFO "Memory region allocated!\n");
-	}
+	} 
 
-
-	/* memory map */
+	/* memory map (for virtual memory space support) */
 	gpio_base = ioremap_nocache(memory_region_base, memory_region_size);
 	
-	/* save pointers for gpio pc base so we dont have to calculate it all the time*/
+	/* save pointers for gpio pc base so we dont have to calculate it 
+	all the time */
 	gpio_pc_base = gpio_base + GPIO_PC;
 
+	/*
+	 * GPIO initialization.
+	 */
 
 	/* set pins 8-15 to input */
 	iowrite32(0x33333333, gpio_pc_base + GPIO_MODEL);
@@ -249,34 +249,35 @@ tdt4258_gamepad_probe(struct platform_device *dev)
 	iowrite32(0xff, gpio_base + GPIO_EXTIRISE);
 	iowrite32(0xff, gpio_base + GPIO_IEN);
 
+	/*
+	 * Device registration
+	 */
+
 	/* allocate char region */
 	alloc_chrdev_region(&device_number, 0, 1, DEVICE_NAME);
-	printk(KERN_INFO "Major: %i\n", MAJOR(device_number));
-	printk(KERN_INFO "Minor: %i\n", MINOR(device_number));
 	
+	/* add character device */
 	cdev_init(&tdt4258_gamepad_cdev, &tdt4258_gamepad_fops);
 	cdev_add(&tdt4258_gamepad_cdev, device_number, 1);
 
+	/* create class and device */
 	cl = class_create(THIS_MODULE, DEVICE_NAME);
 	device_create(cl, NULL, device_number, NULL, DEVICE_NAME);
 
+	/* return success */
 	return 0;
 
 }
 
 /*
- * Remove function
+ * Remove gamepad function
  */
 static int
 tdt4258_gamepad_remove(struct platform_device *dev)
 {
-	printk("my_remove called\n");
 
 
 	/* remove memory region alloc */
-	printk(KERN_INFO "Releasing base address: %#010x\n",
-					memory_region_base);
-	printk(KERN_INFO "Release size: %i\n", memory_region_size);
 	release_mem_region(memory_region_base, memory_region_size);
 
 	/* Release memory map  */
@@ -292,16 +293,20 @@ tdt4258_gamepad_remove(struct platform_device *dev)
         device_destroy(cl, device_number);
         class_destroy(cl);
 
+	/* return success */
 	return 0;
 
 }
 
-
+/*
+ * Driver structures
+ */
 
 static const struct of_device_id my_of_match[] = {
 	{ .compatible = "tdt4258", },
 	{ },
 };
+
 MODULE_DEVICE_TABLE(of, my_of_match);
 
 static struct platform_driver tdt4258_gamepad_driver = {
@@ -314,45 +319,38 @@ static struct platform_driver tdt4258_gamepad_driver = {
 	},
 };
 
-
-
 /*
- * template_init - function to insert this module into kernel space
- *
- * This is the first of two exported functions to handle inserting this
- * code into a running kernel
- *
- * Returns 0 if successfull, otherwise -1
+ * Module init
+ * This function will do nothing but register the driver
  */
-
-static int __init template_init(void)
-{
-
-	printk("Hello World, here is your module speaking\n");
-	
+static int __init
+template_init(void)
+{	
 	/* initiate gamepad driver */
 	platform_driver_register(&tdt4258_gamepad_driver);
 
+	/* return success */
 	return 0;
 }
 
 /*
- * template_cleanup - function to cleanup this module from kernel space
- *
- * This is the second of two exported functions to handle cleanup this
- * code from a running kernel
+ * Module cleanup
+ * Will unregister the driver
  */
-
-static void __exit template_cleanup(void)
+static void __exit
+template_cleanup(void)
 {
-	printk("Short life for a small module...\n");
 	platform_driver_unregister(&tdt4258_gamepad_driver);
 	
 	
 }
+
+/*
+ * Module data
+ */
 module_init(template_init);
 module_exit(template_cleanup);
 
-MODULE_DESCRIPTION("Small module, demo only, not very useful.");
+MODULE_DESCRIPTION("Kernel module for the TDT4258 gamepad driver.");
 MODULE_LICENSE("GPL");
 
