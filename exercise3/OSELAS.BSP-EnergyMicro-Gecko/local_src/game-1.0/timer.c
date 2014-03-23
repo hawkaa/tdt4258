@@ -24,7 +24,7 @@ timer_init(long int usec)
 }
 
 void
-timer_tick(void)
+sigalrm_timer_tick(void)
 {
 	if (timer_handler != NULL) {
 		(*timer_handler)();

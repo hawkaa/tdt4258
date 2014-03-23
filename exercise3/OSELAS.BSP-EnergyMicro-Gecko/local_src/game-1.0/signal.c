@@ -11,7 +11,7 @@
 static void
 sigalrm_handler(int signum)
 {
-	timer_tick();
+	sigalrm_timer_tick();
 }
 
 static void

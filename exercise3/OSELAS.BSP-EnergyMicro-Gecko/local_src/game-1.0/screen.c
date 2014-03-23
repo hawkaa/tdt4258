@@ -44,7 +44,7 @@ void init_screen()
 	ball.heigt = 40;*/	
 }
 
-void draw_element(screen_elem old_elem, screen_elem old_elem) 
+void draw_element(screen_elem old_elem, screen_elem new_elem) 
 {
 
 }

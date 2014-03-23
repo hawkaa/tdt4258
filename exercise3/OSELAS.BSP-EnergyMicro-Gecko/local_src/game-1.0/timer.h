@@ -5,7 +5,7 @@ extern int
 timer_init(long int usec);
 
 extern void
-timer_tick(void);
+sigalrm_timer_tick(void);
 
 extern void
 register_timer_handler(void (*handler)(void));
