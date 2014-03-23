@@ -1,15 +1,19 @@
-#ifndef DRIVER_GAMEPAD_H_
-#define DRIVER_GAMEPAD_H_
+/*
+ * This header defines useful addresses and constants needed for the 
+ * gamepad driver.
+ */
 
-
+/* indices */
 #define PLATFORM_MEM_INDEX_GPIO 0
 #define PLATFORM_IRQ_INDEX_GPIO_EVEN 0
 #define PLATFORM_IRQ_INDEX_GPIO_ODD 1
 
+/* port bases */
 #define GPIO_PA 0x00
 #define GPIO_PB 0x24
 #define GPIO_PC 0x48
 
+/* register offsets */
 #define GPIO_CTRL 0x00
 #define GPIO_MODEL 0x04
 #define GPIO_MODEH 0x08
@@ -25,4 +29,3 @@
 #define GPIO_IEN 0x110
 #define GPIO_IFC 0x11c
 
-#endif
