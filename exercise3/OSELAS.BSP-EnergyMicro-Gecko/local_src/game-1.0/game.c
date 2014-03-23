@@ -15,7 +15,6 @@
 #include "input.h"
 #include "timer.h"
 #include "pong.h"
-#include "handlers.h"
 
 /* constants */
 
@@ -23,12 +22,6 @@
 #define FILESIZE 320*240*2
 
 #define GAMEPAD_DRIVER "/dev/tdt4258_gamepad"
-
-static void
-button_1_down(void)
-{
-	printf("Herregud, som du trykker på knapp nr ÉN!!\n");
-}
 
 int
 main(int argc, char *argv[])
@@ -57,21 +50,24 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	/* register button handlers */
-	register_button_down_handler(2, &up_left_button_press);
-	
 	/*
-	 * Register handlers
+	 * Register handlers for the pong game
 	 */
-	register_button_down_handler(1, &button_1_down_handler);
-	register_button_down_handler(2, &button_2_down_handler);
-	register_button_down_handler(3, &button_3_down_handler);
-	register_button_down_handler(4, &button_4_down_handler);
-	register_button_down_handler(5, &button_5_down_handler);
-	register_button_down_handler(6, &button_6_down_handler);
-	register_button_down_handler(7, &button_7_down_handler);
-	register_button_down_handler(8, &button_8_down_handler);
-	register_timer_handler(&timer_tick_handler);
+
+	register_button_down_handler(2, &up_left_button_press);
+	register_button_up_handler(2, &up_left_button_release);
+
+	register_button_down_handler(4, &down_left_button_press);
+	register_button_up_handler(4, &down_left_button_release);
+
+	register_button_down_handler(6, &up_right_button_press);
+	register_button_up_handler(6, &up_right_button_release);
+
+	register_button_down_handler(8, &down_right_button_press);
+	register_button_up_handler(8, &down_right_button_release);
+
+	register_timer_handler(&timer_tick);
+
 
 	for (;;) {
 		pause();

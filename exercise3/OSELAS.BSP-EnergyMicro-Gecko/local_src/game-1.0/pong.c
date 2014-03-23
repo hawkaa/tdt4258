@@ -31,9 +31,3 @@ down_right_button_press(void){}
 
 void
 down_right_button_release(void){}
-
-
-
-
-
-
