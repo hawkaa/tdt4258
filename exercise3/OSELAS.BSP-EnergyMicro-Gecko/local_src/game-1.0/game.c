@@ -59,9 +59,16 @@ main(int argc, char *argv[])
 	/*
 	 * Register handlers
 	 */
-	/* register button handlers */
-	register_button_down_handler(1, button_1_down);
-	
+	register_button_down_handler(1, &button_1_down_handler);
+	register_button_down_handler(2, &button_2_down_handler);
+	register_button_down_handler(3, &button_3_down_handler);
+	register_button_down_handler(4, &button_4_down_handler);
+	register_button_down_handler(5, &button_5_down_handler);
+	register_button_down_handler(6, &button_6_down_handler);
+	register_button_down_handler(7, &button_7_down_handler);
+	register_button_down_handler(8, &button_8_down_handler);
+	register_timer_handler(&timer_tick_handler);
+
 	for (;;) {
 		pause();
 	}

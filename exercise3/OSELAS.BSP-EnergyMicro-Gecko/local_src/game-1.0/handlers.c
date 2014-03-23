@@ -1,3 +1,9 @@
+/* global includes */
+#include <stdlib.h>
+#include <stdio.h>
+
+/* local includes */
+#include "handlers.h"
 
 void
 button_1_down_handler(void)
@@ -14,7 +20,7 @@ button_2_down_handler(void)
 void
 button_3_down_handler(void)
 {
-
+	printf("Trykk på knapp 3\n");
 }
 
 void

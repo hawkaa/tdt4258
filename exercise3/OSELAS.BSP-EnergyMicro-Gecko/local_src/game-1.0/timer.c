@@ -26,7 +26,6 @@ timer_init(long int usec)
 void
 timer_tick(void)
 {
-	printf("Timer tick!\n");
 	if (timer_handler != NULL) {
 		(*timer_handler)();
 	}
