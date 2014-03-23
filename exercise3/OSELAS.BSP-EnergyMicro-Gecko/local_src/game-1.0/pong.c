@@ -14,35 +14,40 @@
 #define BALL_SIZE 5
 #define MARGIN 10
 
-static screen_elem player1, player2, ball;
+static screen_elem player_left, player_right, ball;
+static int game_over = 1;
+
+static void reset_ball_pos(void)
+{
+	ball.dx = 0;
+	ball.dy = 0;
+	ball.x = SCREEN_WIDTH / 2;
+	ball.y = SCREEN_HEIGHT  / 2;
+}
 
 void
 pong_init(void)
 {
-	player1.x = MARGIN;
-	player1.y = MARGIN;
-	player1.height = PLAYER_HEIGHT;
-	player1.width = PLAYER_WIDTH;
-	player1.c = 0xffff;
-	player1.dx = 0;
-	player1.dy = 0;
+	player_left.x = MARGIN;
+	player_left.y = MARGIN;
+	player_left.height = PLAYER_HEIGHT;
+	player_left.width = PLAYER_WIDTH;
+	player_left.c = 0xffff;
+	player_left.dx = 0;
+	player_left.dy = 0;
 	
-	player2.x = SCREEN_WIDTH - (MARGIN + PLAYER_WIDTH);	
-	player2.y = MARGIN;
-	player2.height = PLAYER_HEIGHT;
-	player2.width = PLAYER_WIDTH;
-	player2.c = 0xffff;
-	player2.dx = 0;
-	player2.dy = 0;
+	player_right.x = SCREEN_WIDTH - (MARGIN + PLAYER_WIDTH);	
+	player_right.y = MARGIN;
+	player_right.height = PLAYER_HEIGHT;
+	player_right.width = PLAYER_WIDTH;
+	player_right.c = 0xffff;
+	player_right.dx = 0;
+	player_right.dy = 0;
 	
-	ball.x = SCREEN_WIDTH / 2;
-	ball.y = SCREEN_HEIGHT  / 2;
 	ball.height = BALL_SIZE;
 	ball.width = BALL_SIZE;
-	ball.dx = 0;
-	ball.dy = 0;
 	ball.c = 0xff00;
-	
+	reset_ball_pos();
 }
 
 static void 
@@ -77,86 +82,111 @@ move_player(screen_elem* player)
 }
 
 static void
-move_ball(screen_elem ball)
+change_direction_if_intersection(screen_elem *ball, screen_elem *player)
 {
+	/* if ball intersects with player */
+	if(	ball->y <= player->y + PLAYER_HEIGHT &&
+		ball->y >= player->y)
+		ball->dx = -ball->dx;	
+	return;
+}
+
+static void
+move_ball(screen_elem *ball)
+{
+	/* is ball moving? */
+	if( ball->dy == 0 && ball->dx == 0)
+		return;
+
+	/* if ball is outside horizontal bounds */
+	if( ball->x < 0 || ball->x > SCREEN_WIDTH)
+	{
+		ball->dx = 0;
+		ball->dy = 0;
+		return;
+	}		
 	
+	/* if ball is outside vertical bounds */
+	if(	ball->y < 0 || ball->y > SCREEN_HEIGHT)
+		ball->dy = -ball->dy;
+	
+	ball->x += ball->dx;
+	ball->y += ball->dy;
+
+	/* if ball is within empty area */
+	if( ball->x >= MARGIN + PLAYER_WIDTH ||
+		ball->x <= SCREEN_WIDTH - (MARGIN + PLAYER_WIDTH))
+		return;	
+	
+	/* ball should now be within one of the player areas */
+	
+	/* if ball is within left player area */
+	if( ball->x <= MARGIN + PLAYER_WIDTH && ball->x > MARGIN)
+	{
+		change_direction_if_intersection(ball, &player_left);
+		return;
+	}
+	/* if ball is within right player area */
+	if( ball->x >= SCREEN_WIDTH - (MARGIN + PLAYER_WIDTH) && ball->x < SCREEN_WIDTH - MARGIN)
+	{
+		change_direction_if_intersection(ball, &player_right);	
+		return;
+	}
 }
 
 void 
 timer_tick(void)
 {
-	move_player(&player1);
-	move_player(&player2);
+	move_player(&player_left);
+	move_player(&player_right);
+	move_ball(&ball);	
 	
-	if(	ball.x <= player1.x + PLAYER_WIDTH)
-	{
-		if(	ball.y <= player1.y + PLAYER_HEIGHT ||
-			ball.y >= player1.y )
-		{
-			//TODO: endre vinkel
-			ball.dx = -ball.dx;
-		}
-	}
-	else if(ball.x >= player2.x)
-	{
-		if(	ball.y <= player2.y + PLAYER_HEIGHT ||
-			ball.y >= player2.y )
-		{
-			//TODO: endre vinkel
-			ball.dx = -ball.dx;
-		}
-	}
-	else
-	{
-		ball.x += ball.dx;
-		ball.y += ball.dy;
-	}
 }
 
 void
 up_left_button_press(void)
 {
-	player1.dy = -PLAYER_SPEED;
+	player_left.dy = -PLAYER_SPEED;
 }
 
 void
 up_left_button_release(void)
 {
-	player1.dy = 0;
+	player_left.dy = 0;
 }
 
 void 
 down_left_button_press(void)
 {
-	player1.dy = PLAYER_SPEED;
+	player_left.dy = PLAYER_SPEED;
 }
 
 void
 down_left_button_release(void)
 {
-	player1.dy = 0;
+	player_left.dy = 0;
 }
 
 void 
 up_right_button_press(void)
 {
-	player2.dy = -PLAYER_SPEED;
+	player_right.dy = -PLAYER_SPEED;
 }
 
 void
 up_right_button_release(void)
 {
-	player2.dy = 0;
+	player_right.dy = 0;
 }
 
 void 
 down_right_button_press(void)
 {
-	player2.dy = PLAYER_SPEED;
+	player_right.dy = PLAYER_SPEED;
 }
 
 void
 down_right_button_release(void)
 {
-	player2.dy = 0;
+	player_right.dy = 0;
 }
