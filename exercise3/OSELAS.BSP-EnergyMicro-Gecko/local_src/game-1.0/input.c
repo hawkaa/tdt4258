@@ -49,7 +49,7 @@ get_button_value(void)
 {
 	char v;
 	/* read one byte */
-	if (read(fd, &v, 1)) {
+	if (read(fd, &v, 1) == 0) {
 		perror("Could not read button value");
 	}
 	return v;

@@ -23,6 +23,23 @@ static short* disp;
 static int fd;
 static struct fb_copyarea update_sq;
 
+static void update_square(int dx, int dy, int s_width, int s_height)
+{
+	update_sq.dx = dx;
+	update_sq.dy = dy;
+	update_sq.width = s_width;
+	update_sq.height = s_height;
+}
+
+static void update_display(int x_start, int x_end, int y_start, int y_end, Color c)
+{
+	int x, y;
+	for(x = x_start; x < x_end; ++x){
+		for(y = y_start; y < y_end; ++y){
+			disp[y*SCREEN_WIDTH + x] = c;	
+		}
+	}	
+}
 
 void init_screen()
 {
@@ -46,10 +63,7 @@ void init_screen()
 		disp[i] = 0x0;
 	}
 
-	update_sq.dx = 0;
-	update_sq.dy = 0;
-	update_sq.width = SCREEN_WIDTH;
-	update_sq.height = SCREEN_HEIGHT;
+	update_square(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	ioctl(fd, 0x4680, &update_sq);
 }
@@ -61,8 +75,22 @@ void close_screen()
 }
 
 
-void draw_element(screen_elem *old_elem, screen_elem *new_elem) 
+void draw_element(const screen_elem *old_elem, const screen_elem *new_elem) 
 {
+	if(old_elem != NULL){
+		printf("clearing x=%d, y=%d\n", old_elem->x, old_elem->y);	
+		update_display(old_elem->x, old_elem->y, 
+				old_elem->x+old_elem->width, old_elem->y+old_elem->height, 0);
+		update_square(old_elem->x, old_elem->y, old_elem->width, old_elem->height);
+		ioctl(fd, 0x4680, &update_sq);		
+	}
 
+	if(new_elem != NULL){
+		printf("drawing x=%d, y=%d\n", new_elem->x, new_elem->y);	
+		update_display(new_elem->x, new_elem->x+new_elem->width, 
+				new_elem->y, new_elem->y+new_elem->height, new_elem->c);
+		update_square(new_elem->x, new_elem->y, new_elem->width, new_elem->height);
+		ioctl(fd, 0x4680, &update_sq);
+	}
 }
 

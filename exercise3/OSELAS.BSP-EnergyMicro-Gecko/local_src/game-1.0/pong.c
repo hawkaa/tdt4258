@@ -11,7 +11,7 @@
 #define SCREEN_HEIGHT 240
 #define PLAYER_WIDTH 10
 #define PLAYER_HEIGHT 50
-#define PLAYER_SPEED 1
+#define PLAYER_SPEED 10
 #define BALL_SIZE 5
 #define MARGIN_HORIZONTAL 10
 #define MARGIN_VERTICAL 10
@@ -34,7 +34,7 @@ pong_init(void)
 	player_left.y = MARGIN_VERTICAL;
 	player_left.height = PLAYER_HEIGHT;
 	player_left.width = PLAYER_WIDTH;
-	player_left.c = 0xffff;
+	player_left.c = 0xff00;
 	player_left.dx = 0;
 	player_left.dy = 0;
 	
@@ -42,7 +42,7 @@ pong_init(void)
 	player_right.y = MARGIN_VERTICAL;
 	player_right.height = PLAYER_HEIGHT;
 	player_right.width = PLAYER_WIDTH;
-	player_right.c = 0xffff;
+	player_right.c = 0xff00;
 	player_right.dx = 0;
 	player_right.dy = 0;
 	
