@@ -2,6 +2,9 @@
 #define SIGNAL_H_
 
 extern int
-signal_handler_init(void);
+button_signal_init(void);
+
+extern int
+timer_signal_init(void);
 
 #endif

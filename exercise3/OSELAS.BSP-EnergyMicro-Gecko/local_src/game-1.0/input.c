@@ -132,3 +132,13 @@ register_button_down_handler(int button, void (*handler)(void))
 	button_down_function_pointers[button-1] = handler;
 
 }
+
+void
+register_button_up_handler(int button, void (*handler)(void))
+{
+	if (button < 1 && button > NUM_BUTTONS) {
+		return;
+	}
+	button_up_function_pointers[button-1] = handler;
+
+}

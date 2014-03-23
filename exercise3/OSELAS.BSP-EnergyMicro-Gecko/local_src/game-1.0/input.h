@@ -10,4 +10,7 @@ process_input(void);
 extern void
 register_button_down_handler(int button, void (*handler)(void));
 
+extern void
+register_button_up_handler(int button, void (*handler)(void));
+
 #endif

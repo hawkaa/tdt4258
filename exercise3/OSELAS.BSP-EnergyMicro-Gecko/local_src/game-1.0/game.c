@@ -13,6 +13,7 @@
 /* local includes */
 #include "signal.h"
 #include "input.h"
+#include "timer.h"
 
 /* constants */
 
@@ -31,15 +32,26 @@ int
 main(int argc, char *argv[])
 {
 	
-	/* init signal handler */
-	if (signal_handler_init()) {
-		perror("Error initiating signal handler");
+/* init button signal handler */
+if (button_signal_init()) {
+		perror("Error initiating button signal handler");
+		exit(EXIT_FAILURE);
+	}
+
+	/* init timer signal handler */
+	if (timer_signal_init()) {
+		perror("Error initiating timer signal handler");
 		exit(EXIT_FAILURE);
 	}
 
 	/* init input module */
 	if (input_init() == -1) {
 		perror("Error loading input module");
+		exit(EXIT_FAILURE);
+	}
+
+	if (timer_init(1000000)) {
+		perror("Error initiating timer module");
 		exit(EXIT_FAILURE);
 	}
 
