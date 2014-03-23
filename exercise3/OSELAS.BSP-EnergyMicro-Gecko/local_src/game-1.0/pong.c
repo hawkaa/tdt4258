@@ -5,24 +5,35 @@
 /* local includes */
 #include "pong.h"
 
-/* screen size */
-static const SCREEN_SIZE;
+void 
+timer_tick(void){}
 
-static screen_elem ball, player1, player2;
-static short disp;
+void
+up_left_button_press(void){}
+
+void
+up_left_button_release(void){}
+
+void 
+down_left_button_press(void){}
+
+void
+down_left_button_release(void){}
+
+void 
+up_right_button_press(void){}
+
+void
+up_right_button_release(void){}
+
+void 
+down_right_button_press(void){}
+
+void
+down_right_button_release(void){}
 
 
-void init_pong(short* screen, int screen_size)
-{
-	SCREEN_SIZE = screen_size;
-	disp = screen;		
 
-	int i;
-	ball.x = 160;
-	ball.y = 120; 
-	ball.width = 40;
-	ball.heigt = 40;
 
-	for(i = 0; i < )	
-}
+
 

@@ -2,19 +2,9 @@
 #ifndef PONG_H
 #define PONG_H
 
-typedef struct 
-{
-	int x;
-	int y;
-	int width;
-	int height;
-} screen_elem;
 
 extern void 
 timer_tick(void);
-
-extern void 
-init_pong(short screen, int screen_size);
 
 extern void
 up_left_button_press(void);
