@@ -20,6 +20,6 @@ extern void
 init_screen(void);
 
 extern void 
-draw_element(screen_elem old_elem, screen_elem new_elem);
+draw_element(screen_elem *old_elem, screen_elem *new_elem);
 
 #endif

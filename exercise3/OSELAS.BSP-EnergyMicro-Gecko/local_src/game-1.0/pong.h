@@ -2,6 +2,9 @@
 #ifndef PONG_H
 #define PONG_H
 
+extern void
+pong_init(void);
+
 
 extern void 
 timer_tick(void);
