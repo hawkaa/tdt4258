@@ -61,7 +61,7 @@ void close_screen()
 }
 
 
-void draw_element(screen_elem old_elem, screen_elem new_elem) 
+void draw_element(screen_elem *old_elem, screen_elem *new_elem) 
 {
 
 }
