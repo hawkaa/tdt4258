@@ -14,6 +14,7 @@
 #include "signal.h"
 #include "input.h"
 #include "timer.h"
+#include "pong.h"
 
 /* constants */
 
@@ -56,7 +57,7 @@ if (button_signal_init()) {
 	}
 
 	/* register button handlers */
-	register_button_down_handler(1, button_1_down);
+	register_button_down_handler(2, &up_left_button_press);
 	
 	for (;;) {
 		pause();
@@ -78,13 +79,6 @@ if (button_signal_init()) {
     	int fd;
     	short *map;   mmapped array of int's 
 
-    	* Open a file for writing.
-     	*  - Creating the file if it doesn't exist.
-     	*  - Truncating it to 0 size if it already exists. (not really needed)
-     	*
-     	* Note: "O_WRONLY" mode is not sufficient when mmaping.
-     	*
-	*
     	fd = open(FILEPATH, O_RDWR, (mode_t)0600);
     	if (fd == -1) {
 		perror("Error opening file for writing");
