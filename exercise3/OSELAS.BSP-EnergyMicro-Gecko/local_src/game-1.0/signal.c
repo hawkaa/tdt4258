@@ -1,3 +1,9 @@
+/*
+ * SIGNAL MODULE
+ *
+ * Will set up signals for driver and timer interraction
+ */
+
 /* global includes */
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,18 +14,30 @@
 #include "input.h"
 #include "timer.h"
 
+/*
+ * Alarm signal handler
+ * Will pass the control off to timer.c
+ */
 static void
 sigalrm_handler(int signum)
 {
 	sigalrm_timer_tick();
 }
 
+/*
+ * User defined signal handler (driver signals that new input is available)
+ * Will pass the signal over to input.c
+ */
 static void
 sigusr1_handler(int signum)
 {
 	process_input();
 }
 
+/*
+ * Timer signal init function
+ * Sets the SIGALRM handler
+ */
 int
 timer_signal_init(void)
 {
@@ -41,6 +59,10 @@ timer_signal_init(void)
 	return sigaction(SIGALRM, &signal_action, NULL);
 }
 
+/*
+ * Button signal init function
+ * Sets the SIGUSR1 handler
+ */
 int
 button_signal_init(void)
 {
@@ -60,6 +82,3 @@ button_signal_init(void)
 	/* replace old with new action, not preserving the old */
 	return sigaction(SIGUSR1, &signal_action, NULL);
 }
-
-
-
