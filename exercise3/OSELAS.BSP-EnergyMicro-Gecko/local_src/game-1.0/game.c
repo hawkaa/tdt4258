@@ -50,7 +50,7 @@ if (button_signal_init()) {
 		exit(EXIT_FAILURE);
 	}
 
-	if (timer_init(1000000)) {
+	if (timer_init(1000)) {
 		perror("Error initiating timer module");
 		exit(EXIT_FAILURE);
 	}

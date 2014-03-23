@@ -2,7 +2,7 @@
 #define TIMER_H_
 
 extern int
-timer_init(long int usec);
+timer_init(unsigned long int usec);
 
 extern void
 timer_tick(void);
