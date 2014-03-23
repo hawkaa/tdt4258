@@ -28,9 +28,17 @@ main(int argc, char *argv[])
 {
 
 	init_screen();
-	printf("closing..\n");
+	
+	screen_elem s;
+	s.x = 200;
+	s.y = 200;
+	s.width = 10;
+	s.height = 10;
+	s.c = 100;
+	
+	draw_element(NULL, &s);
+
 	close_screen();	
-	printf("done.\n");
 	return 0;	
 	/* init button signal handler */
 	/*if (button_signal_init()) {
