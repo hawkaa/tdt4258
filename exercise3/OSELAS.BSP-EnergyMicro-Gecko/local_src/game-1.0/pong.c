@@ -6,6 +6,7 @@
 #include "pong.h"
 
 /* screen size */
+/*
 static const SCREEN_SIZE;
 
 static screen_elem ball, player1, player2;
@@ -25,4 +26,4 @@ void init_pong(short* screen, int screen_size)
 
 	for(i = 0; i < )	
 }
-
+*/
