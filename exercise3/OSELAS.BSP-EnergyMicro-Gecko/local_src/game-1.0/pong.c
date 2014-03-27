@@ -79,7 +79,7 @@ move_player(screen_elem* player)
 	}
 	
 	/* TODO update screen */
-	draw_element(&old_player, player);
+	draw_element_y_overlap(&old_player, player);
 	return;
 }
 
