@@ -65,7 +65,7 @@ main(int argc, char *argv[])
 
 	
 	for (;;) {
-		pause();
+		sleep(100);
 	}
 
 	exit(EXIT_SUCCESS);
