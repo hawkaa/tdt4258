@@ -13,6 +13,7 @@ We were supplied with a variant of Linux called \emph{uClinux}, and it's supplie
 
 \subsection{Signals and interrupts}
 \label{subsection:signals-and-interrupts}
+Based on previous experienced regarding energy efficiency, we decided to implement our driver with interrupts and signals right away.
 \subsubsection{Enabling and handling interrupts}
 \emph{TODO sindre}
 
@@ -45,6 +46,20 @@ Writing to the array will update a buffer holding the pixel values. To write the
 After we are done using the display, it is important to clean up. First we have to undo the memory mapping, wich is done by calling the system call \emph{munmap()} (defined in \emph{sys/mmap}). Second we have to close our connection to the device, wich is done by calling \emph{close()} to the framebuffer driver. \\
 
 Our module \emph{screen.c} is responsible of handling the framebuffer device. We memory map the frambuffer in the module. The module contains methods to initialize the display and close the connection to the device, by calling the functions described in this section. It also contains methods to draw simple elements to the screen, in various ways. See the code for more information. 
+
+\subsubsection{Framebuffer update modes}
+
+\begin{figure}
+	\centering
+	\textbf{Full screen update} \\
+	\includegraphics[width=11cm]{img/update_entire_screen.png}\\
+	\textbf{Double screen update} \\
+	\includegraphics[width=11cm]{img/update_twice.png}\\
+	\textbf{Single screen update} \\
+	\includegraphics[width=11cm]{img/update_once.png}\\
+	\label{fig:frambebuffer-update-modes}
+	\caption{Framebuffer update modes}
+\end{figure}
 
 \subsection{Pong}
 
