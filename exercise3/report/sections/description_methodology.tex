@@ -23,6 +23,8 @@ We were supplied with a variant of Linux called \emph{uClinux}, and it's supplie
 \subsection{Pong}
 
 \subsection{Driver concurrency}
+When writing a driver, we need to handle concurrency in the utilization of the driver.
+\paragraph{Only on handle allowed} Using the \vn{device\_open} variable in \mn{driver-gamepad.c}, we made sure that only one handler of the driver could be open at any time. Because the open file operation is protected by a critical region in the Linux kernel, no race conditions can occur.
 
 \subsection{Energy efficiency}
 \label{subsection:energy-efficiency}
