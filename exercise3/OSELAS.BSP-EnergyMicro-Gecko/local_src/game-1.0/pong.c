@@ -1,7 +1,6 @@
 /* global includes  */
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
 
 /* local includes */
 #include "pong.h"
@@ -9,20 +8,21 @@
 
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
-#define PLAYER_WIDTH 10
+#define PLAYER_WIDTH 20
 #define PLAYER_HEIGHT 50
 #define PLAYER_SPEED 10
 #define BALL_SIZE 5
+#define BALL_SPEED 9
 #define MARGIN_HORIZONTAL 10
-#define MARGIN_VERTICAL 10
+#define MARGIN_VERTICAL 0
 
 static screen_elem player_left, player_right, ball;
 static int game_over = 1;
 
 static void reset_ball(void)
 {
-	ball.dx = 0;
-	ball.dy = 0;
+	ball.dx = BALL_SPEED * 2 / 3;
+	ball.dy = BALL_SPEED / 3;
 	ball.x = SCREEN_WIDTH / 2;
 	ball.y = SCREEN_HEIGHT  / 2;
 }
@@ -42,14 +42,18 @@ pong_init(void)
 	player_right.y = MARGIN_VERTICAL;
 	player_right.height = PLAYER_HEIGHT;
 	player_right.width = PLAYER_WIDTH;
-	player_right.c = 0xff00;
+	player_right.c = 0x00ff;
 	player_right.dx = 0;
 	player_right.dy = 0;
 	
 	ball.height = BALL_SIZE;
 	ball.width = BALL_SIZE;
-	ball.c = 0xff00;
+	ball.c = 0xbb00;
 	reset_ball();
+	draw_element(NULL, &player_left);	
+	draw_element(NULL, &player_right);
+		draw_element(NULL, &ball);
+	
 }
 
 static void 
@@ -84,18 +88,6 @@ move_player(screen_elem* player)
 }
 
 static void
-change_direction_if_intersection(screen_elem *ball, screen_elem *player)
-{
-	float angle;	
-	/* if ball intersects with player */
-	if(	ball->y <= player->y + PLAYER_HEIGHT &&
-		ball->y >= player->y)
-		angle = asin(PLAYER_WIDTH / ( (ball->y + BALL_SIZE / 2) + (player->y + PLAYER_HEIGHT/2)));
-	
-	return;
-}
-
-static void
 move_ball(screen_elem *ball)
 {
 	/* is ball moving? */
@@ -103,54 +95,51 @@ move_ball(screen_elem *ball)
 		return;
 
 	/* if ball is outside horizontal bounds */
-	if( ball->x < 0 || ball->x > SCREEN_WIDTH)
+	if( ball->x < -BALL_SIZE || ball->x > SCREEN_WIDTH + BALL_SIZE + BALL_SPEED)
 	{
-		ball->dx = 0;
-		ball->dy = 0;
-		game_over = 1;
+		reset_ball();
 		return;
-	}		
+	}
 	
 	/* if ball is outside vertical bounds */
-	if(	ball->y < 0 || ball->y > SCREEN_HEIGHT)
+	if(	ball->y <= BALL_SPEED || ball->y > SCREEN_HEIGHT - (BALL_SIZE + BALL_SPEED))
 		ball->dy = -ball->dy;
-	
+
+	/* ball should now be within one of the player areas */
+	screen_elem old_ball = *ball;
 	ball->x += ball->dx;
 	ball->y += ball->dy;
-
-	/* if ball is within empty area */
-	if( ball->x >= MARGIN_HORIZONTAL + PLAYER_WIDTH ||
-		ball->x <= SCREEN_WIDTH - (MARGIN_HORIZONTAL + PLAYER_WIDTH))
-		return;	
-	
-	/* ball should now be within one of the player areas */
 	
 	/* if ball is within left player area */
-	if( ball->x <= MARGIN_HORIZONTAL + PLAYER_WIDTH && ball->x > MARGIN_HORIZONTAL)
+	if( ball->x  < MARGIN_HORIZONTAL + PLAYER_WIDTH && ball->x > MARGIN_HORIZONTAL)
 	{
-		change_direction_if_intersection(ball, &player_left);
-		return;
-	}
+		if(ball->y <= player_left.y + PLAYER_HEIGHT && ball->y >= player_left.y)
+		{
+			if((ball->x - (player_left.x + PLAYER_WIDTH)  ) > ball->dx)// && 
+				ball->x = player_left.x + PLAYER_WIDTH;
+			ball->dx = -ball->dx;
+		}
+			
+	} else
 	/* if ball is within right player area */
-	if( ball->x >= SCREEN_WIDTH - (MARGIN_HORIZONTAL + PLAYER_WIDTH) && ball->x < SCREEN_WIDTH - MARGIN_HORIZONTAL)
+	if( ball->x >= SCREEN_WIDTH - (MARGIN_HORIZONTAL + PLAYER_WIDTH + BALL_SIZE) && ball->x < SCREEN_WIDTH - MARGIN_HORIZONTAL)
 	{
-		change_direction_if_intersection(ball, &player_right);	
-		return;
+		if(ball->y <= player_right.y + PLAYER_HEIGHT && ball->y >= player_right.y)
+		{
+			if((ball->x + BALL_SIZE  - player_right.x) < ball->dx)
+				ball->x = player_right.x - BALL_SIZE;
+			ball->dx = -ball->dx;
+		}
 	}
+	draw_element(&old_ball, ball);
 }
 
 void 
 timer_tick(void)
 {
-	if(game_over)
-	{
-		game_over = 0;
-		reset_ball();
-	}
 	move_player(&player_left);
 	move_player(&player_right);
 	move_ball(&ball);	
-	
 }
 
 void

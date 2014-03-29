@@ -37,14 +37,14 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	/*if (timer_init(100000)) {
+	if (timer_init(100000)) {
 		perror("Error initiating timer module");
 		exit(EXIT_FAILURE);
-	}*/
+	}
 
 	init_screen();		
 	pong_init();
-
+	register_timer_handler(timer_tick);
 	/*
 	 * Register handlers for the pong game
 	 */
