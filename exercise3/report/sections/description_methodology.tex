@@ -13,7 +13,7 @@ We were supplied with a variant of Linux called \emph{uClinux}, and it's supplie
 
 \subsection{Signals and interrupts}
 \label{subsection:signals-and-interrupts}
-Based on previous experienced regarding energy efficiency, we decided to implement our driver with interrupts and signals right away.
+Based on previous experience regarding energy efficiency, we decided to implement our driver with interrupts and signals right away.
 \subsubsection{Enabling and handling interrupts}
 
 Enabling interrupt is done in the \emph{tdt4258\_gamepad\_probe()} method, in the same fassion as the two previous exercises. The only difference is that we write to the specific registers using \emph{iowrite32()} to make the code more portable. For more information about enabling interrupts for the GPIO-controller, see \cite[section 3]{compendium}. We also have to save the IRQ-numbers for the GPIO, for later use. This is done by calling \emph{platform\_get\_irq()} on the platform device that is passed as parameter to the probe function.\\
