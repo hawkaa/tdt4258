@@ -26,18 +26,54 @@ Based on previous experienced regarding energy efficiency, we decided to impleme
 \end{figure}
 The \vn{signal\_user\_application(void)} function in the \mn{driver-gamepad.c} sends a signal to the process who has the driver open. We have used the \textbf{SIGUSR1} signal, because it is documented to be set aside for you to use any way we want and is useful for interprocess communication. In addition to specifying signal type and process to receive the signal, we add the SI\_QUEUE to enable the signal to carry data from kernel to user space. See figure \ref{fig:signal-user-application}.
 
-\subsubsection{Handle signals in user space}
+\subsection{The game application}
+Here is a little overview of the files in the game application. There will not be a thorough explanation of the code, as it is well documented.
+
+\begin{itemize}
+	\item \mn{game.c} - Main game module. Will initialize signal handlers and external modules, register button and timer handlers and start a \vn{pause()} loop. 
+	\item \mn{input.c} - Handles gamepad input. Contains the driver file handle and a list of button handlers. It will determine which button(s) is pressed and/or released, and call the corresponding handlers.
+	\item \mn{pong.c} - This module contains all logic for the Pong game. A more detailed explanation is found in section \ref{subsection:pong}.
+	\item \mn{screen.c} - This module handles the screen driver file handle, and takes care of drawing and updating the frame buffer device.
+	\item \mn{signal.c} - Module that enables signal handlers for \textbf{SIGALRM} and \textbf{SIGUSR1}.
+	\item \mn{timer.c} - This module will set up the timer with a given interval, and keep track of which function that should be called on each timer tick. This is needed to animate the game.
+\end{itemize}
+
+Most of the C source files have a corresponding header to define their external interfaces.
+
+\subsubsection{The pause() loop}
+\begin{figure}[h]
+	\centering
+	\lstinputlisting[frame=single, numbers=left]{code/pause_loop.c}
+	\caption{The pause loop}
+	\label{fig:pause-loop}
+\end{figure}
+The main program will live in a \vn{pause()}\footnote{http://linux.die.net/man/2/pause} loop during execution. This function sleeps until a signal is delivered.
+
+\subsubsection{Timer}
+\begin{figure}[h]
+	\centering
+	\lstinputlisting[frame=single, numbers=left]{code/setitimer.c}
+	\caption{Starting the system timer}
+	\label{fig:setitimer}
+\end{figure}
+The \mn{timer.c} module will start a system timer, using the \vn{setitimer()}\footnote{http://linux.die.net/man/2/setitimer} procedure defined in the C standard library (se figure \ref{fig:setitimer}). On each timer tick, the \textbf{SIGALRM} signal will be sent to the process, which is handeled in \mn{signal.c} and delegated back to \mn{timer.c}.
+
+\subsubsection{Handling signals in user space}
 \begin{figure}[h]
 	\centering
 	\lstinputlisting[frame=single, numbers=left]{code/sighandler.c}
 	\caption{Adding signals handlers with signal mask to the user space}
 	\label{fig:sighandler}
 \end{figure}
+We needed to configure our application \textbf{SIGUSR1} and \textbf{SIGALRM} signals. See figure \ref{fig:sighandler}. The handlers called respective methods in \mn{timer.c} and \mn{input.c}.\\
+\\
+In other words, with the main program spinning in the \vn{pause()} loop, all of the program work is done entirely by the signal handlers.
+
 
 \subsection{Controlling the framebuffer device}
 The EFM32GG has it's own framebuffer device that manages the display. This device is accessed by opening the driver \emph{/dev/fb0} as a file. When the file is opened, we have access to the drivers methods. As described in \cite[section 5.4.2]{compendium}, this means that we can use \emph{read()}, \emph{write()} and \emph{lseek()} wich can be used to handle the frambuffer byte by byte as a usual file. But, as \cite[section 5.4.2]{compendium} describes, there is a way controlling the frambuffer that is easier and faster then using the mentioned method. \\
 
-The framebuffer divice can be memory mapped. This means that we can map the driver to an array in memory, which in C means that we are able to write pixels directly with an usual C array. This done by calling the function \emph{mmap()}, wich is a Unix system call defined in the header \emph{sys/mmap.h}. 
+The framebuffer device can be memory mapped. This means that we can map the driver to an array in memory, which in C means that we are able to write pixels directly with an usual C array. This done by calling the function \emph{mmap()}, wich is a Unix system call declared in the header \emph{sys/mmap.h}. 
 Writing to the array will update a buffer holding the pixel values. To write the changes in the framebuffer to the display we use the system call \emph{ioctl()}. \\
 
 \emph{ioctl()} is driver specific system call, and can be used to a various of tasks. In our case, it is to update the changes in the framebuffer. The number of parameters to this function varies depending on the driver, but it needs two parameters to work properly. The first is an file descriptor for an open file. The second, a device dependent request code wich specifies if it is an \emph{in} or \emph{out} parameter, and the size of the list of driver specific parameters in bytes. See \footnote{http://man7.org/linux/man-pages/man2/ioctl.2.html} for more information.   
@@ -48,8 +84,21 @@ After we are done using the display, it is important to clean up. First we have 
 Our module \emph{screen.c} is responsible of handling the framebuffer device. We memory map the frambuffer in the module. The module contains methods to initialize the display and close the connection to the device, by calling the functions described in this section. It also contains methods to draw simple elements to the screen, in various ways. See the code for more information. 
 
 \subsubsection{Framebuffer update modes}
+Other modules can use \mn{screen.c} to draw rectangular elements on the screen. Each of these method calls require the current and next position of the element. The current position is needed so the sceen can fill it in with the background color (black) before the new position of the element is drawn. The module is constructed to handle this behaviour in different ways, so we could test the performance and energy efficiency of each method.
+
+\paragraph{Full screen update}
+This mode will draw both elements, and signal the driver to update the entire screen. This is the most straight-forward way of doing it.
+
+\paragraph{Double screen update}
+This mode will draw the first element, then signal the driver to update exactly that area, then draw the second and signal the driver to update this location as well. This mode will update as little of the screen as possible, but might introduce overhead due to the invocation of \vn{ioctl()} twice.
+
+\paragraph{Single screen update}
+This mode will draw both elements, then do a calculation of the minimum bounding box of the two elements. This will, depending on distance between the current and next position, update more of the screen that is necessairly, but we are left of with one \vn{ioctl()} call.\\
+\\
+All of the framebuffer update modes are illustrated in figure \ref{fig:framebuffer-update-modes}.
 
 \begin{figure}
+	\label{fig:framebuffer-update-modes}
 	\centering
 	\textbf{Full screen update} \\
 	\includegraphics[width=11cm]{img/update_entire_screen.png}\\
@@ -57,11 +106,11 @@ Our module \emph{screen.c} is responsible of handling the framebuffer device. We
 	\includegraphics[width=11cm]{img/update_twice.png}\\
 	\textbf{Single screen update} \\
 	\includegraphics[width=11cm]{img/update_once.png}\\
-	\label{fig:frambebuffer-update-modes}
 	\caption{Framebuffer update modes}
 \end{figure}
 
 \subsection{Pong}
+\label{subsection:pong}
 
 \subsection{Driver concurrency}
 When writing a driver, we need to handle concurrency in the utilization of the driver.
