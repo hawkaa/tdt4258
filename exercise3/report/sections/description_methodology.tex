@@ -100,6 +100,7 @@ After we are done using the display, it is important to clean up. First we have 
 Our module \emph{screen.c} is responsible of handling the framebuffer device. We memory map the frambuffer in the module. The module contains methods to initialize the display and close the connection to the device, by calling the functions described in this section. It also contains methods to draw simple elements to the screen, in various ways. See the code for more information. 
 
 \subsubsection{Framebuffer update modes}
+\label{subsubsection:framebuffer-update-modes}
 Other modules can use \mn{screen.c} to draw rectangular elements on the screen. Each of these method calls require the current and next position of the element. The current position is needed so the sceen can fill it in with the background color (black) before the new position of the element is drawn. The module is constructed to handle this behaviour in different ways, so we could test the performance and energy efficiency of each method.
 
 \paragraph{Full screen update}
@@ -145,7 +146,7 @@ As we are no longer programming on the "bare metal", we have less control over t
 We implemented our driver so no polling mechanisms were needed (as described in section \ref{subsection:signals-and-interrupts}). As a consequence, the program will stay most of its time in a \emph{pause()} loop, leaving the CPU and IO buses free to do other stuff, or in this case, sleep. This behaviour decreases power consumption.
 
 \subsubsection{Optimizing screen update}
-\emph{TODO sindre}
+As described in section \ref{subsubsection:framebuffer-update-modes}, we try to limit the area of the screen we update. We have been adviced that tuning this area have an impact on performance and energy efficiency.
 
 \subsubsection{Tickless idle}
 \begin{figure}[h]
