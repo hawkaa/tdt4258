@@ -14,7 +14,10 @@ We were supplied with a variant of Linux called \emph{uClinux}, and it's supplie
 \subsection{Signals and interrupts}
 \label{subsection:signals-and-interrupts}
 \subsubsection{Enabling and handling interrupts}
-\emph{TODO sindre}
+
+Enabling interrupt is done in the \emph{tdt4258\_gamepad\_probe()} method, in the same fassion as the two previous exercises. The only difference is that we write to the specific registers using \emph{iowrite32()} to make the code more portable. For more information about enabling interrupts for the GPIO-controller, see \cite[section 3]{compendium}. We also have to save the IRQ-numbers for the GPIO, for later use. This is done by calling \emph{platform\_get\_irq()} on the platform device that is passed as parameter to the probe function.\\
+
+When a user application calls \emph{open()}, we register the method \emph{gpio\_interrupt\_handler()} as the interrupt handler for the odd and even GPIO PC pins. This is done using the system call \emph{request\_irq()}\footnote{http://www.makelinux.net/books/lkd2/ch06lev1sec3}. The GPIO-handler simply reads the button value and signals the user application that the buttons value has changed. It is also responsible of clearing the interrupt (see \cite[section 3]{compendium} and the code).   
 
 \subsubsection{Generating signals in kernel space}
 \begin{figure}[h]
@@ -39,7 +42,7 @@ The EFM32GG has it's own framebuffer device that manages the display. This devic
 The framebuffer divice can be memory mapped. This means that we can map the driver to an array in memory, which in C means that we are able to write pixels directly with an usual C array. This done by calling the function \emph{mmap()}, wich is a Unix system call defined in the header \emph{sys/mmap.h}. 
 Writing to the array will update a buffer holding the pixel values. To write the changes in the framebuffer to the display we use the system call \emph{ioctl()}. \\
 
-\emph{ioctl()} is driver specific system call, and can be used to a various of tasks. In our case, it is to update the changes in the framebuffer. The number of parameters to this function varies depending on the driver, but it needs two parameters to work properly. The first is an file descriptor for an open file. The second, a device dependent request code wich specifies if it is an \emph{in} or \emph{out} parameter, and the size of the list of driver specific parameters in bytes. See \footnote{http://man7.org/linux/man-pages/man2/ioctl.2.html} for more information.   
+\emph{ioctl()} is driver specific system call, and can be used to a various of tasks. In our case, it is to update the changes in the framebuffer. The number of parameters to this function varies depending on the driver, but it needs two parameters to work properly. The first is an file descriptor for an open file. The second, a device dependent request code wich specifies if it is an \emph{in} or \emph{out} parameter, and the size of the list of driver specific parameters in bytes. See the mmap-documentation\footnote{http://man7.org/linux/man-pages/man2/ioctl.2.html} for more information.   
 \\
 
 After we are done using the display, it is important to clean up. First we have to undo the memory mapping, wich is done by calling the system call \emph{munmap()} (defined in \emph{sys/mmap}). Second we have to close our connection to the device, wich is done by calling \emph{close()} to the framebuffer driver. \\
