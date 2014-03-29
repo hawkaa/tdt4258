@@ -11,14 +11,27 @@ We were supplied with a variant of Linux called \emph{uClinux}, and it's supplie
 
 \subsection{Device driver for the gamepad}
 
+\subsubsection{Linux kernel module}
+Oppsett\\
+Opprydding
+\subsubsection{Linux character driver}
+Oppsett\\
+opprydding
+\subsubsection{Character device operations}
+
+\paragraph{Open}
+\paragraph{Clone}
+\paragraph{Read}
+\paragraph{Write}
+
 \subsection{Signals and interrupts}
 \label{subsection:signals-and-interrupts}
 Based on previous experience regarding energy efficiency, we decided to implement our driver with interrupts and signals right away.
 \subsubsection{Enabling and handling interrupts}
 
-Enabling interrupt is done in the \emph{tdt4258\_gamepad\_probe()} method, in the same fassion as the two previous exercises. The only difference is that we write to the specific registers using \emph{iowrite32()} to make the code more portable. For more information about enabling interrupts for the GPIO-controller, see \cite[section 3]{compendium}. We also have to save the IRQ-numbers for the GPIO, for later use. This is done by calling \emph{platform\_get\_irq()} on the platform device that is passed as parameter to the probe function.\\
+Enabling interrupt is done in the \emph{tdt4258\_gamepad\_probe()} method, in the same fashion as the two previous exercises. The only difference is that we write to the specific registers using \emph{iowrite32()} to make the code more portable for virtual memory. For more information about enabling interrupts for the GPIO-controller, see \cite[section 3]{compendium}. We also have to save the IRQ-numbers for the GPIO, for later use. This is done by calling \emph{platform\_get\_irq()} on the platform device that is passed as parameter to the probe function.\\
 
-When a user application calls \emph{open()}, we register the method \emph{gpio\_interrupt\_handler()} as the interrupt handler for the odd and even GPIO PC pins. This is done using the system call \emph{request\_irq()}\footnote{http://www.makelinux.net/books/lkd2/ch06lev1sec3}. The GPIO-handler simply reads the button value and signals the user application that the buttons value has changed. It is also responsible of clearing the interrupt (see \cite[section 3]{compendium} and the code).   
+When a user application calls \emph{open()}, we register the method \emph{gpio\_interrupt\_handler()} as the interrupt handler for the odd and even GPIO PC pins. This is done using the system call \emph{request\_irq()}\footnote{http://www.makelinux.net/books/lkd2/ch06lev1sec3}. The GPIO-handler simply reads and saves the button value and signals the user application that the buttons value has changed. It is also responsible of clearing the interrupt (see \cite[section 3]{compendium} and the code).   
 
 \subsubsection{Generating signals in kernel space}
 \begin{figure}[h]
