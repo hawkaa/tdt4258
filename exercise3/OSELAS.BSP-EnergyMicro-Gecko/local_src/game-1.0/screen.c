@@ -116,8 +116,10 @@ get_bounds(const screen_elem *elem1, const screen_elem *elem2)
 	return bounds;
 }
 
-void draw_element_one_update(const screen_elem *old_elem, const screen_elem *new_elem)
+void draw_element_one_update(const screen_elem *old_elem, const screen_elem *new_elem, 
+				int whole_screen)
 {
+
 	
 	bounds_t b = get_bounds(old_elem, new_elem);
 
@@ -125,7 +127,8 @@ void draw_element_one_update(const screen_elem *old_elem, const screen_elem *new
 				old_elem->y, old_elem->y+old_elem->height, 0);
 	update_display(new_elem->x, new_elem->x+new_elem->width, 
 				new_elem->y, new_elem->y+new_elem->height, new_elem->c);
-	update_square(b.min_x, b.min_y, b.max_x-b.min_x+1, b.max_y-b.min_y+1);
+	if(whole_screen) update_square(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+	else update_square(b.min_x, b.min_y, b.max_x-b.min_x+1, b.max_y-b.min_y+1);
 	ioctl(fd, 0x4680, &update_sq);
 }
 
@@ -154,6 +157,9 @@ void draw_element_y_overlap(const screen_elem *old_elem, const screen_elem *new_
 	ioctl(fd, 0x4680, &update_sq);
 
 }
+
+
+
 
 
 
