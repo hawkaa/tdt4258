@@ -34,9 +34,12 @@ extern void
 draw_element(const screen_elem *old_elem, const screen_elem *new_elem);
 
 extern void 
-draw_element_one_update(const screen_elem *old_elem, const screen_elem *new_elem);
+draw_element_one_update(const screen_elem *old_elem, const screen_elem *new_elem, 
+			int whole_screen);
 
 extern void 
 draw_element_y_overlap(const screen_elem *old_elem, const screen_elem *new_elem);
 
+extern void 
+draw_element_entire_screen(const screen_elem *old_elem, const screen_elem *new_elem);
 #endif
