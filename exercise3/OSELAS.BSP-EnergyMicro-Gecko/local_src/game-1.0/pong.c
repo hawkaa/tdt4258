@@ -8,7 +8,7 @@
 
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
-#define PLAYER_WIDTH 20
+#define PLAYER_WIDTH 5
 #define PLAYER_HEIGHT 50
 #define PLAYER_SPEED 10
 #define BALL_SIZE 5
