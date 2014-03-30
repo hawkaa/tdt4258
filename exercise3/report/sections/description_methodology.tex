@@ -50,18 +50,18 @@ When a user application calls \emph{open()}, we register the method \emph{gpio\_
 	\caption{Signaling user space from kernel space}
 	\label{fig:signal-user-application}
 \end{figure}
-The \vn{signal\_user\_application(void)} function in the \mn{driver-gamepad.c} sends a signal to the process who has the driver open. We have used the \textbf{SIGUSR1} signal, because it is documented to be set aside for you to use any way we want and is useful for interprocess communication. In addition to specifying signal type and process to receive the signal, we add the SI\_QUEUE to enable the signal to carry data from kernel to user space. See figure \ref{fig:signal-user-application}.
+The \vn{signal\_user\_application()} function in the \mn{driver-gamepad.c} sends a signal to the process who has the driver open. We have used the \textbf{SIGUSR1} signal, because it is documented to be set aside for you to use any way we want and is useful for interprocess communication. In addition to specifying signal type and process to receive the signal, we add the SI\_QUEUE to enable the signal to carry data from kernel to user space. See figure \ref{fig:signal-user-application}.
 
 \subsection{The game application}
 Here is a little overview of the files in the game application. There will not be a thorough explanation of the code, as it is well documented.
 
 \begin{itemize}
 	\item \mn{game.c} - Main game module. Will initialize signal handlers and external modules, register button and timer handlers and start a \vn{pause()} loop. 
-	\item \mn{input.c} - Handles gamepad input. Contains the driver file handle and a list of button handlers. It will determine which button(s) is pressed and/or released, and call the corresponding handlers.
+	\item \mn{input.c} - Handles gamepad input. Contains the driver file handle and a list of button handlers. It will determine which button(s) is pressed and/or released, and call the corresponding event handlers.
 	\item \mn{pong.c} - This module contains all logic for the Pong game. A more detailed explanation is found in section \ref{subsection:pong}.
-	\item \mn{screen.c} - This module handles the screen driver file handle, and takes care of drawing and updating the frame buffer device.
-	\item \mn{signal.c} - Module that enables signal handlers for \textbf{SIGALRM} and \textbf{SIGUSR1}.
-	\item \mn{timer.c} - This module will set up the timer with a given interval, and keep track of which function that should be called on each timer tick. This is needed to animate the game.
+	\item \mn{screen.c} - This module handles the screen driver file handle, and takes care of drawing and updating the frame buffer device. A more detailed explanation is found in section \ref{subsection:framebuffer}.
+	\item \mn{signal.c} - Module that enables signal handlers for \textbf{SIGALRM} and \textbf{SIGUSR1}. More info about this module is found in section \ref{subsubsection:handling-signals}.
+	\item \mn{timer.c} - This module will set up the timer with a given interval, and keep track of which function that should be called on each timer tick. This is needed to animate the game. A more detailed description is found in section \ref{subsubsection:timer}.
 \end{itemize}
 
 Most of the C source files have a corresponding header to define their external interfaces.
@@ -76,6 +76,7 @@ Most of the C source files have a corresponding header to define their external 
 The main program will live in a \vn{pause()}\footnote{http://linux.die.net/man/2/pause} loop during execution. This function sleeps until a signal is delivered.
 
 \subsubsection{Timer}
+\label{subsubsection:timer}
 \begin{figure}[h]
 	\centering
 	\lstinputlisting[frame=single, numbers=left]{code/setitimer.c}
@@ -85,6 +86,7 @@ The main program will live in a \vn{pause()}\footnote{http://linux.die.net/man/2
 The \mn{timer.c} module will start a system timer, using the \vn{setitimer()}\footnote{http://linux.die.net/man/2/setitimer} procedure defined in the C standard library (se figure \ref{fig:setitimer}). On each timer tick, the \textbf{SIGALRM} signal will be sent to the process, which is handeled in \mn{signal.c} and delegated back to \mn{timer.c}.
 
 \subsubsection{Handling signals in user space}
+\label{subsubsection:handling-signals}
 \begin{figure}[h]
 	\centering
 	\lstinputlisting[frame=single, numbers=left]{code/sighandler.c}
@@ -97,6 +99,7 @@ In other words, with the main program spinning in the \vn{pause()} loop, all of 
 
 
 \subsection{Controlling the framebuffer device}
+\label{subsection:framebuffer}
 The EFM32GG has it's own framebuffer device that manages the display. This device is accessed by opening the driver \emph{/dev/fb0} as a file. When the file is opened, we have access to the drivers methods. As described in \cite[section 5.4.2]{compendium}, this means that we can use \emph{read()}, \emph{write()} and \emph{lseek()} wich can be used to handle the frambuffer byte by byte as a usual file. But, as \cite[section 5.4.2]{compendium} describes, there is a way controlling the frambuffer that is easier and faster then using the mentioned method. \\
 
 The framebuffer device can be memory mapped. This means that we can map the driver to an array in memory, which in C means that we are able to write pixels directly with an usual C array. This done by calling the function \emph{mmap()}, wich is a Unix system call declared in the header \emph{sys/mmap.h}. 
@@ -151,7 +154,7 @@ As seen in lines 7-9 of figure \ref{fig:sighandler}, we set a signal mask when a
 
 \subsection{Energy efficiency}
 \label{subsection:energy-efficiency}
-As we are no longer programming on the "bare metal", we have less control over the software running on the chip. \emph{uClinux} have certain requirements regarding timers and other peripherals, and \cite{compendium} states that "all relevant clocks are already turned on", which we consider as a statement that says the oscilator setup is fixed, and should not be altered for this exercise. Still, we could use some techniques to reduce the energy consumption.
+As we are no longer programming on the "bare metal", we have less control over the software running on the chip. \emph{uClinux} have certain requirements regarding timers and other peripherals, and \cite{compendium} states that "all relevant clocks are already turned on". We therefore concluded that the oscilator setup was fixed (making us unable to experiment with Energy Modes), and had to use other techniques to reduce energy consumption.
 
 \subsubsection{Interrupts and signals}
 We implemented our driver so no polling mechanisms were needed (as described in section \ref{subsection:signals-and-interrupts}). As a consequence, the program will stay most of its time in a \emph{pause()} loop, leaving the CPU and IO buses free to do other stuff (or  sleep). This behaviour decreases power consumption.
