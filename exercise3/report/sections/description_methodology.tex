@@ -172,3 +172,5 @@ As described in section \ref{subsubsection:framebuffer-update-modes}, we try to 
 Because our game is handeled entirely by signal handlers, leaving the main program in a pause loop, we wanted to reduce the power consumption while waiting for an interrupt/signal. In order to do that, we were adviced to put the kernel in a mode known as tickless idle. This turns off the normal periodic timer interrupts, which decreases power usage.\\
 \\
 Tickles idle was enabled in the \emph{kernelconfig} by setting \emph{Idle dynticks system (tickless idle)} in \emph{General setup $\rightarrow$ Timer subsystem $\rightarrow$ Timer tick handling} (see figure \ref{fig:tickless}). This sets the \emph{NO\_HZ\_IDLE} flag.
+
+\subsection{Installation instructions}
