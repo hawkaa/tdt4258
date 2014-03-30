@@ -20,24 +20,39 @@ In addition to delivering the correct data on time, it is really important that 
 When designing a game, user experience is everything, and it is important that the system behaves as expected. In particular, we focused on the following aspects:
 
 \paragraph{Game behaviour}
-The game should follow the rusles of pong. In particular:
+The game should follow the rules of pong. In particular:
 \begin{itemize}
 	\item The ball should bounce off the player paddles, in addition to the upper and lower walls.
 	\item If a player miss the ball, the game should reset.
-	\item Up and down buttons on each controller should control the corresponding player paddle. The paddle should move as long the button is pressed down, within it's legal horizontal bounds.
+	\item Up and down buttons on each controller should control the corresponding player paddle. The paddle should move as long the button is pressed down, as long it is within it's legal horizontal bounds.
 \end{itemize}
 
 \paragraph{Performance}
-The game speed should never reduce and the frame update rate should stay at 24 FPS. No player interaction should exhaust the computation resources of the chip, making the game slower.  
+The game speed should never reduce and the frame update rate should stay at 24 FPS. No player interaction should exhaust the computation resources of the chip, making the game slower. We did no scientific way of measuring the frames per seconds, but the animations are not adjusted after the given FPS. When a player notices a speed reduce in the game, we can therefore conclude that the FPS has been lowered.
 
 \paragraph{No rendering artifacts}
 No artifacts with the elements drawn on the screen should appear. By that, we mean that all rectangular shapes should stay in the same color and shape during the game. An example of unwanted behaviour is shown in figure \ref{fig:pong_overlapping}, where the ball removes some pixels from the paddle. In addition to this, no flickering of any screen elements should be present. \\
 \\
-The game behaviour was tested by playing the game over and over (the game is actually quite entertaining) looking for unexpected behaviour. We confirmed that the game behaved as expected, with one minor flaw: The player movement has unintuitive behaviour if two buttons are pressed at the same time. If up is pressed while down is already pressed, the paddle will move up, but when up is released again, the paddle will stop moving. The most intuitive behaviour would be to let the paddle move down, as the down button is pressed. We decided to not fix this issue, because it requires extra book-keeping in the application. The solutioun is simple: Don't press up and down at the same time.\\
+The game behaviour was tested by playing the game over and over (the game is actually quite entertaining) looking for unexpected behaviour. We confirmed that the game behaved as expected, with one minor flaw: The player movement has unintuitive behaviour if two buttons are pressed at the same time. If up is pressed while down is already pressed, the paddle will move up, but when up is released again, the paddle will stop moving. The most intuitive behaviour would be to let the paddle move down, as the down button is pressed. We decided to not fix this issue, because it requires extra book-keeping in the application, in addition to the very simple solution: Don't press up and down at the same time.\\
 \\
 Testing performance and rendering has very much to do with the next section, where we will elaborate on different rendering modes.
 
 \subsection{Energy efficiency and performance}
+\begin{table}
+	\begin{tabular}{c|c|c}
+		\hline
+		\hline
+		& Test 1 & Test 2\\
+		\hline
+		Single & $11.87mA$ & $12.38mA$ \\
+		Double & $11.94mA$ & $12.37mA$ \\
+		Full & $31.82mA$ & $31.93mA$ \\
+		Tickless & $11.46mA$ & $11.98mA$ \\
+		\hline
+		
+	
+	\end{tabular}
+\end{table}
 
 \subsubsection{Performance and energy efficiency with different frame update modes}
 
