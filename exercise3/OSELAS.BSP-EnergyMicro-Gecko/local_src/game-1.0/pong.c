@@ -34,7 +34,7 @@ pong_init(void)
 	player_left.y = MARGIN_VERTICAL;
 	player_left.height = PLAYER_HEIGHT;
 	player_left.width = PLAYER_WIDTH;
-	player_left.c = 0xff00;
+	player_left.c = 0xaaff;
 	player_left.dx = 0;
 	player_left.dy = 0;
 	
@@ -52,8 +52,7 @@ pong_init(void)
 	reset_ball();
 	draw_element(NULL, &player_left);	
 	draw_element(NULL, &player_right);
-		draw_element(NULL, &ball);
-	
+	draw_element(NULL, &ball);
 }
 
 static void 
@@ -83,7 +82,7 @@ move_player(screen_elem* player)
 	}
 	
 	/* TODO update screen */
-	draw_element_y_overlap(&old_player, player);
+	draw_element_one_update(&old_player, player, 0);
 	return;
 }
 
@@ -131,9 +130,13 @@ move_ball(screen_elem *ball)
 			ball->dx = -ball->dx;
 		}
 	}
-	draw_element(&old_ball, ball);
+	draw_element_one_update(&old_ball, ball, 0);
 }
 
+/*
+ * The positions and the screen is updated at the same time
+ * thus increasing the gamespeed when increasing the screen update frequency
+ */
 void 
 timer_tick(void)
 {
