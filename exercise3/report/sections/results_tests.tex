@@ -15,13 +15,25 @@ In addition to delivering the correct data on time, it is really important that 
 
 \subsection{Pong}
 \label{subsection:pong-testing}
-It is always important to have a system that behaves as expected, so our game 
-As usual, we 
+When designing a game, user experience is everything, and it is important that the system behaves as expected. In particular, we focused on the following aspects:
+
+\paragraph{Game behaviour}
+The game should follow the rusles of pong. In particular:
 \begin{itemize}
-	\item At spillet ikke lagger
-	\item At ballen spretter fint av kantene og spillerne
-	\item At spillet resetter seg når man er ferdig
+	\item The ball should bounce off the player paddles, in addition to the upper and lower walls.
+	\item If a player miss the ball, the game should reset.
+	\item Up and down buttons on each controller should control the corresponding player paddle. The paddle should move as long the button is pressed down, within it's legal horizontal bounds.
 \end{itemize}
+
+\paragraph{Performance}
+The game speed should never reduce and the frame update rate should stay at 24 FPS. No player interaction should exhaust the computation resources of the chip, making the game slower.  
+
+\paragraph{No rendering artifacts}
+No artifacts with the elements drawn on the screen should appear. By that, we mean that all rectangular shapes should stay in the same color and shape during the game. An example of unwanted behaviour is shown in figure \ref{fig:pong_overlapping}, where the ball removes some pixels from the paddle. In addition to this, no flickering of any screen elements should be present. \\
+\\
+The game behaviour was tested by playing the game over and over (the game is actually quite entertaining) looking for unexpected behaviour. We confirmed that the game behaved as expected, with one minor flaw: The player movement has unintuitive behaviour if two buttons are pressed at the same time. If up is pressed while down is already pressed, the paddle will move up, but when up is released again, the paddle will stop moving. The most intuitive behaviour would be to let the paddle move down, as the down button is pressed. We decided to not fix this issue, because it requires extra book-keeping in the application. The solutioun is simple: Don't press up and down at the same time.\\
+\\
+Testing performance and rendering has very much to do with the next section, where we will elaborate on different rendering modes.
 
 \subsection{Energy efficiency and performance}
 
