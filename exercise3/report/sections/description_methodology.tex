@@ -10,17 +10,33 @@
 We were supplied with a variant of Linux called \emph{uClinux}, and it's supplied toolchain. We built the distribution by using a build system named \emph{ptxdist}. We followed \cite[section 5.3]{compendium} step by step, and when done we ended up with a working linux distribuion on the chip, with Tux drawn on the screen. Initially we did not change the kernel config\footnote{We ended up doing so, please see section \ref{subsection:energy-efficiency}.}, nor add any more packages than already supplied and configured.
 
 \subsection{Device driver for the gamepad}
-
+After \emph{uClinux} was installed on the board, the next thing to do was to create a driver for the gamepad. We chose to implement a \emph{platform driver}, which is a more generic way of implementing a driver. It is also the recommended approach.
 \subsubsection{Linux kernel module}
-Oppsett\\
-Opprydding
-\subsubsection{Linux character driver}
-Our device is a character device and this has to be set up. First we need to dynamicly  
+
+\begin{figure}[h]
+	\centering
+	\lstinputlisting[frame=single, numbers=left]{code/tdt4258_gamepad_driver.c}
+	\caption{Driver struct for the \emph{tdt4258\_gamepad\_driver}}
+	\label{fig:tdt4258-gamepad-driver}
+\end{figure}
+
+A Linux kernel module is a small program that extends the functionality of the kernel. A kernel module runs in kernel space, in contrast to user space, which makes programming the module a little different and more challenging.\\
 \\
-opprydding
+Since we've chose to implement a \emph{platform driver}, the module init and exit functions does nothing but registering and unregistering the driver with the calls \vn{platform\_driver\_register} and \vn{platform\_driver\_unregister} respectively. The struct used for these calls is shown in figure \ref{fig:tdt4258-gamepad-driver}. The driver initialization is left to the driver probe function, which is described in the following section. 
+
+\subsubsection{The probe and remove function}
+
+When registring the driver, the kernel checks the driver struct (shown in \ref{fig:tdt4258-gamepad-driver}) to find a matching device for the driver. If it does, the kernel calls the drivers probe function. The kernel also passes a \emph{platform\_device} struct to the probe call wich contains valuable information about the device. One of the first things we do in our probe function is to find the memory region and it's size. The method \emph{platform\_get\_resource()} helps us with this task, returning a \emph{resource} struct containing that information. This information is stored for later use. \\
+
+Next we need to know the IRQ numbers, which is retrived calling the function \emph{platform\_get\_irq()} with the device struct as parameter. Since we have stored information about the memory region and it's size, we now need to reserve this region. We call the method \emph{request\_mem\_region()} reserve the memory region for this driver and to make sure that no other device uses this memory region. If the call is successful, we now that the memory region is safe to use.  \\
+
+The memory region is still not accesible to the kernel (not memory mapped), so this is done with the help of the function \emph{ioremap\_nocache()}. This function do a series of platform specific operations to set up the virtual memory mapping\footnote{We're not using virtual memory in this exercise, but it's nice to follow standard Linux practice.}. The method returns the start address of the memory mapped region, wich in our case means the base address of GPIO PC. In our driver we access the memory region using \emph{iowrite32()} and \emph{ioread32()}, mainly because it's considered good Linux practice and because it handles virtual memory to physical memory mapping if that is present on the system. On our system it is not so we could dereference the pointer to the memory directly, but we wanted our driver to be more generic. \\
 
 
-\subsubsection{Character device operations}
+
+
+\subsubsection{Linux character device and it's operations}
+
 
 \paragraph{Open}
 \paragraph{Clone}
@@ -103,6 +119,7 @@ After we are done using the display, it is important to clean up. First we have 
 Our module \emph{screen.c} is responsible of handling the framebuffer device. We memory map the frambuffer in the module. The module contains methods to initialize the display and close the connection to the device, by calling the functions described in this section. It also contains methods to draw simple elements to the screen, in various ways. See the code for more information. 
 
 \subsubsection{Framebuffer update modes}
+\label{subsubsection:framebuffer-update-modes}
 Other modules can use \mn{screen.c} to draw rectangular elements on the screen. Each of these method calls require the current and next position of the element. The current position is needed so the sceen can fill it in with the background color (black) before the new position of the element is drawn. The module is constructed to handle this behaviour in different ways, so we could test the performance and energy efficiency of each method.
 
 \paragraph{Full screen update}
@@ -130,6 +147,7 @@ All of the framebuffer update modes are illustrated in figure \ref{fig:framebuff
 
 \subsection{Pong}
 \label{subsection:pong}
+\emph{TODO - Kim}
 
 \subsection{Driver concurrency}
 When writing a driver, we need to handle concurrency in the utilization of the driver.
@@ -145,10 +163,10 @@ As seen in lines 7-9 of figure \ref{fig:sighandler}, we set a signal mask when a
 As we are no longer programming on the "bare metal", we have less control over the software running on the chip. \emph{uClinux} have certain requirements regarding timers and other peripherals, and \cite{compendium} states that "all relevant clocks are already turned on", which we consider as a statement that says the oscilator setup is fixed, and should not be altered for this exercise. Still, we could use some techniques to reduce the energy consumption.
 
 \subsubsection{Interrupts and signals}
-We implemented our driver so no polling mechanisms were needed (as described in section \ref{subsection:signals-and-interrupts}). As a consequence, the program will stay most of its time in a \emph{pause()} loop, leaving the CPU and IO buses free to do other stuff, or in this case, sleep. This behaviour decreases power consumption.
+We implemented our driver so no polling mechanisms were needed (as described in section \ref{subsection:signals-and-interrupts}). As a consequence, the program will stay most of its time in a \emph{pause()} loop, leaving the CPU and IO buses free to do other stuff (or  sleep). This behaviour decreases power consumption.
 
 \subsubsection{Optimizing screen update}
-\emph{TODO sindre}
+As described in section \ref{subsubsection:framebuffer-update-modes}, we try to limit the area of the screen we update. We have been adviced that tuning this area have an impact on performance and energy efficiency.
 
 \subsubsection{Tickless idle}
 \begin{figure}[h]
@@ -157,4 +175,6 @@ We implemented our driver so no polling mechanisms were needed (as described in 
 	\caption{Configuring the kernel to tickless idle}
 	\label{fig:tickless}
 \end{figure}
-Because our game is handeled entirely by signal handlers, leaving the main program in a pause loop, we wanted to reduce the power consumption while waiting for an interrupt/signal. In order to do that, we were adviced to put the kernel in a mode known as tickless idle. We did this by setting
+Because our game is handeled entirely by signal handlers, leaving the main program in a pause loop, we wanted to reduce the power consumption while waiting for an interrupt/signal. In order to do that, we were adviced to put the kernel in a mode known as tickless idle. This turns off the normal periodic timer interrupts, which decreases power usage.\\
+\\
+Tickles idle was enabled in the \emph{kernelconfig} by setting \emph{Idle dynticks system (tickless idle)} in \emph{General setup $\rightarrow$ Timer subsystem $\rightarrow$ Timer tick handling} (see figure \ref{fig:tickless}). This sets the \emph{NO\_HZ\_IDLE} flag.
