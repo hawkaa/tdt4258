@@ -24,24 +24,29 @@ A Linux kernel module is a small program that extends the functionality of the k
 \\
 Since we've chose to implement a \emph{platform driver}, the module init and exit functions does nothing but registering and unregistering the driver with the calls \vn{platform\_driver\_register} and \vn{platform\_driver\_unregister} respectively. The struct used for these calls is shown in figure \ref{fig:tdt4258-gamepad-driver}. The driver initialization is left to the driver probe function, which is described in the following section. 
 
-\subsubsection{The probe and remove function}
-
-When registring the driver, the kernel checks the driver struct (shown in \ref{fig:tdt4258-gamepad-driver}) to find a matching device for the driver. If it does, the kernel calls the drivers probe function. The kernel also passes a \emph{platform\_device} struct to the probe call wich contains valuable information about the device. One of the first things we do in our probe function is to find the memory region and it's size. The method \emph{platform\_get\_resource()} helps us with this task, returning a \emph{resource} struct containing that information. This information is stored for later use. \\
-
-Next we need to know the IRQ numbers, which is retrived calling the function \emph{platform\_get\_irq()} with the device struct as parameter. Since we have stored information about the memory region and it's size, we now need to reserve this region. We call the method \emph{request\_mem\_region()} reserve the memory region for this driver and to make sure that no other device uses this memory region. If the call is successful, we now that the memory region is safe to use.  \\
-
-The memory region is still not accesible to the kernel (not memory mapped), so this is done with the help of the function \emph{ioremap\_nocache()}. This function do a series of platform specific operations to set up the virtual memory mapping\footnote{We're not using virtual memory in this exercise, but it's nice to follow standard Linux practice.}. The method returns the start address of the memory mapped region, wich in our case means the base address of GPIO PC. In our driver we access the memory region using \emph{iowrite32()} and \emph{ioread32()}, mainly because it's considered good Linux practice and because it handles virtual memory to physical memory mapping if that is present on the system. On our system it is not so we could dereference the pointer to the memory directly, but we wanted our driver to be more generic. \\
-
-
-
-
 \subsubsection{Linux character device and it's operations}
 
+This section briefly explain how to set up, use and remove the driver, and does not explain each function used in great detail. We used Linux Device Drivers extensively when writing the code for the probe and remove function. There is a lot of information in the book, so we have included only the information needed to explain our solution. If there should be any need for a deeper explanation, please consult LDD \footnote{In particular chapters 3 and 9 were very useful}.   
 
-\paragraph{Open}
-\paragraph{Clone}
-\paragraph{Read}
-\paragraph{Write}
+\paragraph{The probe function} 
+
+When registring the driver, the kernel checks the driver struct (shown in \ref{fig:tdt4258-gamepad-driver}) to find a matching device for the driver. If it does, the kernel calls the drivers probe function. The kernel also passes a \emph{platform\_device} struct to the probe call wich contains valuable information about the device. One of the first things we do in our probe function is to find the memory region and it's size. The method \emph{platform\_get\_resource()} helps us with this task, returning a \emph{resource} struct containing that information. That information is stored for later use. \\
+
+Next we need to know the IRQ numbers, which is retrived calling the function \emph{platform\_get\_irq()} with the device struct as parameter. Since we have stored information about the memory region and it's size, we now need to reserve this region. We call the method \emph{request\_mem\_region()} to reserve the memory region for this driver and to make sure that no other device uses this memory region. If the call is successful, we know that the memory region is safe to use.  \\
+
+The memory region is still not accesible to the kernel (not memory mapped), so this is done with the help of the function \emph{ioremap\_nocache()}. This function does a series of platform specific operations to set up the virtual memory mapping\footnote{We're not using virtual memory in this exercise, but it's nice to follow standard Linux practice.}. The method returns the start address of the memory mapped region, wich in our case means the base address of GPIO PC. In our driver we access the memory region using \emph{iowrite32()} and \emph{ioread32()}, mainly because it's considered good Linux practice and because it handles virtual memory to physical memory mapping if that is present on the system. On our system it is not, so we could dereference the pointer to the memory directly, but we are using these wrappers because we wanted our driver to be more generic. Next the GPIO is setup in the same fassion as previous exercises. Please see \cite[section 3]{compendium} and section \ref{subsection:signals-and-interrupts} for more information about GPIO setup. \\
+
+The last thing we need to do is to register the device as a character device. This is done using the method \emph{alloc\_chrdev\_region()}, wich dynamicly allocates \emph{major} device numbers for us. If this call is successful, we have to initialize the device as a character device. This is done by calling \emph{cdev\_init()}, wich takes the operations that can be called on this driver (stored in a \emph{file\_operations} struct) and makes correct \emph{cdev} struct wich represents our char device. Next we add it to the table of available char devices with the call to \emph{cdev\_add()}. At last we need to setup the permissions and create the device. This is done by calling \emph{class\_create()} and \emph{device\_create()}.     
+
+
+\paragraph{The remove function}
+
+When we want to remove the driver from the kernel, we have to deallocate all that has been allocated by the driver's poll function. This means releasing the memory region by calling \emph{release\_mem\_region()} and removing the virtual adress mapping with the function \emph{iounmap()}. We also have to unregister the device as a character device, remove the device and destroy the class, calling \emph{cdev\_del()}, \emph{device\_destroy()} and \emph{class\_destroy()} respectively. 
+
+\paragraph{Open} The gamepad's open function, \emph{tdt4258\_gamepad\_open()} will check if driver is in use. If it is an error will be reported since only one user application can use the gamepad at a given time. If there is no other application using the gamepad, we request the IRQ channels so the driver can receive interrupts when the buttons are pressed. If the request is successful, we save the calling prosesses \emph{pid} and increment the number of devices using the driver.    
+\paragraph{Close} The gamepad's close function, \emph{tdt4258\_gamepad\_release()} will decrement the number of devices that currently is using the driver and free the IRQ channels if the number of devices using the driver is 0.
+\paragraph{Read} The gamepad's read function, \emph{tdt4258\_gamepad\_read()} reads one byte and sends the buttons value to the user application using \emph{put\_user()}. 
+\paragraph{Write} Since we are not going to write values to the buttons, our write function, \emph{tdt4258\_gamepad\_write()}, will return an error code if used.
 
 \subsection{Signals and interrupts}
 \label{subsection:signals-and-interrupts}
