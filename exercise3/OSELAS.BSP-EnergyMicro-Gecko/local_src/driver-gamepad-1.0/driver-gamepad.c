@@ -254,16 +254,43 @@ tdt4258_gamepad_probe(struct platform_device *dev)
 	 */
 
 	/* allocate char region */
-	alloc_chrdev_region(&device_number, 0, 1, DEVICE_NAME);
+	if(alloc_chrdev_region(&device_number, 0, 1, DEVICE_NAME)){
+		printk(KERN_INFO "Could not register device number\n");
+		release_mem_region(memory_region_base, memory_region_size);
+		iounmap(memory_region_base);
+		return -1;
+	}
 	
 	/* add character device */
 	cdev_init(&tdt4258_gamepad_cdev, &tdt4258_gamepad_fops);
-	cdev_add(&tdt4258_gamepad_cdev, device_number, 1);
+	if(cdev_add(&tdt4258_gamepad_cdev, device_number, 1)){
+		printk(KERN_INFO "Could not add char device\n");
+		release_mem_region(memory_region_base, memory_region_size);
+		iounmap(memory_region_base);
+		unregister_chrdev_region(device_number, 1);
+		return -1;	
+	}
 
 	/* create class and device */
 	cl = class_create(THIS_MODULE, DEVICE_NAME);
-	device_create(cl, NULL, device_number, NULL, DEVICE_NAME);
-
+	if(cl == NULL){
+		printk(KERN_INFO "Could not create class\n");
+		release_mem_region(memory_region_base, memory_region_size);
+		iounmap(memory_region_base);
+		unregister_chrdev_region(device_number, 1);
+		cdev_del(&tdt4258_gamepad_cdev);
+		return -1;
+	}
+	
+	if(device_create(cl, NULL, device_number, NULL, DEVICE_NAME) == ERR_PTR){
+		release_mem_region(memory_region_base, memory_region_size);
+		iounmap(memory_region_base);
+		unregister_chrdev_region(device_number, 1);
+		cdev_del(&tdt4258_gamepad_cdev);
+		class_destroy(cl);
+		return -1;
+	}
+	printk(KERN_INFO "Module successfully initialized\n");
 	/* return success */
 	return 0;
 
@@ -294,6 +321,7 @@ tdt4258_gamepad_remove(struct platform_device *dev)
         class_destroy(cl);
 
 	/* return success */
+	printk(KERN_INFO "Module removed succesfully\n");
 	return 0;
 
 }
