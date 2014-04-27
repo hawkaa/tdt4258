@@ -3,7 +3,7 @@ struct sigaction signal_action;
 /* add handler */
 signal_action.sa_handler = sigusr1_handler;
 
-/* empty block mask. SIGUSR1 signals will still be blocked */
+/* block mask, will block SIGUSR1 and SIGALRM when handling signals */
 sigemptyset(&signal_action.sa_mask);
 sigaddset(&signal_action.sa_mask, SIGUSR1);
 sigaddset(&signal_action.sa_mask, SIGALRM);
