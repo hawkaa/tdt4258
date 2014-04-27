@@ -49,7 +49,7 @@ When we want to remove the driver from the kernel, we have to deallocate all tha
 
 When we want to remove the driver from the kernel, we have to deallocate all that has been allocated by the driver's probe function. This means releasing the memory region by calling \emph{release\_mem\_region()} and removing the virtual adress mapping with the function \emph{iounmap()}. We also have to unregister the device as a character device, remove the device and destroy the class, calling \emph{cdev\_del()}, \emph{device\_destroy()} and \emph{class\_destroy()} respectively. 
 
-\paragraph{Open} The gamepad's open function, \emph{tdt4258\_gamepad\_open()} will check if driver is in use. If it is an error will be reported since only one user application can use the gamepad at a given time. If there is no other application using the gamepad, we request the IRQ channels so the driver can receive interrupts when the buttons are pressed. If the request is successful, we save the calling prosesses \emph{pid} and increment the number of devices using the driver.    
+\paragraph{Open} The gamepad's open function, \emph{tdt4258\_gamepad\_open()} will check if driver is in use. If it is an error it will be reported since only one user application can use the gamepad at a given time. If there is no other application using the gamepad, we request the IRQ channels so the driver can receive interrupts when the buttons are pressed. If the request is successful, we save the calling prosesses \emph{pid} and increment the number of devices using the driver.    
 \paragraph{Close} The gamepad's close function, \emph{tdt4258\_gamepad\_release()} will decrement the number of devices that currently is using the driver and free the IRQ channels if there is no other application using the device.
 \paragraph{Read} The gamepad's read function, \emph{tdt4258\_gamepad\_read()} reads one byte and sends the buttons value to the user application using \emph{put\_user()}. 
 
@@ -60,7 +60,7 @@ When we want to remove the driver from the kernel, we have to deallocate all tha
 Based on previous experience regarding energy efficiency, we decided to implement our driver with interrupts and signals right away.
 \subsubsection{Enabling and handling interrupts}
 
-Enabling interrupt is done in the \emph{tdt4258\_gamepad\_probe()} method, in the same fashion as the two previous exercises, with the only difference is that the writing is done with \emph{iowrite32()}. When a user application calls \emph{open()}, we register the method \emph{gpio\_interrupt\_handler()} as the interrupt handler for the odd and even GPIO PC pins. This is done using the system call \emph{request\_irq()} (see \cite{interrupt_handler}). The GPIO-handler simply reads and saves the button value and signals the user application that the buttons value has changed. It is also responsible of clearing the interrupt (see \cite[section 3]{compendium} and the code).   
+Enabling interrupts is done in the \emph{tdt4258\_gamepad\_probe()} method, in the same fashion as the two previous exercises, with the only difference is that the writing is done with \emph{iowrite32()}. When a user application calls \emph{open()}, we register the method \emph{gpio\_interrupt\_handler()} as the interrupt handler for the odd and even GPIO PC pins. This is done using the system call \emph{request\_irq()} (see \cite{interrupt_handler}). The GPIO-handler simply reads and saves the button value and signals the user application that the buttons value has changed. It is also responsible of clearing the interrupt (see \cite[section 3]{compendium} and the code).   
 
 \subsubsection{Generating signals in kernel space}
 \begin{figure}[h]
@@ -132,7 +132,7 @@ After we are done using the display, it is important to clean up. First we have 
 
 \subsubsection{Framebuffer update modes}
 \label{subsubsection:framebuffer-update-modes}
-Other modules can use \mn{screen.c} to draw rectangular elements on the screen. Each of these method calls require the current and next position of the element. The current position is needed so the sceen can fill it in with the background color (black) before the new position of the element is drawn. The module is constructed to handle this behaviour in different ways, so we could test the performance and energy efficiency of each method.
+Other modules can use \mn{screen.c} to draw rectangular elements on the screen. Each of these method calls require the current and next position of the element. The current position is needed so the screen can fill it in with the background color (black) before the new position of the element is drawn. The module is constructed to handle this behaviour in different ways, so we could test the performance and energy efficiency of each method.
 
 \paragraph{Full screen update}
 This mode will draw both elements, and signal the driver to update the entire screen. This is the most straight-forward way of doing it.
@@ -167,7 +167,7 @@ Primarily focusing on the driver, we decided to implement one of the simplest ga
 	\caption{Screenshot of the game}
 \end{figure}
 
-\paragraph{Implementation} The functions that get called on button press and release adjusted the movement speed of the paddle. When a button got pressed, the speed of the represented player would be set. On release the speed would be set to zero. This way, two calls are needed each time the players moves a paddle. To draw the objects, the game made use of the screen module, described briefly in \ref{subsection:the_game_application}. On each clock tick, the game will calculate the new positions of the paddles and the ball, and do the screen update.
+\paragraph{Implementation} The functions that gets called on button press and release adjusted the movement speed of the paddle. When a button got pressed, the speed of the represented player would be set. On release the speed would be set to zero. This way, two calls are needed each time the players moves a paddle. To draw the objects, the game made use of the screen module, described briefly in \ref{subsection:the_game_application}. On each clock tick, the game will calculate the new positions of the paddles and the ball, and do the screen update.
 
 \paragraph{Overlapping objects} 
 Avoiding overlapping objects became a minor challenge. When the ball overlapped one of the paddles, the overlapping part would go blank when the ball moved away \emph{(see figure \ref{fig:pong_overlapping})}.
