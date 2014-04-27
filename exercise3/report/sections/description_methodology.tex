@@ -47,7 +47,11 @@ When we want to remove the driver from the kernel, we have to deallocate all tha
 
 \paragraph{Close} The gamepad's close function, \emph{tdt4258\_gamepad\_release()} will decrement the number of user applications that uses the driver, and if none left, it will free the IRQ channels.
 
-\paragraph{Read} The gamepad's read function, \emph{tdt4258\_gamepad\_read()} reads one byte and sends the buttons value to the user application using \emph{put\_user()}. The read function will never return EOF.
+When we want to remove the driver from the kernel, we have to deallocate all that has been allocated by the driver's probe function. This means releasing the memory region by calling \emph{release\_mem\_region()} and removing the virtual adress mapping with the function \emph{iounmap()}. We also have to unregister the device as a character device, remove the device and destroy the class, calling \emph{cdev\_del()}, \emph{device\_destroy()} and \emph{class\_destroy()} respectively. 
+
+\paragraph{Open} The gamepad's open function, \emph{tdt4258\_gamepad\_open()} will check if driver is in use. If it is an error will be reported since only one user application can use the gamepad at a given time. If there is no other application using the gamepad, we request the IRQ channels so the driver can receive interrupts when the buttons are pressed. If the request is successful, we save the calling prosesses \emph{pid} and increment the number of devices using the driver.    
+\paragraph{Close} The gamepad's close function, \emph{tdt4258\_gamepad\_release()} will decrement the number of devices that currently is using the driver and free the IRQ channels if there is no other application using the device.
+\paragraph{Read} The gamepad's read function, \emph{tdt4258\_gamepad\_read()} reads one byte and sends the buttons value to the user application using \emph{put\_user()}. 
 
 \paragraph{Write} Since we are not going to write values to the buttons, our write function, \emph{tdt4258\_gamepad\_write()}, will return an error code if used.
 
@@ -153,7 +157,8 @@ All of the framebuffer update modes are illustrated in figure \ref{fig:framebuff
 \end{figure}
 \subsection{Pong}
 \label{subsection:pong}
-Primarly focusing on the driver, we decided to implement one of the simplest games we know, Pong. Pong is a game simulating table tennis. The players control a virtual paddle each. A ball moves between the paddles until one of the players misses it. The goal is to keep the ball moving until the other player misses the ball. Figure \ref{fig:pong_screenshot} shows a screenshot of how the game ended up looking.
+Primarily focusing on the driver, we decided to implement one of the simplest games we know, Pong. Pong is a game simulating table tennis. The players control a virtual paddle each. A ball moves between the paddles until one of the players misses it. The goal is to keep the ball moving until the other player misses the ball. Figure \ref{fig:pong_screenshot} shows a screenshot of how the game ended up looking.
+
 \begin{figure}[h]
 	\label{fig:pong_screenshot}
 	\centering
@@ -205,3 +210,6 @@ Because our game is handeled entirely by signal handlers, leaving the main progr
 Tickles idle was enabled in the \emph{kernelconfig} by setting \emph{Idle dynticks system (tickless idle)} in \emph{General setup $\rightarrow$ Timer subsystem $\rightarrow$ Timer tick handling} (see figure \ref{fig:tickless}). This sets the \emph{NO\_HZ\_IDLE} flag.
 
 \subsection{Installation instructions}
+The code is delivered in \emph{exercise3\_group1.tar.gz} with all the required source code and configuration. Unzip the archive, and run the commands described in \cite{compendium}. When the images are built and flashed, run the commands \textbf{modprobe driver-gamepad} and \textbf{game} to run the game.
+
+
