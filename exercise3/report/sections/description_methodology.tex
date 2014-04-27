@@ -41,10 +41,10 @@ The last thing we need to do is to register the device as a character device. Th
 
 \paragraph{The remove function}
 
-When we want to remove the driver from the kernel, we have to deallocate all that has been allocated by the driver's poll function. This means releasing the memory region by calling \emph{release\_mem\_region()} and removing the virtual adress mapping with the function \emph{iounmap()}. We also have to unregister the device as a character device, remove the device and destroy the class, calling \emph{cdev\_del()}, \emph{device\_destroy()} and \emph{class\_destroy()} respectively. 
+When we want to remove the driver from the kernel, we have to deallocate all that has been allocated by the driver's probe function. This means releasing the memory region by calling \emph{release\_mem\_region()} and removing the virtual adress mapping with the function \emph{iounmap()}. We also have to unregister the device as a character device, remove the device and destroy the class, calling \emph{cdev\_del()}, \emph{device\_destroy()} and \emph{class\_destroy()} respectively. 
 
 \paragraph{Open} The gamepad's open function, \emph{tdt4258\_gamepad\_open()} will check if driver is in use. If it is an error will be reported since only one user application can use the gamepad at a given time. If there is no other application using the gamepad, we request the IRQ channels so the driver can receive interrupts when the buttons are pressed. If the request is successful, we save the calling prosesses \emph{pid} and increment the number of devices using the driver.    
-\paragraph{Close} The gamepad's close function, \emph{tdt4258\_gamepad\_release()} will decrement the number of devices that currently is using the driver and free the IRQ channels if the number of devices using the driver is 0.
+\paragraph{Close} The gamepad's close function, \emph{tdt4258\_gamepad\_release()} will decrement the number of devices that currently is using the driver and free the IRQ channels if there is no other application using the device.
 \paragraph{Read} The gamepad's read function, \emph{tdt4258\_gamepad\_read()} reads one byte and sends the buttons value to the user application using \emph{put\_user()}. 
 \paragraph{Write} Since we are not going to write values to the buttons, our write function, \emph{tdt4258\_gamepad\_write()}, will return an error code if used.
 
