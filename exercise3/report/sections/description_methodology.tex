@@ -153,7 +153,7 @@ All of the framebuffer update modes are illustrated in figure \ref{fig:framebuff
 \end{figure}
 \subsection{Pong}
 \label{subsection:pong}
-Primarly focusing on the driver, we decided to implement one of the simplest games we know, Pong. Pong is a game simulating table tennis. The players control a virtual paddle each. A ball moves between the paddles until one of the players misses it. The goal is to keep the ball moving until the other player misses the ball.
+Primarly focusing on the driver, we decided to implement one of the simplest games we know, Pong. Pong is a game simulating table tennis. The players control a virtual paddle each. A ball moves between the paddles until one of the players misses it. The goal is to keep the ball moving until the other player misses the ball. Figure \ref{fig:pong_screenshot} shows a screenshot of how the game ended up looking.
 
 \begin{figure}[h]
 	\label{fig:pong_screenshot}
@@ -165,7 +165,9 @@ Primarly focusing on the driver, we decided to implement one of the simplest gam
 \paragraph{Implementation} The functions that get called on button press and release adjusted the movement speed of the paddle. When a button get pressed, the speed of the represented player would be set. On release the speed would be set to zero. This way, two calls are needed each time the players moves a paddle. To draw the objects, the game made use of the screen module, described briefly in \ref{subsection:the_game_application}. This module has a specific function designed to handle vertical movement only, a function which \mn{game.c} will utilize. On each clock tick, the game will calculate the new positions of the paddles and the ball, and do the screen update.
 
 \paragraph{Overlapping objects} 
-Avoiding overlapping objects became a minor challenge. When the ball overlapped one of the paddles, the overlapping part would go blank when the ball moved away.
+Avoiding overlapping objects became a minor challenge. When the ball overlapped one of the paddles, the overlapping part would go blank when the ball moved away \emph{(see figure \ref{fig:pong_overlapping})}.
+The overlapping occured when the distance between the ball and the player became smaller than the speed in horizontal direction. For example, if the horizontal speed of the ball was three pixels, and the distance between the ball and the player was two pixels, the ball would move one pixel into the player leaving a one pixel wide blank area on the player. For a simple game such as Pong, multipe graphic layers are not needed. To prevent overlapping, the ball position would be adjusted so that it stuck to the paddle instead of overlapping. 
+
 \begin{figure}[h]
 	\label{fig:pong_overlapping}
 	\includegraphics[width=5cm, trim= 0 240 0 100]{img/pong_overlapping_0.pdf}
@@ -174,7 +176,6 @@ Avoiding overlapping objects became a minor challenge. When the ball overlapped 
 	
 	\caption{Paddle turning blank after overlapping}
 \end{figure}
-The overlapping occured when the distance between the ball and the player became smaller than the speed in horizontal direction. For example, if the horizontal speed of the ball was three pixels, and the distance between the ball and the player was two pixels, the ball would move one pixel into the player leaving a one pixel wide blank area on the player. For a simple game such as Pong, multipe graphic layers are not needed. To prevent overlapping, the ball position would be adjusted so that it stuck to the paddle instead of overlapping. 
 
 \subsection{Driver concurrency}
 When writing a driver, we need to handle concurrency in the utilization of the driver.
@@ -182,7 +183,6 @@ When writing a driver, we need to handle concurrency in the utilization of the d
 Using the \vn{device\_open} variable in \mn{driver-gamepad.c}, we made sure that only one handler of the driver could be open at any time. Because the open file operation is protected by a critical region in the Linux kernel, no race conditions can occur setting this variable.
 \paragraph{Signal mask}
 As seen in lines 7-9 of figure \ref{fig:sighandler}, we set a signal mask when assigning signal handlers. By adding signals to this mask, we tell the operating system that these signals should be blocked while the signal handler is running. In this solution, the only code that modifies the game state is signal handlers for \textbf{SIGUSR1} (buttons) and \textbf{SIGALRM} (timer), and by adding these to the signal mask, we guarantee that the signal handlers will run one by one, making it impossible for race conditions and invalid program state.
-
 
 \subsection{Energy efficiency}
 \label{subsection:energy-efficiency}
