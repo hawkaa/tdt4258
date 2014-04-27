@@ -81,7 +81,7 @@ move_player(screen_elem* player)
 		player->y = (player->y + player->dy < 0 ? 0 : player->y + player->dy);	
 	}
 	
-	/* TODO update screen */
+	/* update screen */
 	draw_element_one_update(&old_player, player, 0);
 	return;
 }
@@ -92,22 +92,19 @@ move_ball(screen_elem *ball)
 	/* is ball moving? */
 	if( ball->dy == 0 && ball->dx == 0)
 		return;
+	screen_elem old_ball = *ball;
+	ball->x += ball->dx;
+	ball->y += ball->dy;
 
 	/* if ball is outside horizontal bounds */
 	if( ball->x < -BALL_SIZE || ball->x > SCREEN_WIDTH + BALL_SIZE + BALL_SPEED)
-	{
 		reset_ball();
-		return;
-	}
 	
 	/* if ball is outside vertical bounds */
 	if(	ball->y <= BALL_SPEED || ball->y > SCREEN_HEIGHT - (BALL_SIZE + BALL_SPEED))
 		ball->dy = -ball->dy;
 
 	/* ball should now be within one of the player areas */
-	screen_elem old_ball = *ball;
-	ball->x += ball->dx;
-	ball->y += ball->dy;
 	
 	/* if ball is within left player area */
 	if( ball->x  < MARGIN_HORIZONTAL + PLAYER_WIDTH && ball->x > MARGIN_HORIZONTAL)
@@ -118,7 +115,6 @@ move_ball(screen_elem *ball)
 				ball->x = player_left.x + PLAYER_WIDTH;
 			ball->dx = -ball->dx;
 		}
-			
 	} else
 	/* if ball is within right player area */
 	if( ball->x >= SCREEN_WIDTH - (MARGIN_HORIZONTAL + PLAYER_WIDTH + BALL_SIZE) && ball->x < SCREEN_WIDTH - MARGIN_HORIZONTAL)
@@ -130,7 +126,7 @@ move_ball(screen_elem *ball)
 			ball->dx = -ball->dx;
 		}
 	}
-	draw_element_one_update(&old_ball, ball, 0);
+	draw_element(&old_ball, ball);
 }
 
 /*
