@@ -7,7 +7,7 @@
 	\label{fig:uclinux}
 \end{figure}
 \subsection{Compiling the Linux kernel}
-We were supplied with a variant of Linux called \emph{uClinux}, and it's supplied toolchain. We built the distribution by using a build system named \emph{ptxdist}. We followed \cite[section 5.3]{compendium} step by step, and when done we ended up with a working linux distribuion on the chip, with Tux drawn on the screen. Initially we did not change the kernel config\footnote{We ended up doing so, please see section \ref{subsection:energy-efficiency}.}, nor add any more packages than already supplied and configured.
+We were supplied with a variant of Linux called \emph{uClinux}, and it's supplied toolchain. We built the distribution by using a build system named \emph{ptxdist}. We followed \cite[section 5.3]{compendium} step by step. When done we ended up with a working linux distribuion on the chip, with Tux drawn on the screen. Initially we did not change the kernel config\footnote{We ended up doing so, please see section \ref{subsection:energy-efficiency}.}, nor add any more packages than already supplied and configured.
 
 \subsection{Device driver for the gamepad}
 After \emph{uClinux} was installed on the board, the next thing to do was to create a driver for the gamepad. We chose to implement a \emph{platform driver}, which is a more generic way of implementing a driver. It is also the recommended approach, according to \cite{compendium}.
@@ -22,7 +22,7 @@ After \emph{uClinux} was installed on the board, the next thing to do was to cre
 
 A Linux kernel module is a small program that extends the functionality of the kernel. A kernel module runs in kernel space, in contrast to user space, which makes programming the module a little different and more challenging.\\
 \\
-Since we've chose to implement a \emph{platform driver}, the module init and exit functions does nothing but registering and unregistering the driver with the calls \vn{platform\_driver\_register} and \vn{platform\_driver\_unregister} respectively. The struct used for these calls is shown in figure \ref{fig:tdt4258-gamepad-driver}. The driver initialization is left to the driver probe function, which is described in the following section. 
+Since we chose to implement a \emph{platform driver}, the module init and exit functions does nothing but register and unregister the driver with the calls \vn{platform\_driver\_register} and \vn{platform\_driver\_unregister} respectively. The struct used for these calls is shown in figure \ref{fig:tdt4258-gamepad-driver}. The driver initialization is left to the driver probe function, which is described in the following section. 
 
 \subsubsection{Linux character device and it's operations}
 
@@ -155,6 +155,7 @@ All of the framebuffer update modes are illustrated in figure \ref{fig:framebuff
 	\includegraphics[width=11cm]{img/update_once.png}\\
 	\caption{Framebuffer update modes}
 \end{figure}
+\newpage
 \subsection{Pong}
 \label{subsection:pong}
 Primarily focusing on the driver, we decided to implement one of the simplest games we know, Pong. Pong is a game simulating table tennis. The players control a virtual paddle each. A ball moves between the paddles until one of the players misses it. The goal is to keep the ball moving until the other player misses the ball. Figure \ref{fig:pong_screenshot} shows a screenshot of how the game ended up looking.
@@ -166,11 +167,11 @@ Primarily focusing on the driver, we decided to implement one of the simplest ga
 	\caption{Screenshot of the game}
 \end{figure}
 
-\paragraph{Implementation} The functions that get called on button press and release adjusted the movement speed of the paddle. When a button get pressed, the speed of the represented player would be set. On release the speed would be set to zero. This way, two calls are needed each time the players moves a paddle. To draw the objects, the game made use of the screen module, described briefly in \ref{subsection:the_game_application}. On each clock tick, the game will calculate the new positions of the paddles and the ball, and do the screen update.
+\paragraph{Implementation} The functions that get called on button press and release adjusted the movement speed of the paddle. When a button got pressed, the speed of the represented player would be set. On release the speed would be set to zero. This way, two calls are needed each time the players moves a paddle. To draw the objects, the game made use of the screen module, described briefly in \ref{subsection:the_game_application}. On each clock tick, the game will calculate the new positions of the paddles and the ball, and do the screen update.
 
 \paragraph{Overlapping objects} 
 Avoiding overlapping objects became a minor challenge. When the ball overlapped one of the paddles, the overlapping part would go blank when the ball moved away \emph{(see figure \ref{fig:pong_overlapping})}.
-The overlapping occured when the distance between the ball and the player became smaller than the speed in horizontal direction. For example, if the horizontal speed of the ball was three pixels, and the distance between the ball and the player was two pixels, the ball would move one pixel into the player leaving a one pixel wide blank area on the player. For a simple game such as Pong, multipe graphic layers are not needed. To prevent overlapping, the ball position would be adjusted so that it stuck to the paddle instead of overlapping. 
+The overlapping occured when the distance between the ball and the player became smaller than the speed in horizontal direction. For example, if the horizontal speed of the ball was three pixels, and the distance between the ball and the player was two pixels, the ball would move one pixel into the paddle leaving a one pixel wide blank area on the paddle. For a simple game such as Pong, multipe graphic layers are not needed. To prevent overlapping, the ball position would be adjusted so that it stuck to the paddle instead of overlapping. 
 
 \begin{figure}[h]
 	\label{fig:pong_overlapping}
@@ -180,10 +181,10 @@ The overlapping occured when the distance between the ball and the player became
 	
 	\caption{Paddle turning blank after overlaping}
 \end{figure}
-
+\newpage
 \subsection{Driver concurrency}
 When writing a driver, we need to handle concurrency in the utilization of the driver.
-\paragraph{Only on handle allowed}
+\paragraph{Only one handle allowed}
 Using the \vn{device\_open} variable in \mn{driver-gamepad.c}, we made sure that only one handler of the driver could be open at any time. Because the open file operation is protected by a critical region in the Linux kernel, no race conditions can occur setting this variable.
 \paragraph{Signal mask}
 As seen in lines 7-9 of figure \ref{fig:sighandler}, we set a signal mask when assigning signal handlers. By adding signals to this mask, we tell the operating system that these signals should be blocked while the signal handler is running. In this solution, the only code that modifies the game state is signal handlers for \textbf{SIGUSR1} (buttons) and \textbf{SIGALRM} (timer), and by adding these to the signal mask, we guarantee that the signal handlers will run one by one, making it impossible for race conditions and invalid program state.
