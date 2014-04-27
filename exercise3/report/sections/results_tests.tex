@@ -71,13 +71,13 @@ All tests were run with the three update modes described in \ref{subsubsection:f
 As we can see in table \ref{table:energy_consumption}, the energy consumption of this screen update mode is quite high. Test 1 would run with the expected FPS, but once we started to move the players, the game would exaust the chip's resources, giving us a really slow and laggy game.
 
 \subsubsection{Double screen update}
-Using the double screen update algorithm, we reduced the power consumption to about one third of the full screen update. In addition to this, both tests had the expected performance.
+Using the double screen update algorithm, we reduced the power consumption to about one third of the full screen update. In addition to this, both tests had the expected performance. We observed some flickering on the paddles, which is because most of the area is first painted black, then redrawn with the current color.
 
 \subsubsection{Single screen update}
-Single screen update gave us the same results as the double one. There is a very small difference in average amperage, but this is most likely uncertainty in the measurements.
+Single screen update gave us the same results as the double one, except that we saw no paddle flickering. There is a very small difference in average amperage, but this is most likely uncertainty in the measurements.
 
 \subsubsection{Tickless idle}
-We also wanted to see how the tickless idle kernel would affect the energy consumption. We chose the double screen update algorithm when conducting this test, due to its conceptual simplicity. As the results show, we reduced the average amperage with approximately $0.4mA$.
+We also wanted to see how the tickless idle kernel would affect the energy consumption. We chose the double screen update algorithm for the ball, due to its conceptual simplicity, and the single update algorithm for the paddles to avoid flickering. As the results show, we reduced the average amperage with approximately $0.4mA$.
 
 \subsection{Further development}
 In this section, we will elaborate on different functionality to enhance the system.
