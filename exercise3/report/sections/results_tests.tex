@@ -28,17 +28,19 @@ The game should follow the rules of pong. In particular:
 \end{itemize}
 
 \paragraph{Performance}
-The game speed should never reduce and the frame update rate should stay at 24 FPS. No player interaction should exhaust the computation resources of the chip, making the game slower. We did no scientific way of measuring the frames per seconds, but the animations are not adjusted after the given FPS. When a player notices a speed reduce in the game, we can therefore conclude that the FPS has been lowered.
+The game speed should never reduce and the frame update rate should stay at 24 FPS. No player interaction should exhaust the computation resources of the chip, making the game slower. We did no scientific way of measuring the frames per seconds, but since the game animations are not adjusted to match the given FPS (one frame update will move the items a specific number of pixels), we can conclude that the FPS has been lowered if we notice a speed reduction in the game.
 
 \paragraph{No rendering artifacts}
 No artifacts with the elements drawn on the screen should appear. By that, we mean that all rectangular shapes should stay in the same color and shape during the game. An example of unwanted behaviour is shown in figure \ref{fig:pong_overlapping}, where the ball removes some pixels from the paddle. In addition to this, no flickering of any screen elements should be present. \\
 \\
-The game behaviour was tested by playing the game over and over (the game is actually quite entertaining) looking for unexpected behaviour. We confirmed that the game behaved as expected, with one minor flaw: The player movement has unintuitive behaviour if two buttons are pressed at the same time. If up is pressed while down is already pressed, the paddle will move up, but when up is released again, the paddle will stop moving. The most intuitive behaviour would be to let the paddle move down, as the down button is pressed. We decided to not fix this issue, because it requires extra book-keeping in the application, in addition to the very simple solution: Don't press up and down at the same time.\\
+The game behaviour was tested by playing the game over and over (the game is actually quite entertaining) looking for unexpected behaviour. We confirmed that the game behaved as expected, with one minor flaw: The player movement has unintuitive behaviour if two buttons are pressed at the same time. If up is pressed while down is already pressed, the paddle will move up, but when up is released again, the paddle will stop moving. The most intuitive behaviour would be to let the paddle move down, as the down button is pressed. We decided to not fix this issue, because it requires extra book-keeping in the application. Finally, resolving this behaviour is quite simple: Don't press up and down at the same time.\\
 \\
 Testing performance and rendering has very much to do with the next section, where we will elaborate on different rendering modes.
 
 \subsection{Energy efficiency and performance}
 \begin{table}
+	\label{table:energy_consumption}
+	\centering
 	\begin{tabular}{c|c|c}
 		\hline
 		\hline
@@ -47,17 +49,36 @@ Testing performance and rendering has very much to do with the next section, whe
 		Single & $11.87mA$ & $12.38mA$ \\
 		Double & $11.94mA$ & $12.37mA$ \\
 		Full & $31.82mA$ & $31.93mA$ \\
-		Tickless & $11.46mA$ & $11.98mA$ \\
+		\hline
+		Tickless (Single) & $11.46mA$ & $11.98mA$ \\
 		\hline
 		
 	
 	\end{tabular}
+	\caption{Energy consumption of different screen update modes, including a measurement with tickless idle.}
 \end{table}
+When we tested performance and energy efficiency, we conducted two tests:
+\begin{itemize}
+	\item \textbf{Test 1}  - Leaving the game idle for 10 seconds, letting the continiously move into the lower right corner and reset back to middle.
+	\item \textbf{Test 2} - Playing the game, letting each paddle hit the ball twice. To make the test yield consequent results, the same persons played the game on all tests, and were instructed not to move the paddles more than necessairly.
+\end{itemize}
 
-\subsubsection{Performance and energy efficiency with different frame update modes}
+All tests were run with the three update modes described in \ref{subsubsection:framebuffer-update-modes}. We measured the energy consumption using the \emph{energyAware Profiler}. The results of the measurements is shown in table \ref{table:energy_consumption}
+
+
+
+\subsubsection{Full screen update}
+As we can see in table \ref{table:energy_consumption}, the energy consumption of this screen update mode is quite high. Test 1 would run with the expected FPS, but once we started to move the players, the game would exaust the chip's resources, giving us a really slow and laggy game.
+
+\subsubsection{Double screen update}
+Using the double screen update algorithm, we reduced the power consumption to about one third of the full screen update. In addition to this, both tests had the expected performance.
+
+\subsubsection{Single screen update}
+Single screen update gave us the same results as the double one. There is a very small difference in average amperage, but this is most likely uncertainty in the measurements.
 
 \subsubsection{Tickless idle}
+We also wanted to see how the tickless idle kernel would affect the energy consumption. We chose the double screen update algorithm when conducting this test, due to its conceptual simplicity. As the results show, we reduced the average amperage with approximately $0.4mA$.
 
 \subsection{Further development}
-\paragraph{Memory Mapping}
-Memory mapping is a technique used to transfer data between kernel space and userspace without copying. It is the fastest way to handle larger amount of data. The screen module uses this technique when writing to the framebuffer. We thought our driver could benefit from offering a way to use mmap to read the values of the buttons pressed. We attempted to create open and close functions for mmap and assign them to their respective fields in the \emph{vm\_operations} struct. Also a \emph{fault} function where created, wich seems to be the inheritor after the \emph{nopage} got removed. Lastly a function to assign the file data to the virtual memory data where created and assigned to the \emph{mmap} field of the \emph{file\_operations} struct. We failed however to get this to work (, wich is why it is described here and not in the \emph{description of methology} section). It seemed like the \emph{mmap} fuction never got called. Benjamin, who was thrilled by the idea to support memory mapping, where helpfull but unsucessfull when trying to find the problem with us. He did however come with some suggestions where to look for clues, such as in the source code of the framebuffer. As it was not part of the assignment, and since we felt that it had allready taken to much of our time, we did not proceed with any further investigations at this point.
+\paragraph{Memory Mapping of the gamepad driver}
+Memory mapping is a technique used to transfer data between kernel space and userspace without copying. It is the fastest way to handle larger amount of data. The screen module uses this technique when writing to the framebuffer. We thought our driver could benefit from offering a way to use mmap to read the values of the buttons pressed. We attempted to create open and close functions for mmap and assign them to their respective fields in the \emph{vm\_operations} struct. Also a \emph{fault} function where created, wich seems to be the inheritor after the \emph{nopage} got removed. Lastly a function to assign the file data to the virtual memory data where created and assigned to the \emph{mmap} field of the \emph{file\_operations} struct. We failed however to get this to work (, wich is why it is described here and not in the \emph{description of methology} section). It seemed like the \emph{mmap} fuction never got called. Benjamin, who also thought it would be nice of our driver to support memory mapping, where helpfull but unsucessfull when trying to find the problem with us. He did however come with some suggestions where to look for clues, such as in the source code of the framebuffer. As it was not part of the assignment, and since we felt that it had allready taken to much of our time, we did not proceed with any further investigations at this point.
