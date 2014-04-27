@@ -81,7 +81,7 @@ move_player(screen_elem* player)
 		player->y = (player->y + player->dy < 0 ? 0 : player->y + player->dy);	
 	}
 	
-	/* TODO update screen */
+	/* update screen */
 	draw_element_one_update(&old_player, player, 0);
 	return;
 }
