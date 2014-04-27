@@ -12,18 +12,23 @@
 /* local includes */
 #include "screen.h"
 
-/* screen values */
+/* screen constants */
 #define SCREEN_SIZE 320*240*2
 #define SCREEN_WIDTH 320 
 #define SCREEN_HEIGHT 240
 
 #define SCREEN_PATH "/dev/fb0"
 
+
 static short* disp;
 static int fd;
 static struct fb_copyarea update_sq;
 
-static void update_square(int dx, int dy, int s_width, int s_height)
+/*
+ * Sets the update square
+ */
+static void
+update_square(int dx, int dy, int s_width, int s_height)
 {
 	update_sq.dx = dx;
 	update_sq.dy = dy;
@@ -31,7 +36,11 @@ static void update_square(int dx, int dy, int s_width, int s_height)
 	update_sq.height = s_height;
 }
 
-static void update_display(int x_start, int x_end, int y_start, int y_end, Color c)
+/*
+ * Iterates over pixels, and sets the current pixel color to c
+ */
+static void
+update_display(int x_start, int x_end, int y_start, int y_end, Color c)
 {
 	int x, y;
 	for(x = x_start; x < x_end; ++x){
@@ -41,16 +50,23 @@ static void update_display(int x_start, int x_end, int y_start, int y_end, Color
 	}	
 }
 
-void init_screen()
+/*
+ * Initialize the screen module
+ */
+void
+init_screen()
 {
+	
 	int i;
   
+  	/* open screen handle */
         fd = open(SCREEN_PATH, O_RDWR, (mode_t)0600);
         if (fd == -1) {
                 perror("Error opening file for writing");
                 exit(EXIT_FAILURE);
         }               
-          
+        
+	/* memory map the device into the disp array */
         disp =(short*)mmap(0, SCREEN_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
         if (disp == MAP_FAILED) {
 		close(fd);
@@ -58,24 +74,33 @@ void init_screen()
                 exit(EXIT_FAILURE);
         }
 
-	for(i = 0; i < SCREEN_SIZE/2; ++i){ 
-		/* reset the screen */
+	/* reset the screen */
+	for (i = 0; i < SCREEN_SIZE/2; ++i) { 
 		disp[i] = 0x0;
 	}
 
+	/* update the entire screen with the black background color */
 	update_square(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-
 	ioctl(fd, 0x4680, &update_sq);
 }
 
-void close_screen()
+/*
+ * proper cleanup of memory map and device handle
+ */
+void
+close_screen()
 {
 	munmap(disp, SCREEN_SIZE);
 	close(fd);
 }
 
 
-void draw_element(const screen_elem *old_elem, const screen_elem *new_elem) 
+/*
+ * Draw element.
+ * Will update the screen twice
+ */
+void
+draw_element(const screen_elem *old_elem, const screen_elem *new_elem) 
 {
 	if(old_elem != NULL){
 		update_display(old_elem->x, old_elem->x+old_elem->width, 
@@ -92,6 +117,9 @@ void draw_element(const screen_elem *old_elem, const screen_elem *new_elem)
 	}
 }
 
+/*
+ * Will calculate the minimum bounding box of two elements
+ */
 static bounds_t
 get_bounds(const screen_elem *elem1, const screen_elem *elem2)
 {
@@ -116,7 +144,13 @@ get_bounds(const screen_elem *elem1, const screen_elem *elem2)
 	return bounds;
 }
 
-void draw_element_one_update(const screen_elem *old_elem, const screen_elem *new_elem, 
+/*
+ * Draw element
+ * Will calculate minimum bounding box (if whole_screen = 0) and update only
+ * one time.
+ */
+void
+draw_element_one_update(const screen_elem *old_elem, const screen_elem *new_elem, 
 				int whole_screen)
 {
 
@@ -132,6 +166,9 @@ void draw_element_one_update(const screen_elem *old_elem, const screen_elem *new
 	ioctl(fd, 0x4680, &update_sq);
 }
 
+/*
+ * Function designed specifically for moving the paddles in the y direction
+ */
 void draw_element_y_overlap(const screen_elem *old_elem, const screen_elem *new_elem)
 {
 	int dy;

@@ -153,7 +153,11 @@ All of the framebuffer update modes are illustrated in figure \ref{fig:framebuff
 \end{figure}
 \subsection{Pong}
 \label{subsection:pong}
+<<<<<<< HEAD
 Primarly focusing on the driver, we decided to implement one of the simplest games we know, Pong. Pong is a game simulating table tennis. The players control a virtual paddle each. A ball moves between the paddles until one of the players misses it. The goal is to keep the ball moving until the other player misses the ball. Figure \ref{fig:pong_screenshot} shows a screenshot of how the game ended up looking.
+=======
+Primarily focusing on the driver, we decided to implement one of the simplest games we know, Pong. Pong is a game simulating table tennis. The players control a virtual paddle each. A ball moves between the paddles until one of the players misses it. The goal is to keep the ball moving until the other player misses the ball.
+>>>>>>> 86aef019cfd0bc030050ab89a8ec9afa72b2456e
 
 \begin{figure}[h]
 	\label{fig:pong_screenshot}
@@ -162,7 +166,7 @@ Primarly focusing on the driver, we decided to implement one of the simplest gam
 	\caption{Screenshot of the game}
 \end{figure}
 
-\paragraph{Implementation} The functions that get called on button press and release adjusted the movement speed of the paddle. When a button get pressed, the speed of the represented player would be set. On release the speed would be set to zero. This way, two calls are needed each time the players moves a paddle. To draw the objects, the game made use of the screen module, described briefly in \ref{subsection:the_game_application}. This module has a specific function designed to handle vertical movement only, a function which \mn{game.c} will utilize. On each clock tick, the game will calculate the new positions of the paddles and the ball, and do the screen update.
+\paragraph{Implementation} The functions that get called on button press and release adjusted the movement speed of the paddle. When a button get pressed, the speed of the represented player would be set. On release the speed would be set to zero. This way, two calls are needed each time the players moves a paddle. To draw the objects, the game made use of the screen module, described briefly in \ref{subsection:the_game_application}. On each clock tick, the game will calculate the new positions of the paddles and the ball, and do the screen update.
 
 \paragraph{Overlapping objects} 
 Avoiding overlapping objects became a minor challenge. When the ball overlapped one of the paddles, the overlapping part would go blank when the ball moved away \emph{(see figure \ref{fig:pong_overlapping})}.
@@ -174,7 +178,7 @@ The overlapping occured when the distance between the ball and the player became
 	\includegraphics[width=5cm, trim= 0 240 0 100]{img/pong_overlapping_1.pdf}
 	\includegraphics[width=5cm, trim= 0 240 0 100]{img/pong_overlapping_2.pdf}
 	
-	\caption{Paddle turning blank after overlapping}
+	\caption{Paddle turning blank after overlaping}
 \end{figure}
 
 \subsection{Driver concurrency}
