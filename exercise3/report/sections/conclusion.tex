@@ -5,3 +5,4 @@ This exercise opens up for a lot of things that can be done. We have decided to 
 
 
 \subsection{Why we did not use DMA}
+Using the DMA to write to the frame buffer could be a way of improving the energy efficiency of our game. We concluded, under Benjamin's supervision, that there was no gain in doing this. This is because the game is interactive, and and we do not know in advance whether to move a player or not. In other words, on each clock tick, there is a numerous states that the game can be in, each giving a different output to the screen.
