@@ -80,7 +80,7 @@ Here is a little overview of the files in the game application. There will not b
 	\item \mn{input.c} - Handles gamepad input. Contains the driver file handle and a list of button handlers. It will determine which button(s) is pressed and/or released, and call the corresponding event handlers.
 	\item \mn{pong.c} - This module contains all logic for the Pong game. A more detailed explanation is found in section \ref{subsection:pong}.
 	\item \mn{screen.c} - This module handles the screen driver file handle, and takes care of drawing and updating the frame buffer device. A more detailed explanation is found in section \ref{subsection:framebuffer}.
-	\item \mn{signal.c} - Module that enables signal handlers for \textbf{SIGALRM} and \textbf{SIGUSR1}. More info about this module is found in section \ref{subsubsection:handling-signals}.
+	\item \mn{signal.c} - Module that enables signal handlers for \textbf{SIGALRM} and \textbf{SIGUSR1}. Read more about this module in \ref{subsubsection:timer} and \ref{subsubsection:handling-signals}.
 	\item \mn{timer.c} - This module will set up the timer with a given interval, and keep track of which function that should be called on each timer tick. This is needed to animate the game. A more detailed description is found in section \ref{subsubsection:timer}.
 \end{itemize}
 
